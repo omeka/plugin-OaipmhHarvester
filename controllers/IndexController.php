@@ -16,7 +16,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     	// Get the available metadata formats from the data provider.
     	$baseUrl = $_POST['base_url'];
     	$requestArguments = array('verb' => 'ListMetadataFormats');
-    	$oaipmh = new OaipmhHarvester_Oaipmh($baseUrl, $requestArguments);
+    	$oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
     	
 		// Compare the available OAI-PMH metadataFormats with the available 
 		// Omeka maps and extract only those that are common to both. It's 
@@ -52,7 +52,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     		$requestArguments['resumptionToken'] = $_POST['resumption_token'];
 		}
 		
-    	$oaipmh = new OaipmhHarvester_Oaipmh($baseUrl, $requestArguments);
+    	$oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
 		$sets = $oaipmh->getOaipmh()->ListSets->set;
 		
 		// Set the resumption token, if any.
@@ -92,12 +92,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
 		$oaipmhHarvesterSet->save();
     	
     	// Set the command arguments.
-    	$phpCommandPath	 = $this->_getPhpCommandPath();
-    	$harvestFilePath = $this->_getHarvestFilePath($metadataPrefix);
-    	$setId		     = escapeshellarg($oaipmhHarvesterSet->id);
+    	$phpCommandPath	   = $this->_getPhpCommandPath();
+    	$bootstrapFilePath = $this->_getBootstrapFilePath();
+    	$setId		       = escapeshellarg($oaipmhHarvesterSet->id);
     	
     	// Set the command and run the script in the background.
-    	$command = "$phpCommandPath $harvestFilePath -s $setId";
+    	$command = "$phpCommandPath $bootstrapFilePath -s $setId";
     	//$this->_fork($command);
     	
     	$this->flashSuccess("Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.");
@@ -113,27 +113,20 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     	$dir = new DirectoryIterator(OAIPMH_HARVESTER_MAPS_DIRECTORY);
     	$maps = array();
     	foreach ($dir as $dirEntry) {
-    		if ($dirEntry->isDir() && !$dirEntry->isDot()) {
-    			// The harvest.php file must exist in order to use the map. 
-    			if (file_exists(OAIPMH_HARVESTER_MAPS_DIRECTORY 
-    						  . DIRECTORY_SEPARATOR 
-    						  . $dirEntry->getFilename() 
-    						  . DIRECTORY_SEPARATOR 
-    						  . 'harvest.php')) {
-    				$maps[] = $dirEntry->getFilename();
-    			}
+    		if ($dirEntry->isFile() && !$dirEntry->isDot()) {
+    			// Get and set only the name of the file minus the extension.
+    			preg_match('/^(.+)\.php$/', $dirEntry->getFilename(), $map);
+    			$maps[] = $map[1];
 			}
 		}
 		return $maps;
 	}
 	
-	private function _getHarvestFilePath($metadataPrefix)
+	private function _getBootstrapFilePath()
 	{
-		return OAIPMH_HARVESTER_MAPS_DIRECTORY
+		return OAIPMH_HARVESTER_PLUGIN_DIRECTORY
 			 . DIRECTORY_SEPARATOR 
-			 . $metadataPrefix 
-			 . DIRECTORY_SEPARATOR 
-			 . 'harvest.php';
+			 . 'bootstrap.php';
 	}
 	
 	// Get the path to the PHP CLI command. This does not account for servers 

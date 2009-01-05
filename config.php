@@ -5,7 +5,7 @@
 define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY . DIRECTORY_SEPARATOR . 'maps');
 
-require_once 'Oaipmh.php';
+require_once 'Oaipmh/Xml.php';
 
 require_once 'OaipmhHarvesterSet.php';
 require_once 'OaipmhHarvesterSetTable.php';

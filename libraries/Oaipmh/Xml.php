@@ -1,5 +1,5 @@
 <?php
-class OaipmhHarvester_Oaipmh
+class Oaipmh_Xml
 {
     private $oaipmh;
     

@@ -18,6 +18,6 @@ class Oaipmh_Xml
     
     public function getOaipmh()
     {
-    	return $this->oaipmh;
-	}
+        return $this->oaipmh;
+    }
 }

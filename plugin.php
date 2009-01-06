@@ -2,8 +2,8 @@
 define('OAIPMH_HARVESTER_PLUGIN_VERSION', '0.2');
 define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
-										. DIRECTORY_SEPARATOR 
-										. 'maps');
+                                        . DIRECTORY_SEPARATOR 
+                                        . 'maps');
 
 require_once 'Oaipmh/Xml.php';
 require_once 'OaipmhHarvesterSet.php';
@@ -22,52 +22,52 @@ function oaipmh_harvester_install()
     
     // Harvested sets/collections.
     /*
-	id: primary key
-	collection_id: the corresponding collection id in `collections`
-	base_url: the OAI-PMH base URL
-	set_spec: the OAI-PMH set spec (unique identifier)
-	set_name: the OAI-PMH set name
-	metadata_prefix: the OAI-PMH metadata prefix used for this harvest
-	status: the current harvest status for this set; in progress, completed, error
-	status_messages: any messages sent from the harvester, usually only during an error status
-	initiated: the datetime the harvest initiated
-	completed: the datetime the harvest completed
-	*/
-	$sql = "
-	CREATE TABLE IF NOT EXISTS `oaipmh_harvester_sets` (
-		`id` int(10) unsigned NOT NULL auto_increment,
-		`collection_id` int(10) unsigned default NULL,
-		`base_url` text collate utf8_unicode_ci NOT NULL,
-		`set_spec` text collate utf8_unicode_ci NOT NULL,
-		`set_name` text collate utf8_unicode_ci NOT NULL,
-		`set_description` text collate utf8_unicode_ci,
-		`metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
-		`status` enum('in progress','completed','error') collate utf8_unicode_ci NOT NULL default 'in progress',
-		`status_messages` text collate utf8_unicode_ci,
-		`initiated` datetime default NULL,
-		`completed` datetime default NULL,
-		PRIMARY KEY  (`id`)
-	) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-	$db->query($sql);
-			
-	// Harvested records/items.
-	/*
-	id: primary key
-	set_id: the corresponding set id in `oaipmh_harvester_sets`
-	item_id: the corresponding item id in `items`
-	identifier: the OAI-PMH record identifier (unique identifier)
-	datestamp: the OAI-PMH record datestamp
-	*/
-	$sql = "
+    id: primary key
+    collection_id: the corresponding collection id in `collections`
+    base_url: the OAI-PMH base URL
+    set_spec: the OAI-PMH set spec (unique identifier)
+    set_name: the OAI-PMH set name
+    metadata_prefix: the OAI-PMH metadata prefix used for this harvest
+    status: the current harvest status for this set; in progress, completed, error
+    status_messages: any messages sent from the harvester, usually only during an error status
+    initiated: the datetime the harvest initiated
+    completed: the datetime the harvest completed
+    */
+    $sql = "
+    CREATE TABLE IF NOT EXISTS `oaipmh_harvester_sets` (
+        `id` int(10) unsigned NOT NULL auto_increment,
+        `collection_id` int(10) unsigned default NULL,
+        `base_url` text collate utf8_unicode_ci NOT NULL,
+        `set_spec` text collate utf8_unicode_ci NOT NULL,
+        `set_name` text collate utf8_unicode_ci NOT NULL,
+        `set_description` text collate utf8_unicode_ci,
+        `metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
+        `status` enum('in progress','completed','error') collate utf8_unicode_ci NOT NULL default 'in progress',
+        `status_messages` text collate utf8_unicode_ci,
+        `initiated` datetime default NULL,
+        `completed` datetime default NULL,
+        PRIMARY KEY  (`id`)
+    ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+    $db->query($sql);
+    
+    // Harvested records/items.
+    /*
+    id: primary key
+    set_id: the corresponding set id in `oaipmh_harvester_sets`
+    item_id: the corresponding item id in `items`
+    identifier: the OAI-PMH record identifier (unique identifier)
+    datestamp: the OAI-PMH record datestamp
+    */
+    $sql = "
     CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_records` (
-		`id` int(10) unsigned NOT NULL auto_increment,
-		`set_id` int(10) unsigned NOT NULL,
-		`item_id` int(10) unsigned NOT NULL,
-		`identifier` text collate utf8_unicode_ci NOT NULL,
-		`datestamp` tinytext collate utf8_unicode_ci NOT NULL,
-		PRIMARY KEY  (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-	$db->query($sql);
+        `id` int(10) unsigned NOT NULL auto_increment,
+        `set_id` int(10) unsigned NOT NULL,
+        `item_id` int(10) unsigned NOT NULL,
+        `identifier` text collate utf8_unicode_ci NOT NULL,
+        `datestamp` tinytext collate utf8_unicode_ci NOT NULL,
+        PRIMARY KEY  (`id`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+    $db->query($sql);
 }
 
 function oaipmh_harvester_uninstall()
@@ -83,6 +83,6 @@ function oaipmh_harvester_uninstall()
 
 function oaipmh_harvester_admin_navigation_main($nav)
 {
-	$nav['OAI-PMH Harvester'] = uri('oaipmh-harvester');
-	return $nav;
+    $nav['OAI-PMH Harvester'] = uri('oaipmh-harvester');
+    return $nav;
 }

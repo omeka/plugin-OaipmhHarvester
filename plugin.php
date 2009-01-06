@@ -1,7 +1,13 @@
 <?php
-require 'config.php';
-
 define('OAIPMH_HARVESTER_PLUGIN_VERSION', '0.2');
+define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
+define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
+										. DIRECTORY_SEPARATOR 
+										. 'maps');
+
+require_once 'Oaipmh/Xml.php';
+require_once 'OaipmhHarvesterSet.php';
+require_once 'OaipmhHarvesterSetTable.php';
 
 add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
@@ -18,55 +24,32 @@ function oaipmh_harvester_install()
     /*
 	id: primary key
 	collection_id: the corresponding collection id in `collections`
-	status_id: the current harvest status for this set 
 	base_url: the OAI-PMH base URL
 	set_spec: the OAI-PMH set spec (unique identifier)
 	set_name: the OAI-PMH set name
 	metadata_prefix: the OAI-PMH metadata prefix used for this harvest
-	messages: any messages sent from the harvester, usually only during an error status
+	status: the current harvest status for this set; in progress, completed, error
+	status_messages: any messages sent from the harvester, usually only during an error status
 	initiated: the datetime the harvest initiated
 	completed: the datetime the harvest completed
 	*/
 	$sql = "
-	CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_sets` (
+	CREATE TABLE IF NOT EXISTS `oaipmh_harvester_sets` (
 		`id` int(10) unsigned NOT NULL auto_increment,
-  		`collection_id` int(10) unsigned NULL,
-  		`status_id` int(10) unsigned NOT NULL,
-  		`base_url` text collate utf8_unicode_ci NOT NULL,
-  		`set_spec` text collate utf8_unicode_ci NOT NULL,
-  		`set_name` text collate utf8_unicode_ci NOT NULL,
-  		`set_description` text collate utf8_unicode_ci NULL,
-  		`metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
-  		`messages` text collate utf8_unicode_ci NULL,
-  		`initiated` datetime default NULL,
-  		`completed` datetime default NULL,
-  		PRIMARY KEY  (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		`collection_id` int(10) unsigned default NULL,
+		`base_url` text collate utf8_unicode_ci NOT NULL,
+		`set_spec` text collate utf8_unicode_ci NOT NULL,
+		`set_name` text collate utf8_unicode_ci NOT NULL,
+		`set_description` text collate utf8_unicode_ci,
+		`metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
+		`status` enum('in progress','completed','error') collate utf8_unicode_ci NOT NULL default 'in progress',
+		`status_messages` text collate utf8_unicode_ci,
+		`initiated` datetime default NULL,
+		`completed` datetime default NULL,
+		PRIMARY KEY  (`id`)
+	) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 	$db->query($sql);
-	
-	// Set harvest statuses.
-	/*
-	id: primary key
-	name: the name of the status
-	description: the description of the status
-	*/
-	$sql ="
-	CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_set_statuses` (
-  		`id` mediumint(8) unsigned NOT NULL auto_increment,
-  		`name` tinytext collate utf8_unicode_ci NOT NULL,
-  		`description` tinytext collate utf8_unicode_ci,
-  		PRIMARY KEY  (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-	$db->query($sql);
-	
-	$sql = "
-	INSERT INTO `{$db->prefix}oaipmh_harvester_set_statuses` 
-	(`id`, `name`, `description`) VALUES
-	(NULL, 'In Progress', NULL),
-	(NULL, 'Completed', NULL),
-	(NULL, 'Error', NULL);";
-	$db->query($sql);
-		
+			
 	// Harvested records/items.
 	/*
 	id: primary key
@@ -93,8 +76,6 @@ function oaipmh_harvester_uninstall()
     
     $db = get_db();
     $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_sets`;";
-    $db->query($sql);
-    $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_set_statuses`;";
     $db->query($sql);
     $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_records`;";
     $db->query($sql);

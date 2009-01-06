@@ -42,7 +42,7 @@ head($head);
         		<td><?php echo $harvestedSet->set_name; ?></td>
         		<td><?php echo $harvestedSet->metadata_prefix; ?></td>
         		<td><?php echo $harvestedSet->base_url; ?></td>
-        		<td><?php echo $harvestedSet->getStatus()->name; ?></td>
+        		<td><?php echo ucwords($harvestedSet->status); ?></td>
         	</tr>
         <?php endforeach; ?>
         </tbody>

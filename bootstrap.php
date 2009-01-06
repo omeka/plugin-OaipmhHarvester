@@ -3,8 +3,9 @@
 ini_set('memory_limit', '500M');
 
 // Require the necessary files. There is probably a better way to do this.
-require '../../paths.php';
-require '../../application/libraries/Omeka/Core.php';
+$baseDir = str_replace('plugins/OaipmhHarvester', '', dirname(__FILE__));
+require "{$baseDir}paths.php";
+require "{$baseDir}application/libraries/Omeka/Core.php";
 
 // Load only the required core phases.
 $core = new Omeka_Core;

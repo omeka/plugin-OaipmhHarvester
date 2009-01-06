@@ -1,20 +1,19 @@
 <?php
 class OaipmhHarvesterSet extends Omeka_Record
 {
+	const STATUS_IN_PROGRESS = 'in progress';
+	const STATUS_COMPLETED	 = 'completed';
+	const STATUS_ERROR		 = 'error';
+	
 	public $id;
 	public $collection_id;
-	public $status_id;
 	public $base_url;
 	public $set_spec;
 	public $set_name;
 	public $set_description;
 	public $metadata_prefix;
-	public $messages;
+	public $status;
+	public $status_messages;
 	public $initiated;
 	public $completed;
-    
-    public function getStatus()
-    {
-        return $this->getTable('OaipmhHarvesterSetStatus')->find($this->status_id);
-    }
 }

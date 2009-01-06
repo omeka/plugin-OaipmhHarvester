@@ -4,6 +4,7 @@ abstract class Oaipmh_Harvest_Abstract
 	protected $db;
 	protected $options;
 	protected $set;
+	protected $oaipmh;
 	
 	public function __construct($db, $options, $set)
 	{
@@ -12,18 +13,36 @@ abstract class Oaipmh_Harvest_Abstract
 		$this->set 	   = $set;
 		
 		try {
+			
+			// Call the template method that runs before the harvest.
 			$this->_beforeHarvest();
+			// Initiate the harvest.
 			$this->_harvest();
+			// Call the template method that runs after the harvest.
 			$this->_afterHarvest();
+			
+			// Set the set as completed.
+			$this->set->status = OaipmhHarvesterSet::STATUS_COMPLETED;
+			$this->set->completed = date('Y:m:d H:i:s');
+			$this->set->save();
+		
 		} catch (Exception $e) {
-			echo $e->getMessage();
+			// Record the error.
+			$this->set->status = OaipmhHarvesterSet::STATUS_ERROR;
+			$this->set->status_messages = $this->_appendToStatusMessages($e->getMessage());
+			$this->set->save();
 		}
 	}
 	
-	abstract protected function _harvestPage($oaipmh);
+	abstract protected function _harvestPage();
 
-	protected function _beforeHarvest() {}
-	protected function _afterHarvest() {}
+	protected function _beforeHarvest()
+	{
+	}
+	
+	protected function _afterHarvest()
+	{
+	}
 	
 	private function _harvest($resumptionToken = false)
 	{
@@ -37,39 +56,29 @@ abstract class Oaipmh_Harvest_Abstract
 			$requestArguments['resumptionToken'] = $resumptionToken;
 		} else {
 			$requestArguments['set']			= $this->set->set_spec;
-			$requestArguments['metadataPrefix'] = 'cdwalite';//$this->set->metadata_prefix;
+			$requestArguments['metadataPrefix'] = $this->set->metadata_prefix;
 		}
 
-// Debugging
-//echo '+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=';
-//echo PHP_EOL;
-//echo $baseUrl;
-//echo PHP_EOL;
-//print_r($requestArguments);
-//echo PHP_EOL;
-
-		// Set the OAI-PMH object.
-		$oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
+		// Cache the OAI-PMH SimpleXML object.
+		$xml = new Oaipmh_Xml($baseUrl, $requestArguments);
+		$this->oaipmh = $xml->getOaipmh();
 		
-		// Hand off the mapping to the classes inheriting from this class.
-		$this->_harvestPage($oaipmh);
+		// Throw an error if the response is an error.
+		if ($this->_isError($this->oaipmh)) {
+			throw new Exception((string) $this->oaipmh->error);
+		}
+
+		// Hand off the page-by-page mapping to the classes inheriting from this 
+		// class.
+		$this->_harvestPage();
 		
 		// If there is a resumption token, recurse this method.
-		if (isset($oaipmh->getOaipmh()->ListRecords->resumptionToken)) {
-			
-// Debugging
-//echo $oaipmh->getOaipmh()->ListRecords->resumptionToken->asXml();
-//echo PHP_EOL;
-			
-			$resumptionToken = (string) $oaipmh->getOaipmh()->ListRecords->resumptionToken;
+		if (isset($this->oaipmh->ListRecords->resumptionToken)) {
+			$resumptionToken = (string) $this->oaipmh->ListRecords->resumptionToken;
 			if (!empty($resumptionToken)) {
 				$this->_harvest($resumptionToken);
 			}
 		}
-		
-// Debugging
-//echo 'return';
-//echo PHP_EOL;
 		
 		// If there is no resumption token, we're all done here.
 		return;
@@ -85,8 +94,27 @@ abstract class Oaipmh_Harvest_Abstract
 		return $collection->id;
 	}
 	
+	protected function _insertItem()
+	{
+		
+	}
+	
+	protected function _getRecords()
+	{
+		return $this->oaipmh->ListRecords->record;
+	}
+	
 	protected function _isError($oaipmh)
 	{
 		return isset($oaipmh->error);
+	}
+	
+	protected function _appendToStatusMessages($message, $appendWith = "\n\n")
+	{
+		if (0 == strlen($this->set->status_messages)) {
+			$appendWith = '';
+		}
+		
+		return $this->set->status_messages . $appendWith . $message;
 	}
 }

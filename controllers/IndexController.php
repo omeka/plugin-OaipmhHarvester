@@ -79,15 +79,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     	
     	// Insert the set.
     	$oaipmhHarvesterSet = new OaipmhHarvesterSet;
-		$statusId = $this->getTable('OaipmhHarvesterSetStatus')
-						 ->findIdByName('In Progress');
-		
-		$oaipmhHarvesterSet->status_id		 = $statusId;
 		$oaipmhHarvesterSet->base_url		 = $baseUrl;
 		$oaipmhHarvesterSet->set_spec		 = $setSpec;
 		$oaipmhHarvesterSet->set_name		 = $setName;
 		$oaipmhHarvesterSet->set_description = $setDescription;
 		$oaipmhHarvesterSet->metadata_prefix = $metadataPrefix;
+		$oaipmhHarvesterSet->status		 	 = OaipmhHarvesterSet::STATUS_IN_PROGRESS;
 		$oaipmhHarvesterSet->initiated		 = date('Y:m:d H:i:s');
 		$oaipmhHarvesterSet->save();
     	
@@ -98,7 +95,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     	
     	// Set the command and run the script in the background.
     	$command = "$phpCommandPath $bootstrapFilePath -s $setId";
-    	//$this->_fork($command);
+    	$this->_fork($command);
     	
     	$this->flashSuccess("Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.");
 

@@ -15,24 +15,36 @@ head($head);
     this repository. You will not be able to harvest any sets.</div>
     <?php endif; ?>
 
+    <h2>Sets in data provider: <?php echo $this->baseUrl; ?></h2>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Set Spec</th>
+                <th>Set Name</th>
+                <th>Set Description</th>
+                <th>Harvest</th>
+            </tr>
+        </thead>
+        <tbody>
     <?php foreach ($this->sets as $set): ?>
-    <div>
-        <p>Set Spec: <?php echo $set->setSpec; ?></p>
-        <p>Set Name: <?php echo $set->setName; ?></p>
-        <?php $setDc = @ $set->setDescription->children('oai_dc', true)->children('dc', true); ?>
-        <p>Set Description: <?php echo @ $setDc->description; ?></p>
-        <?php if (!empty($this->availableMaps)): ?>
-        <form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
-            <?php echo $this->formSelect('metadata_prefix', null, null, $this->availableMaps); ?>
-            <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
-            <?php echo $this->formHidden('set_spec', $set->setSpec); ?>
-            <?php echo $this->formHidden('set_name', $set->setName); ?>
-            <?php echo $this->formHidden('set_description', @ $setDc->description); ?>
-            <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
-        </form>
-        <?php endif; ?>
-    </div>
+    <?php $setDc = @ $set->setDescription->children('oai_dc', true)->children('dc', true); ?>
+            <tr>
+                <td><strong><?php echo wordwrap($set->setSpec, 20, '<br />', true); ?></strong></td>
+                <td><?php echo $set->setName; ?></td>
+                <td><?php echo @ $setDc->description; ?></td>
+                <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
+                <?php echo $this->formSelect('metadata_prefix', null, null, $this->availableMaps); ?>
+                <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
+                <?php echo $this->formHidden('set_spec', $set->setSpec); ?>
+                <?php echo $this->formHidden('set_name', $set->setName); ?>
+                <?php echo $this->formHidden('set_description', @ $setDc->description); ?>
+                <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
+                </form></td>
+            </tr>
     <?php endforeach; ?>
+        </tbody>
+    </table>
     <?php if ($this->resumptionToken): ?>
     <div>
         <form method="post">

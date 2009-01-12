@@ -63,8 +63,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         
         // Set the variables to the view object.
-        $this->view->availableMaps     = $availableMaps;
-        $this->view->sets             = $sets;
+        $this->view->availableMaps   = $availableMaps;
+        $this->view->sets            = $sets;
         $this->view->resumptionToken = $resumptionToken;
         $this->view->baseUrl         = $baseUrl;
     }
@@ -101,6 +101,15 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         $this->redirect->goto('index');
         exit;
+    }
+    
+    public function statusAction()
+    {
+        $setId = $_GET['set_id'];
+        
+        $set = $this->getTable('OaipmhHarvesterSet')->find($setId);
+        
+        $this->view->set = $set;
     }
     
     private function _getMaps()

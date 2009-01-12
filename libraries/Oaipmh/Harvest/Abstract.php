@@ -2,15 +2,16 @@
 abstract class Oaipmh_Harvest_Abstract
 {
     protected $db;
-    protected $options;
     protected $set;
+    protected $statusMessages = array();
+    
+    // The current, cached OAI-PMH SimpleXML object.
     protected $oaipmh;
     
-    public function __construct($db, $options, $set)
+    public function __construct($db, $set)
     {
-        $this->db      = $db;
-        $this->options = $options;
-        $this->set     = $set;
+        $this->db  = $db;
+        $this->set = $set;
         
         try {
             
@@ -21,20 +22,21 @@ abstract class Oaipmh_Harvest_Abstract
             // Call the template method that runs after the harvest.
             $this->_afterHarvest();
             
-            // Set the set as completed.
+            // Mark the set as completed.
             $this->set->status = OaipmhHarvesterSet::STATUS_COMPLETED;
+            $this->set->status_messages = $this->_formatStatusMessages();
             $this->set->completed = date('Y:m:d H:i:s');
             $this->set->save();
         
         } catch (Exception $e) {
             // Record the error.
             $this->set->status = OaipmhHarvesterSet::STATUS_ERROR;
-            $this->set->status_messages = $this->_appendToStatusMessages($e->getMessage());
+            $this->set->status_messages = $this->_formatStatusMessages();
             $this->set->save();
         }
     }
     
-    abstract protected function _harvestPage();
+    abstract protected function _harvestRecord($record);
     
     protected function _beforeHarvest()
     {
@@ -60,24 +62,24 @@ abstract class Oaipmh_Harvest_Abstract
         }
         
         // Cache the OAI-PMH SimpleXML object.
-        $xml = new Oaipmh_Xml($baseUrl, $requestArguments);
-        $this->oaipmh = $xml->getOaipmh();
+        $oaipmhXml = new Oaipmh_Xml($baseUrl, $requestArguments);
+        $this->oaipmh = $oaipmhXml->getOaipmh();
         
         // Throw an error if the response is an error.
         if ($this->_isError($this->oaipmh)) {
-            throw new Exception((string) $this->oaipmh->error);
+            $this->_addStatusMessage((string) $this->oaipmh->error);
+            throw new Exception;
         }
 
-        // Hand off the page-by-page mapping to the classes inheriting from this 
-        // class.
-        $this->_harvestPage();
+        // Iterate through the records and hand off the mapping to the classes 
+        // inheriting from this class.
+        foreach ($this->_getRecords() as $record) {
+            $this->_harvestRecord($record);
+        }
         
         // If there is a resumption token, recurse this method.
-        if (isset($this->oaipmh->ListRecords->resumptionToken)) {
-            $resumptionToken = (string) $this->oaipmh->ListRecords->resumptionToken;
-            if (!empty($resumptionToken)) {
-                $this->_harvest($resumptionToken);
-            }
+        if ($resumptionToken = $this->_getResumptionToken()) {
+            $this->_harvest($resumptionToken);
         }
         
         // If there is no resumption token, we're all done here.
@@ -87,13 +89,10 @@ abstract class Oaipmh_Harvest_Abstract
     // Insert a collection.
     protected function _insertCollection()
     {
-        $collection = new Collection;
-        $collection->name = $this->set->set_name;
-        $collection->description = $this->set->set_description;
-        $collection->save();
-        return $collection->id;
+        
     }
     
+    // Insert an item.
     protected function _insertItem()
     {
         
@@ -109,12 +108,24 @@ abstract class Oaipmh_Harvest_Abstract
         return isset($oaipmh->error);
     }
     
-    protected function _appendToStatusMessages($message, $appendWith = "\n\n")
+    protected function _addStatusMessage($message)
     {
-        if (0 == strlen($this->set->status_messages)) {
-            $appendWith = '';
+        $this->statusMessages[] = $message;
+    }
+    
+    protected function _formatStatusMessages($delimiter = "\n\n")
+    {
+        return implode($delimiter, $this->statusMessages);
+    }
+    
+    protected function _getResumptionToken()
+    {
+        if (isset($this->oaipmh->ListRecords->resumptionToken)) {
+            $resumptionToken = (string) $this->oaipmh->ListRecords->resumptionToken;
+            if (!empty($resumptionToken)) {
+                return $resumptionToken;
+            }
         }
-        
-        return $this->set->status_messages . $appendWith . $message;
+        return false;
     }
 }

@@ -1,6 +1,9 @@
 <?php
-// Set a high memory limit to avoid memory allocation issues.
-ini_set('memory_limit', '500M');
+// Set an infinite memory limit to avoid memory allocation issues. There still 
+// may be a problem with very large record lists, so some other solutions will 
+// need to be devised to optimize the code and/or implement selective harvesting 
+// features.
+ini_set('memory_limit', -1);
 
 // Require the necessary files. There is probably a better way to do this.
 $baseDir = str_replace('plugins/OaipmhHarvester', '', dirname(__FILE__));
@@ -35,7 +38,7 @@ $metadataPrefixClassName = "Oaipmh_Harvest_Abstract_$metadataPrefixClass";
 require_once 'Oaipmh/Harvest/Abstract.php';
 require_once 'Oaipmh/Xml.php';
 
-require_once "maps/$metadataPrefix.php";
+require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataPrefix.php";
 
 // Set the harvest object.
-new $metadataPrefixClassName($db, $options, $set);
+new $metadataPrefixClassName($set);

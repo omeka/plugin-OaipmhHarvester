@@ -8,6 +8,8 @@ define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY
 require_once 'Oaipmh/Xml.php';
 require_once 'OaipmhHarvesterSet.php';
 require_once 'OaipmhHarvesterSetTable.php';
+require_once 'OaipmhHarvesterRecord.php';
+require_once 'OaipmhHarvesterRecordTable.php';
 
 add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
@@ -34,7 +36,7 @@ function oaipmh_harvester_install()
     completed: the datetime the harvest completed
     */
     $sql = "
-    CREATE TABLE IF NOT EXISTS `oaipmh_harvester_sets` (
+    CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_sets` (
         `id` int(10) unsigned NOT NULL auto_increment,
         `collection_id` int(10) unsigned default NULL,
         `base_url` text collate utf8_unicode_ci NOT NULL,
@@ -62,7 +64,7 @@ function oaipmh_harvester_install()
     CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_records` (
         `id` int(10) unsigned NOT NULL auto_increment,
         `set_id` int(10) unsigned NOT NULL,
-        `item_id` int(10) unsigned NOT NULL,
+        `item_id` int(10) unsigned default NULL,
         `identifier` text collate utf8_unicode_ci NOT NULL,
         `datestamp` tinytext collate utf8_unicode_ci NOT NULL,
         PRIMARY KEY  (`id`)

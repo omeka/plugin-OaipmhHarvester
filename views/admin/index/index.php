@@ -25,6 +25,12 @@ head($head);
     
     <h2>Harvested Sets</h2>
     
+    <?php if (empty($this->harvestedSets)): ?>
+    
+    <p>There are no harvested sets.</p>
+    
+    <?php else: ?>
+    
     <table>
        <thead>
             <tr>
@@ -47,6 +53,8 @@ head($head);
         <?php endforeach; ?>
         </tbody>
     </table>
+    
+    <?php endif; ?>
 
 </div>
 

@@ -59,8 +59,8 @@ abstract class Oaipmh_Harvest_Abstract
         
         // Throw an error if the response is an error.
         if ($this->_isError()) {
-            $this->addStatusMessage((string) $this->_oaipmh->error);
-            throw new Exception;
+            $statusMessage = (string) $this->_oaipmh->error;
+            throw new Exception($statusMessage);
         }
 
         // Iterate through the records and hand off the mapping to the classes 

@@ -11,7 +11,7 @@ class Oaipmh_Harvest_Abstract_OaiDc extends Oaipmh_Harvest_Abstract
                                     'description' => $set->set_description, 
                                     'public'      => true, 
                                     'featured'    => false);
-        //$this->collection = $this->insertCollection($collectionMetadata);
+        $this->collection = $this->insertCollection($collectionMetadata);
     }
     
     // Mapping goes here, per record.
@@ -40,6 +40,6 @@ class Oaipmh_Harvest_Abstract_OaiDc extends Oaipmh_Harvest_Abstract
             }
         }
         
-        //$this->insertItem($itemMetadata, $elementTexts);
+        $this->insertItem($itemMetadata, $elementTexts);
     }
 }

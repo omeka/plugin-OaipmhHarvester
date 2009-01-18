@@ -84,7 +84,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $oaipmhHarvesterSet->set_name        = $setName;
         $oaipmhHarvesterSet->set_description = $setDescription;
         $oaipmhHarvesterSet->metadata_prefix = $metadataPrefix;
-        $oaipmhHarvesterSet->status          = OaipmhHarvesterSet::STATUS_IN_PROGRESS;
+        $oaipmhHarvesterSet->status          = OaipmhHarvesterSet::STATUS_STARTING;
         $oaipmhHarvesterSet->initiated       = date('Y:m:d H:i:s');
         $oaipmhHarvesterSet->save();
         

@@ -12,6 +12,10 @@ abstract class Oaipmh_Harvest_Abstract
         $this->_set = $set;
         
         try {
+            // Mark the set as in progress.
+            $this->_set->status = OaipmhHarvesterSet::STATUS_IN_PROGRESS;
+            $this->_set->save();
+            
             // Call the template method that runs before the harvest.
             $this->beforeHarvest();
             // Initiate the harvest.

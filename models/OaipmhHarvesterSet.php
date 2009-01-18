@@ -1,6 +1,7 @@
 <?php
 class OaipmhHarvesterSet extends Omeka_Record
 {
+    const STATUS_STARTING    = 'starting';
     const STATUS_IN_PROGRESS = 'in progress';
     const STATUS_COMPLETED   = 'completed';
     const STATUS_ERROR       = 'error';

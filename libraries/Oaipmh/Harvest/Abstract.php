@@ -28,7 +28,7 @@ abstract class Oaipmh_Harvest_Abstract
             
             // Mark the set as completed.
             $this->_set->status    = OaipmhHarvesterSet::STATUS_COMPLETED;
-            $this->_set->completed = date('Y:m:d H:i:s');
+            $this->_set->completed = $this->_getCurrentDateTime();
             $this->_set->save();
             
         } catch (Exception $e) {
@@ -129,6 +129,11 @@ abstract class Oaipmh_Harvest_Abstract
         return $messageCodeText;
     }
     
+    private function _getCurrentDateTime()
+    {
+        return date('Y-m-d H:i:s');
+    }
+    
     protected function beforeHarvest()
     {
     }
@@ -167,7 +172,7 @@ abstract class Oaipmh_Harvest_Abstract
         if (0 == strlen($this->_set->status_messages)) {
             $delimiter = '';
         }
-        $date = date('Y-m-d H:i:s');
+        $date = $this->_getCurrentDateTime();
         $messageCodeText = $this->_getMessageCodeText($messageCode);
         
         $this->_set->status_messages = "{$this->_set->status_messages}$delimiter$messageCodeText: $message ($date)";

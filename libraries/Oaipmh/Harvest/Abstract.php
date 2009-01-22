@@ -1,6 +1,9 @@
 <?php
 abstract class Oaipmh_Harvest_Abstract
 {
+    const MESSAGE_CODE_NOTICE = 1;
+    const MESSAGE_CODE_ERROR = 2;
+    
     private $_set;
     
     // The current, cached OAI-PMH SimpleXML objects.
@@ -30,7 +33,7 @@ abstract class Oaipmh_Harvest_Abstract
             
         } catch (Exception $e) {
             // Record the error.
-            $this->addStatusMessage($e->getMessage());
+            $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
             $this->_set->status = OaipmhHarvesterSet::STATUS_ERROR;
             $this->_set->save();
         }
@@ -112,6 +115,20 @@ abstract class Oaipmh_Harvest_Abstract
         return false;
     }
     
+    private function _getMessageCodeText($messageCode)
+    {
+        switch ($messageCode) {
+            case self::MESSAGE_CODE_ERROR:
+                $messageCodeText = 'Error';
+                break;
+            case self::MESSAGE_CODE_NOTICE:
+            default:
+                $messageCodeText = 'Notice';
+                break;
+        }
+        return $messageCodeText;
+    }
+    
     protected function beforeHarvest()
     {
     }
@@ -145,12 +162,15 @@ abstract class Oaipmh_Harvest_Abstract
         return $item;
     }
     
-    protected function addStatusMessage($message, $delimiter = "\n\n")
+    protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
         if (0 == strlen($this->_set->status_messages)) {
             $delimiter = '';
         }
-        $this->_set->status_messages = $this->_set->status_messages . $delimiter . $message;
+        $date = date('Y-m-d H:i:s');
+        $messageCodeText = $this->_getMessageCodeText($messageCode);
+        
+        $this->_set->status_messages = "{$this->_set->status_messages}$delimiter$messageCodeText: $message ($date)";
         $this->_set->save();
     }
     

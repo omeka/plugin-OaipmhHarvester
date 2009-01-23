@@ -6,8 +6,10 @@ abstract class Oaipmh_Harvest_Abstract
     
     private $_set;
     
-    // The current, cached OAI-PMH SimpleXML objects.
-    private $_oaipmh;
+    // The current, cached Oaipmh_Xml object.
+    private $_oaipmhXml;
+    
+    // The current, cached SimpleXML record object.
     private $_record;
     
     public function __construct($set)
@@ -56,13 +58,12 @@ abstract class Oaipmh_Harvest_Abstract
             $requestArguments['metadataPrefix'] = $this->_set->metadata_prefix;
         }
         
-        // Cache the OAI-PMH SimpleXML object.
-        $oaipmhXml = new Oaipmh_Xml($baseUrl, $requestArguments);
-        $this->_oaipmh = $oaipmhXml->getOaipmh();
+        // Cache the Oaipmh_Xml object.
+        $this->_oaipmhXml = new Oaipmh_Xml($baseUrl, $requestArguments);
         
         // Throw an error if the response is an error.
-        if ($this->_isError()) {
-            $statusMessage = (string) $this->_oaipmh->error;
+        if ($this->_oaipmhXml->isError()) {
+            $statusMessage = (string) $this->_oaipmhXml->getOaipmh()->error;
             throw new Exception($statusMessage);
         }
 
@@ -96,18 +97,14 @@ abstract class Oaipmh_Harvest_Abstract
     
     private function _getRecords()
     {
-        return $this->_oaipmh->ListRecords->record;
-    }
-    
-    private function _isError()
-    {
-        return isset($this->_oaipmh->error);
+        return $this->_oaipmhXml->getOaipmh()->ListRecords->record;
     }
     
     private function _getResumptionToken()
     {
-        if (isset($this->_oaipmh->ListRecords->resumptionToken)) {
-            $resumptionToken = (string) $this->_oaipmh->ListRecords->resumptionToken;
+        $oaipmh = $this->_oaipmhXml->getOaipmh();
+        if (isset($oaipmh->ListRecords->resumptionToken)) {
+            $resumptionToken = (string) $oaipmh->ListRecords->resumptionToken;
             if (!empty($resumptionToken)) {
                 return $resumptionToken;
             }

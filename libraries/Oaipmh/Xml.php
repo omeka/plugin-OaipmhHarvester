@@ -20,4 +20,9 @@ class Oaipmh_Xml
     {
         return $this->oaipmh;
     }
+    
+    public function isError()
+    {
+        return isset($this->oaipmh->error);
+    }
 }

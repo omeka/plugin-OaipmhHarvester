@@ -63,7 +63,9 @@ abstract class Oaipmh_Harvest_Abstract
         
         // Throw an error if the response is an error.
         if ($this->_oaipmhXml->isError()) {
-            $statusMessage = (string) $this->_oaipmhXml->getOaipmh()->error;
+            $errorCode = (string) $this->_oaipmhXml->getErrorCode();
+            $error     = (string) $this->_oaipmhXml->getError();
+            $statusMessage = "$errorCode: $error";
             throw new Exception($statusMessage);
         }
 

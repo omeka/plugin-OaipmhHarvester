@@ -25,4 +25,14 @@ class Oaipmh_Xml
     {
         return isset($this->oaipmh->error);
     }
+    
+    public function getError()
+    {
+        return $this->oaipmh->error;
+    }
+    
+    public function getErrorCode()
+    {
+        return $this->oaipmh->error->attributes()->code;
+    }
 }

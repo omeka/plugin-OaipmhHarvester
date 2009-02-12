@@ -35,4 +35,20 @@ class Oaipmh_Xml
     {
         return $this->oaipmh->error->attributes()->code;
     }
+    
+    public function getRecords()
+    {
+        return $this->oaipmh->ListRecords->record;
+    }
+    
+    public function getResumptionToken()
+    {
+        if (isset($this->oaipmh->ListRecords->resumptionToken)) {
+            $resumptionToken = (string) $this->oaipmh->ListRecords->resumptionToken;
+            if (!empty($resumptionToken)) {
+                return $resumptionToken;
+            }
+        }
+        return false;
+    }
 }

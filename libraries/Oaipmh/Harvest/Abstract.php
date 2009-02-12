@@ -71,14 +71,14 @@ abstract class Oaipmh_Harvest_Abstract
 
         // Iterate through the records and hand off the mapping to the classes 
         // inheriting from this class.
-        foreach ($this->_getRecords() as $record) {
+        foreach ($this->_oaipmhXml->getRecords() as $record) {
             // Cache the record for later use.
             $this->_record = $record;
             $this->harvestRecord($record);
         }
         
         // If there is a resumption token, recurse this method.
-        if ($resumptionToken = $this->_getResumptionToken()) {
+        if ($resumptionToken = $this->_oaipmhXml->getResumptionToken()) {
             $this->_harvest($resumptionToken);
         }
         
@@ -95,23 +95,6 @@ abstract class Oaipmh_Harvest_Abstract
         $record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
         $record->save();
-    }
-    
-    private function _getRecords()
-    {
-        return $this->_oaipmhXml->getOaipmh()->ListRecords->record;
-    }
-    
-    private function _getResumptionToken()
-    {
-        $oaipmh = $this->_oaipmhXml->getOaipmh();
-        if (isset($oaipmh->ListRecords->resumptionToken)) {
-            $resumptionToken = (string) $oaipmh->ListRecords->resumptionToken;
-            if (!empty($resumptionToken)) {
-                return $resumptionToken;
-            }
-        }
-        return false;
     }
     
     private function _getMessageCodeText($messageCode)

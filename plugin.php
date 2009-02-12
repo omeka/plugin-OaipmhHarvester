@@ -13,6 +13,8 @@ require_once 'OaipmhHarvesterRecordTable.php';
 
 add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
+add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
+add_plugin_hook('config', 'oaipmh_harvester_config');
 
 add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
 
@@ -75,12 +77,31 @@ function oaipmh_harvester_install()
 function oaipmh_harvester_uninstall()
 {
     delete_option('oaipmh_harvester_plugin_version');
+    delete_option('oaipmh_harvester_php_path');
     
     $db = get_db();
     $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_sets`;";
     $db->query($sql);
     $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_records`;";
     $db->query($sql);
+}
+
+function oaipmh_harvester_config_form()
+{
+    if (!$path = get_option('oaipmh_harvester_php_path')) {
+        // Get the path to the PHP-CLI command. This does not account for 
+        // servers without a PHP CLI or those with a different command name for 
+        // PHP, such as "php5".
+        $command = 'which php 2>&0';
+        $lastLineOutput = exec($command, $output, $returnVar);
+        $path = $returnVar == 0 ? trim($lastLineOutput) : '';
+    }
+    include 'config_form.php';
+}
+
+function oaipmh_harvester_config()
+{
+    set_option('oaipmh_harvester_php_path', $_POST['oaipmh_harvester_php_path']);
 }
 
 function oaipmh_harvester_admin_navigation_main($nav)

@@ -89,7 +89,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $oaipmhHarvesterSet->save();
         
         // Set the command arguments.
-        $phpCommandPath    = $this->_getPhpCommandPath();
+        $phpCommandPath    = get_option('oaipmh_harvester_php_path');
         $bootstrapFilePath = $this->_getBootstrapFilePath();
         $setId             = escapeshellarg($oaipmhHarvesterSet->id);
         
@@ -133,16 +133,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         return OAIPMH_HARVESTER_PLUGIN_DIRECTORY
              . DIRECTORY_SEPARATOR 
              . 'bootstrap.php';
-    }
-    
-    // Get the path to the PHP CLI command. This does not account for servers 
-    // without a PHP CLI or those with a different command name for PHP, such as 
-    // "php5".
-    private function _getPhpCommandPath()
-    {
-        $command = 'which php 2>&0';
-        $lastLineOutput = exec($command, $output, $returnVar);
-        return $returnVar == 0 ? trim($lastLineOutput) : '';
     }
     
     // Launch a low-priority background process, returning control to the 

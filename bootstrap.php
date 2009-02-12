@@ -1,10 +1,4 @@
 <?php
-// Set an infinite memory limit to avoid memory allocation issues. There still 
-// may be a problem with very large record lists, so some other solutions will 
-// need to be devised to optimize the code and/or implement selective harvesting 
-// features.
-ini_set('memory_limit', -1);
-
 // Require the necessary files. There is probably a better way to do this.
 $baseDir = str_replace('plugins/OaipmhHarvester', '', dirname(__FILE__));
 require "{$baseDir}paths.php";
@@ -13,6 +7,10 @@ require "{$baseDir}application/libraries/Omeka/Core.php";
 // Load only the required core phases.
 $core = new Omeka_Core;
 $core->phasedLoading('initializePluginBroker');
+
+// Set the memory limit.
+$memoryLimit = get_option('oaipmh_harvester_memory_limit');
+ini_set('memory_limit', "$memoryLimit");
 
 // Set the command line arguments.
 $options = getopt('s:');

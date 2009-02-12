@@ -96,12 +96,18 @@ function oaipmh_harvester_config_form()
         $lastLineOutput = exec($command, $output, $returnVar);
         $path = $returnVar == 0 ? trim($lastLineOutput) : '';
     }
+    
+    if (!$memoryLimit = get_option('oaipmh_harvester_memory_limit')) {
+        $memoryLimit = ini_get('memory_limit');
+    }
+    
     include 'config_form.php';
 }
 
 function oaipmh_harvester_config()
 {
     set_option('oaipmh_harvester_php_path', $_POST['oaipmh_harvester_php_path']);
+    set_option('oaipmh_harvester_memory_limit', $_POST['oaipmh_harvester_memory_limit']);
 }
 
 function oaipmh_harvester_admin_navigation_main($nav)

@@ -6,7 +6,8 @@ class Oaipmh_Xml
     public function __construct($baseUrl, array $requestArguments)
     {
         $requestUrl = $this->getRequestUrl($baseUrl, $requestArguments);
-        $this->oaipmh = new SimpleXMLIterator($requestUrl, null, true);
+        $requestContent = file_get_contents($requestUrl);
+        $this->oaipmh = new SimpleXMLIterator($requestContent);
     }
     
     // Repositories must support both the GET and POST methods. Here we are 

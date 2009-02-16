@@ -14,6 +14,10 @@ abstract class Oaipmh_Harvest_Abstract
     
     public function __construct($set)
     {        
+        // Set an error handler method to record run-time warnings (non-fatal 
+        // errors). Fatal and parse errors cannot be called in this way.
+        set_error_handler(array($this, 'errorHandler'), E_WARNING);
+        
         $this->_set = $set;
         
         try {
@@ -164,5 +168,12 @@ abstract class Oaipmh_Harvest_Abstract
     protected function getSet()
     {
         return $this->_set;
+    }
+    
+    public function errorHandler($errno, $errstr, $errfile, $errline)
+    {
+        $statusMessage = "$errstr in $errfile on line $errline";
+        $this->addStatusMessage($statusMessage, self::MESSAGE_CODE_ERROR);
+        return true;
     }
 }

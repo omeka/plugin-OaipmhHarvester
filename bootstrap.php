@@ -1,15 +1,4 @@
 <?php
-// Set an error handler function to record run-time warnings (non-fatal errors).
-set_error_handler('oaipmhHarvesterErrorHandler', E_WARNING);
-function oaipmhHarvesterErrorHandler($errno, $errstr, $errfile, $errline)
-{
-    $dateTime = date('Y-m-d H:i:s');
-    file_put_contents(OAIPMH_HARVESTER_PLUGIN_DIRECTORY . '/errors.log', 
-                      "($dateTime) Error: $errstr in $errfile on line $errline\n", 
-                      FILE_APPEND);
-    return true;
-}
-
 // Require the necessary files. There is probably a better way to do this.
 $baseDir = str_replace('plugins/OaipmhHarvester', '', dirname(__FILE__));
 require "{$baseDir}paths.php";

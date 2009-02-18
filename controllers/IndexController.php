@@ -14,7 +14,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $maps = $this->_getMaps();
         
         // Get the available metadata formats from the data provider.
-        $baseUrl = $_POST['base_url'];
+        $baseUrl = trim($_POST['base_url']);
         $requestArguments = array('verb' => 'ListMetadataFormats');
         $oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
         

@@ -112,6 +112,36 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $this->view->set = $set;
     }
     
+    public function deleteAction()
+    {
+        $setId = $_GET['set_id'];
+        
+        $set = $this->getTable('OaipmhHarvesterSet')->find($setId);
+        
+        $records = $this->getTable('OaipmhHarvesterRecord')->findBySetId($set->id);
+        
+        // Delete items
+        foreach ($records as $record) {
+            $item = $this->getTable('Item')->find($record->item_id);
+            $item->delete();
+        }
+        
+        // Delete collection
+        $collection = $this->getTable('Collection')->find($set->collection_id);
+        $collection->delete();
+        
+        $set->status = OaipmhHarvesterSet::STATUS_DELETED;
+        $statusMessage = 'All items created for this harvest were deleted on ' 
+                       . date('Y-m-d H:i:s');
+        $set->status_messages = strlen($set->status_messages) == 0 
+                              ? $statusMessage 
+                              : "\n\n" . $statusMessage;
+        $set->save();
+        
+        $this->flash('All items created for the harvest were deleted.');
+        $this->redirect->goto('index');
+    }
+    
     private function _getMaps()
     {
         // Get the available OAI-PMH to Omeka maps, which should correspond to 

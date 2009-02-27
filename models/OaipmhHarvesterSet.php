@@ -5,6 +5,7 @@ class OaipmhHarvesterSet extends Omeka_Record
     const STATUS_IN_PROGRESS = 'in progress';
     const STATUS_COMPLETED   = 'completed';
     const STATUS_ERROR       = 'error';
+    const STATUS_DELETED     = 'deleted';
     
     public $id;
     public $collection_id;

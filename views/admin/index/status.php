@@ -44,7 +44,10 @@ head($head);
             <td><?php echo nl2br($this->set->status_messages); ?></td>
         </tr>
     </table>
-
+    <?php if ($this->set->status != OaipmhHarvesterSet::STATUS_DELETED): ?>
+    <p><strong>Warning:</strong> clicking the following link will delete all items created for this harvest. 
+    <a href="<?php echo uri("oaipmh-harvester/index/delete?set_id={$this->set->id}"); ?>">Delete items</a></p>
+    <?php endif; ?>
 </div>
 
 <?php foot(); ?>

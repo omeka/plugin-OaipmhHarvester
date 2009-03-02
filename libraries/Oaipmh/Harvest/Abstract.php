@@ -129,7 +129,7 @@ abstract class Oaipmh_Harvest_Abstract
     }
     
     // Insert a collection.
-    protected function insertCollection($metadata = array())
+    final protected function insertCollection($metadata = array())
     {
         $collection = insert_collection($metadata);
         
@@ -141,7 +141,7 @@ abstract class Oaipmh_Harvest_Abstract
     }
     
     // Insert an item.
-    protected function insertItem($metadata = array(), $elementTexts = array())
+    final protected function insertItem($metadata = array(), $elementTexts = array())
     {
         $item = insert_item($metadata, $elementTexts);
         
@@ -153,7 +153,7 @@ abstract class Oaipmh_Harvest_Abstract
         return $item;
     }
     
-    protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
+    final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
         if (0 == strlen($this->_set->status_messages)) {
             $delimiter = '';
@@ -165,7 +165,7 @@ abstract class Oaipmh_Harvest_Abstract
         $this->_set->save();
     }
     
-    protected function getSet()
+    final protected function getSet()
     {
         return $this->_set;
     }

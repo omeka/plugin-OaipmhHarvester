@@ -16,7 +16,14 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // Get the available metadata formats from the data provider.
         $baseUrl = trim($_POST['base_url']);
         $requestArguments = array('verb' => 'ListMetadataFormats');
-        $oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
+        
+        // Catch errors such as "String could not be parsed as XML"
+        try {
+            $oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
+        } catch (Exception $e) {
+            $this->flash($e->getMessage());
+            $this->redirect->goto('index');
+        }
         
         // Compare the available OAI-PMH metadataFormats with the available 
         // Omeka maps and extract only those that are common to both. It's 
@@ -53,6 +60,15 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         
         $oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
+        
+        // Handle returned errors, such as "noSetHierarchy"
+        if ($oaipmh->isError()) {
+            $error     = (string) $oaipmh->getError();
+            $errorCode = (string) $oaipmh->getError()->attributes()->code;
+            $this->flash("$errorCode: $error");
+            $this->redirect->goto('index');
+        }
+        
         $sets = $oaipmh->getOaipmh()->ListSets->set;
         
         // Set the resumption token, if any.

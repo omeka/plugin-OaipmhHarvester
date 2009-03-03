@@ -1,7 +1,7 @@
 <?php
-class OaipmhHarvesterSetTable extends Omeka_Db_Table
+class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
 {
-    public function findAllSets()
+    public function findAllHarvests()
     {
         $select = $this->getSelect();
         return $this->fetchObjects($select);

@@ -13,19 +13,19 @@ $memoryLimit = get_option('oaipmh_harvester_memory_limit');
 ini_set('memory_limit', "$memoryLimit");
 
 // Set the command line arguments.
-$options = getopt('s:');
+$options = getopt('h:');
 
 // Get the database object.
 $db = get_db();
 
 // Set the set ID.
-$setId = $options['s'];
+$harvestId = $options['h'];
 
 // Set the set.
-$set = $db->getTable('OaipmhHarvesterSet')->find($setId);
+$harvest = $db->getTable('OaipmhHarvesterHarvest')->find($harvestId);
 
 // Set the metadata prefix.
-$metadataPrefix = $set->metadata_prefix;
+$metadataPrefix = $harvest->metadata_prefix;
 
 // Set the metadata prefix class.
 $metadataPrefixClass = Inflector::camelize($metadataPrefix);
@@ -39,4 +39,4 @@ require_once 'Oaipmh/Xml.php';
 require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataPrefix.php";
 
 // Set the harvest object.
-new $metadataPrefixClassName($set);
+new $metadataPrefixClassName($harvest);

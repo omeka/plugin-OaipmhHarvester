@@ -3,8 +3,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
 {
     public function indexAction()
     {
-        $harvestedSets = $this->getTable('OaipmhHarvesterSet')->findAllSets();
-        $this->view->harvestedSets = $harvestedSets;
+        $harvests = $this->getTable('OaipmhHarvesterHarvest')->findAllHarvests();
+        $this->view->harvests = $harvests;
     }
     
     public function setsAction()
@@ -61,15 +61,25 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         $oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
         
-        // Handle returned errors, such as "noSetHierarchy"
+        // Handle returned errors, such as "noSetHierarchy". For a data provider 
+        // that has no set hierarchy, see: http://solarphysics.livingreviews.org/register/oai
         if ($oaipmh->isError()) {
             $error     = (string) $oaipmh->getError();
-            $errorCode = (string) $oaipmh->getError()->attributes()->code;
-            $this->flash("$errorCode: $error");
-            $this->redirect->goto('index');
+            $errorCode = (string) $oaipmh->getErrorCode();
+            
+            // If the error code is "noSetHierarchy" set the sets to false to 
+            // indicate that the repository does not have a set hierarchy.
+            if ($errorCode == Oaipmh_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
+                $sets = false;
+            } else {
+                $this->flash("$errorCode: $error");
+                $this->redirect->goto('index');
+            }
+            
+        // If no error was returned, it is a valid ListSets response.
+        } else {
+            $sets = $oaipmh->getOaipmh()->ListSets->set;
         }
-        
-        $sets = $oaipmh->getOaipmh()->ListSets->set;
         
         // Set the resumption token, if any.
         if (isset($oaipmh->getOaipmh()->ListSets->resumptionToken)) {
@@ -88,32 +98,37 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     public function harvestAction()
     {
         $baseUrl        = $_POST['base_url'];
-        $setSpec        = $_POST['set_spec'];
-        $setName        = $_POST['set_name'];
-        $setDescription = $_POST['set_description'];
         $metadataPrefix = $_POST['metadata_prefix'];
+        $setSpec        = isset($_POST['set_spec']) ? $_POST['set_spec'] : null;
+        $setName        = isset($_POST['set_name']) ? $_POST['set_name'] : null;
+        $setDescription = isset($_POST['set_description']) ? $_POST['set_description'] : null;
         
         // Insert the set.
-        $oaipmhHarvesterSet = new OaipmhHarvesterSet;
-        $oaipmhHarvesterSet->base_url        = $baseUrl;
-        $oaipmhHarvesterSet->set_spec        = $setSpec;
-        $oaipmhHarvesterSet->set_name        = $setName;
-        $oaipmhHarvesterSet->set_description = $setDescription;
-        $oaipmhHarvesterSet->metadata_prefix = $metadataPrefix;
-        $oaipmhHarvesterSet->status          = OaipmhHarvesterSet::STATUS_STARTING;
-        $oaipmhHarvesterSet->initiated       = date('Y:m:d H:i:s');
-        $oaipmhHarvesterSet->save();
+        $harvest = new OaipmhHarvesterHarvest;
+        $harvest->base_url        = $baseUrl;
+        $harvest->set_spec        = $setSpec;
+        $harvest->set_name        = $setName;
+        $harvest->set_description = $setDescription;
+        $harvest->metadata_prefix = $metadataPrefix;
+        $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
+        $harvest->initiated       = date('Y:m:d H:i:s');
+        $harvest->save();
         
         // Set the command arguments.
         $phpCommandPath    = get_option('oaipmh_harvester_php_path');
         $bootstrapFilePath = $this->_getBootstrapFilePath();
-        $setId             = escapeshellarg($oaipmhHarvesterSet->id);
+        $harvestId         = escapeshellarg($harvest->id);
         
         // Set the command and run the script in the background.
-        $command = "$phpCommandPath $bootstrapFilePath -s $setId";
+        $command = "$phpCommandPath $bootstrapFilePath -h $harvestId";
         $this->_fork($command);
         
-        $this->flashSuccess("Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.");
+        if ($setSpec) {
+            $message = "Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
+        } else {
+            $message = "Repository \"$baseUrl\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
+        }
+        $this->flashSuccess($message);
         
         $this->redirect->goto('index');
         exit;
@@ -121,38 +136,43 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     
     public function statusAction()
     {
-        $setId = $_GET['set_id'];
+        $harvestId = $_GET['harvest_id'];
         
-        $set = $this->getTable('OaipmhHarvesterSet')->find($setId);
+        $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvestId);
         
-        $this->view->set = $set;
+        $this->view->harvest = $harvest;
     }
     
     public function deleteAction()
     {
-        $setId = $_GET['set_id'];
+        $harvestId = $_GET['harvest_id'];
         
-        $set = $this->getTable('OaipmhHarvesterSet')->find($setId);
+        $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvestId);
         
-        $records = $this->getTable('OaipmhHarvesterRecord')->findBySetId($set->id);
+        $records = $this->getTable('OaipmhHarvesterRecord')->findByHarvestId($harvest->id);
         
-        // Delete items
+        // Delete items if they exist.
         foreach ($records as $record) {
-            $item = $this->getTable('Item')->find($record->item_id);
-            $item->delete();
+            if ($record->item_id) {
+                $item = $this->getTable('Item')->find($record->item_id);
+                $item->delete();
+            }
         }
         
-        // Delete collection
-        $collection = $this->getTable('Collection')->find($set->collection_id);
-        $collection->delete();
+        // Delete collection if exists.
         
-        $set->status = OaipmhHarvesterSet::STATUS_DELETED;
+        if ($harvest->collection_id) {
+            $collection = $this->getTable('Collection')->find($harvest->collection_id);
+            $collection->delete();
+        }
+        
+        $harvest->status = OaipmhHarvesterHarvest::STATUS_DELETED;
         $statusMessage = 'All items created for this harvest were deleted on ' 
                        . date('Y-m-d H:i:s');
-        $set->status_messages = strlen($set->status_messages) == 0 
-                              ? $statusMessage 
-                              : "\n\n" . $statusMessage;
-        $set->save();
+        $harvest->status_messages = strlen($harvest->status_messages) == 0 
+                                  ? $statusMessage 
+                                  : "\n\n" . $statusMessage;
+        $harvest->save();
         
         $this->flash('All items created for the harvest were deleted.');
         $this->redirect->goto('index');

@@ -23,32 +23,34 @@ head($head);
         <?php echo $this->formSubmit('submit_view_sets', 'View Sets', array('class' => 'submit submit-medium')); ?>
     </form>
     
-    <h2>Harvested Sets</h2>
+    <h2>Harvests</h2>
     
-    <?php if (empty($this->harvestedSets)): ?>
+    <?php if (empty($this->harvests)): ?>
     
-    <p>There are no harvested sets.</p>
+    <p>There are no harvests.</p>
     
     <?php else: ?>
     
     <table>
        <thead>
             <tr>
+                <th>ID</th>
+                <th>Base URL</th>
+                <th>Metadata Prefix</th>
                 <th>Set Spec</th>
                 <th>Set Name</th>
-                <th>Metadata Prefix</th>
-                <th>Base URL</th>
                 <th>Status</th>
             </tr>
         </thead>
         <tbody>
-        <?php foreach ($this->harvestedSets as $harvestedSet): ?>
+        <?php foreach ($this->harvests as $harvest): ?>
             <tr>
-                <td><?php echo $harvestedSet->set_spec; ?></td>
-                <td><?php echo $harvestedSet->set_name; ?></td>
-                <td><?php echo $harvestedSet->metadata_prefix; ?></td>
-                <td><?php echo $harvestedSet->base_url; ?></td>
-                <td><a href="<?php echo uri("oaipmh-harvester/index/status?set_id={$harvestedSet->id}"); ?>"><?php echo ucwords($harvestedSet->status); ?></a></td>
+                <td><?php echo $harvest->id; ?></td>
+                <td><?php echo $harvest->base_url; ?></td>
+                <td><?php echo $harvest->metadata_prefix; ?></td>
+                <td><?php echo $harvest->set_spec; ?></td>
+                <td><?php echo $harvest->set_name; ?></td>
+                <td><a href="<?php echo uri("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo ucwords($harvest->status); ?></a></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

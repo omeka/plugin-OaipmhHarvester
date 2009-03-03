@@ -1,10 +1,10 @@
 <?php
 class OaipmhHarvesterRecordTable extends Omeka_Db_Table
 {
-    public function findBySetId($setId)
+    public function findByHarvestId($harvestId)
     {
         $select = $this->getSelect();
-        $select->where('set_id = ?');
-        return $this->fetchObjects($select, array($setId));
+        $select->where('harvest_id = ?');
+        return $this->fetchObjects($select, array($harvestId));
     }
 }

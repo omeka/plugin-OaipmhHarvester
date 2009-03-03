@@ -14,9 +14,18 @@ head($head);
     <div class="error">There are no available data maps that are compatable with 
     this repository. You will not be able to harvest any sets.</div>
     <?php endif; ?>
-
+    
     <h2>Sets in data provider: <?php echo $this->baseUrl; ?></h2>
     
+    <?php if (!$this->sets): ?>
+    <p>This data provider has no set hierarchy, but you may harvest the entire repository:</p>
+    <form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
+        <?php echo $this->formSelect('metadata_prefix', null, null, $this->availableMaps); ?>
+        <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
+        <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
+    </form>
+    <?php else: ?>
+
     <table>
         <thead>
             <tr>
@@ -54,7 +63,7 @@ head($head);
         </form>
     </div>
     <?php endif; ?>
-    
+    <?php endif;?>
 </div>
 
 <?php foot(); ?>

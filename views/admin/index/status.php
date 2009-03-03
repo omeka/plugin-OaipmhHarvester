@@ -12,41 +12,45 @@ head($head);
     
     <table>
         <tr>
+            <td>ID</td>
+            <td><?php echo $this->harvest->id; ?></td>
+        </tr>
+        <tr>
             <td>Set Spec</td>
-            <td><?php echo $this->set->set_spec; ?></td>
+            <td><?php echo $this->harvest->set_spec; ?></td>
         </tr>
         <tr>
             <td>Set Name</td>
-            <td><?php echo $this->set->set_name; ?></td>
+            <td><?php echo $this->harvest->set_name; ?></td>
         </tr>
         <tr>
             <td>Metadata Prefix</td>
-            <td><?php echo $this->set->metadata_prefix; ?></td>
+            <td><?php echo $this->harvest->metadata_prefix; ?></td>
         </tr>
         <tr>
             <td>Base URL</td>
-            <td><?php echo $this->set->base_url; ?></td>
+            <td><?php echo $this->harvest->base_url; ?></td>
         </tr>
         <tr>
             <td>Status</td>
-            <td><?php echo ucwords($this->set->status); ?></td>
+            <td><?php echo ucwords($this->harvest->status); ?></td>
         </tr>
         <tr>
             <td>Initiated</td>
-            <td><?php echo $this->set->initiated; ?></td>
+            <td><?php echo $this->harvest->initiated; ?></td>
         </tr>
         <tr>
             <td>Completed</td>
-            <td><?php echo $this->set->completed ? $this->set->completed : '[not completed]'; ?></td>
+            <td><?php echo $this->harvest->completed ? $this->harvest->completed : '[not completed]'; ?></td>
         </tr>
         <tr>
             <td>Status Messages</td>
-            <td><?php echo nl2br($this->set->status_messages); ?></td>
+            <td><?php echo nl2br($this->harvest->status_messages); ?></td>
         </tr>
     </table>
-    <?php if ($this->set->status != OaipmhHarvesterSet::STATUS_DELETED): ?>
+    <?php if ($this->harvest->status != OaipmhHarvesterHarvest::STATUS_DELETED): ?>
     <p><strong>Warning:</strong> clicking the following link will delete all items created for this harvest. 
-    <a href="<?php echo uri("oaipmh-harvester/index/delete?set_id={$this->set->id}"); ?>">Delete items</a></p>
+    <a href="<?php echo uri("oaipmh-harvester/index/delete?harvest_id={$this->harvest->id}"); ?>">Delete items</a></p>
     <?php endif; ?>
 </div>
 

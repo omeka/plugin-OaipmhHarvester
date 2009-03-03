@@ -6,9 +6,9 @@ class Oaipmh_Harvest_Abstract_OaiDc extends Oaipmh_Harvest_Abstract
     
     protected function beforeHarvest()
     {
-        $set = $this->getSet();
-        $collectionMetadata = array('name'        => $set->set_name, 
-                                    'description' => $set->set_description, 
+        $harvest = $this->getHarvest();
+        $collectionMetadata = array('name'        => $harvest->set_name, 
+                                    'description' => $harvest->set_description, 
                                     'public'      => true, 
                                     'featured'    => false);
         $this->collection = $this->insertCollection($collectionMetadata);

@@ -4,7 +4,7 @@ abstract class Oaipmh_Harvest_Abstract
     const MESSAGE_CODE_NOTICE = 1;
     const MESSAGE_CODE_ERROR = 2;
     
-    private $_set;
+    private $_harvest;
     
     // The current, cached Oaipmh_Xml object.
     private $_oaipmhXml;
@@ -12,54 +12,59 @@ abstract class Oaipmh_Harvest_Abstract
     // The current, cached SimpleXML record object.
     private $_record;
     
-    public function __construct($set)
+    public function __construct(OaipmhHarvesterHarvest $harvest)
     {        
         // Set an error handler method to record run-time warnings (non-fatal 
         // errors). Fatal and parse errors cannot be called in this way.
         set_error_handler(array($this, 'errorHandler'), E_WARNING);
         
-        $this->_set = $set;
+        $this->_harvest = $harvest;
         
         try {
-            // Mark the set as in progress.
-            $this->_set->status = OaipmhHarvesterSet::STATUS_IN_PROGRESS;
-            $this->_set->save();
+            // Mark the harvest as in progress.
+            $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_IN_PROGRESS;
+            $this->_harvest->save();
             
             // Call the template method that runs before the harvest.
             $this->beforeHarvest();
             // Initiate the harvest.
-            $this->_harvest();
+            $this->_harvestRecords();
             // Call the template method that runs after the harvest.
             $this->afterHarvest();
             
             // Mark the set as completed.
-            $this->_set->status    = OaipmhHarvesterSet::STATUS_COMPLETED;
-            $this->_set->completed = $this->_getCurrentDateTime();
-            $this->_set->save();
+            $this->_harvest->status    = OaipmhHarvesterHarvest::STATUS_COMPLETED;
+            $this->_harvest->completed = $this->_getCurrentDateTime();
+            $this->_harvest->save();
             
         } catch (Exception $e) {
             // Record the error.
             $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
-            $this->_set->status = OaipmhHarvesterSet::STATUS_ERROR;
-            $this->_set->save();
+            $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_ERROR;
+            $this->_harvest->save();
         }
     }
     
     abstract protected function harvestRecord($record);
     
-    private function _harvest($resumptionToken = false)
+    private function _harvestRecords($resumptionToken = false)
     {
         
         // Get the base URL.
-        $baseUrl = $this->_set->base_url;
+        $baseUrl = $this->_harvest->base_url;
         
         // Set the request arguments.
         $requestArguments = array('verb' => 'ListRecords');
         if ($resumptionToken) {
+            // Harvest a list reissue. 
             $requestArguments['resumptionToken'] = $resumptionToken;
+        } else if ($this->_harvest->set_spec) {
+            // Harvest a set.
+            $requestArguments['set']            = $this->_harvest->set_spec;
+            $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
         } else {
-            $requestArguments['set']            = $this->_set->set_spec;
-            $requestArguments['metadataPrefix'] = $this->_set->metadata_prefix;
+            // Harvest a repository.
+            $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
         }
         
         // Cache the Oaipmh_Xml object.
@@ -83,7 +88,7 @@ abstract class Oaipmh_Harvest_Abstract
         
         // If there is a resumption token, recurse this method.
         if ($resumptionToken = $this->_oaipmhXml->getResumptionToken()) {
-            $this->_harvest($resumptionToken);
+            $this->_harvestRecords($resumptionToken);
         }
         
         // If there is no resumption token, we're all done here.
@@ -94,7 +99,7 @@ abstract class Oaipmh_Harvest_Abstract
     {
         $record = new OaipmhHarvesterRecord;
         
-        $record->set_id     = $this->_set->id;
+        $record->harvest_id = $this->_harvest->id;
         $record->item_id    = $item->id;
         $record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
@@ -131,11 +136,23 @@ abstract class Oaipmh_Harvest_Abstract
     // Insert a collection.
     final protected function insertCollection($metadata = array())
     {
+        // There must be a collection name, so if there is none, like when the 
+        // harvest is repository-wide, set it to the base URL.
+        if (!isset($metadata['name']) || !$metadata['name']) {
+            $metadata['name'] = $this->_harvest->base_url;
+        }
+        
+        // The `collections` table does not allow NULL descriptions, so set to 
+        // an empty string. This is most likely a bug in Omeka's core.
+        if (!isset($metadata['description']) || !$metadata['description']) {
+            $metadata['description'] = '';
+        }
+        
         $collection = insert_collection($metadata);
         
-        // Remember to set the set's collection ID once it has been saved.
-        $this->_set->collection_id = $collection->id;
-        $this->_set->save();
+        // Remember to set the harvest's collection ID once it has been saved.
+        $this->_harvest->collection_id = $collection->id;
+        $this->_harvest->save();
         
         return $collection;
     }
@@ -155,19 +172,19 @@ abstract class Oaipmh_Harvest_Abstract
     
     final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
-        if (0 == strlen($this->_set->status_messages)) {
+        if (0 == strlen($this->_harvest->status_messages)) {
             $delimiter = '';
         }
         $date = $this->_getCurrentDateTime();
         $messageCodeText = $this->_getMessageCodeText($messageCode);
         
-        $this->_set->status_messages = "{$this->_set->status_messages}$delimiter$messageCodeText: $message ($date)";
-        $this->_set->save();
+        $this->_harvest->status_messages = "{$this->_harvest->status_messages}$delimiter$messageCodeText: $message ($date)";
+        $this->_harvest->save();
     }
     
-    final protected function getSet()
+    final protected function getHarvest()
     {
-        return $this->_set;
+        return $this->_harvest;
     }
     
     public function errorHandler($errno, $errstr, $errfile, $errline)

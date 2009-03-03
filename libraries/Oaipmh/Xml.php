@@ -1,6 +1,8 @@
 <?php
 class Oaipmh_Xml
 {
+    const ERROR_CODE_NO_SET_HIERARCHY = 'noSetHierarchy';
+    
     private $oaipmh;
     
     public function __construct($baseUrl, array $requestArguments)

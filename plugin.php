@@ -106,7 +106,12 @@ function oaipmh_harvester_config_form()
 
 function oaipmh_harvester_config()
 {
-    set_option('oaipmh_harvester_php_path', $_POST['oaipmh_harvester_php_path']);
+    $path = realpath($_POST['oaipmh_harvester_php_path']);
+    if (!$path) {
+        throw new Exception('Error: The path to PHP-CLI is invalid.');
+    }
+    
+    set_option('oaipmh_harvester_php_path', $path);
     set_option('oaipmh_harvester_memory_limit', $_POST['oaipmh_harvester_memory_limit']);
 }
 

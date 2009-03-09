@@ -6,19 +6,23 @@ abstract class Oaipmh_Harvest_Abstract
     
     private $_harvest;
     
+    private $_releaseObjects;
+    
     // The current, cached Oaipmh_Xml object.
     private $_oaipmhXml;
     
     // The current, cached SimpleXML record object.
     private $_record;
     
-    public function __construct(OaipmhHarvesterHarvest $harvest)
+    public function __construct(OaipmhHarvesterHarvest $harvest, $releaseObjects = true)
     {        
         // Set an error handler method to record run-time warnings (non-fatal 
         // errors). Fatal and parse errors cannot be called in this way.
         set_error_handler(array($this, 'errorHandler'), E_WARNING);
         
         $this->_harvest = $harvest;
+        
+        $this->_releaseObjects = $releaseObjects;
         
         try {
             // Mark the harvest as in progress.
@@ -43,6 +47,9 @@ abstract class Oaipmh_Harvest_Abstract
             $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_ERROR;
             $this->_harvest->save();
         }
+        
+        $peakUsage = memory_get_peak_usage();
+        $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
     }
     
     abstract protected function harvestRecord($record);
@@ -125,6 +132,15 @@ abstract class Oaipmh_Harvest_Abstract
         return date('Y-m-d H:i:s');
     }
     
+    private function _releaseObject($obj)
+    {
+        if ($this->_releaseObjects) {
+            release_object($obj);
+            return true;
+        }
+        return false;
+    }
+    
     protected function beforeHarvest()
     {
     }
@@ -166,6 +182,12 @@ abstract class Oaipmh_Harvest_Abstract
         // OaipmhHarvesterRecords table should only contain records that have 
         // corresponding items.
         $this->_insertRecord($item);
+        
+        // Release the item object from memory if indicated to do so. Return 
+        // true instead of the item object.
+        if ($this->_releaseObject($item)) {
+            return true;
+        }
         
         return $item;
     }

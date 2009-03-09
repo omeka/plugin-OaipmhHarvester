@@ -24,6 +24,9 @@ $harvestId = $options['h'];
 // Set the set.
 $harvest = $db->getTable('OaipmhHarvesterHarvest')->find($harvestId);
 
+// Set the release objects option.
+$releaseObjects = get_option('oaipmh_harvester_release_objects') == 'yes' ? true : false;
+
 // Set the metadata prefix.
 $metadataPrefix = $harvest->metadata_prefix;
 
@@ -39,4 +42,4 @@ require_once 'Oaipmh/Xml.php';
 require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataPrefix.php";
 
 // Set the harvest object.
-new $metadataPrefixClassName($harvest);
+new $metadataPrefixClassName($harvest, $releaseObjects);

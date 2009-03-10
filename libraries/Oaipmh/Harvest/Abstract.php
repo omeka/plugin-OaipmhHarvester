@@ -174,8 +174,9 @@ abstract class Oaipmh_Harvest_Abstract
     }
     
     // Insert an item.
-    final protected function insertItem($metadata = array(), $elementTexts = array())
+    final protected function insertItem($metadata = array(), $elementTexts = array(), $fileMetadata = array())
     {
+        // Insert the item.
         $item = insert_item($metadata, $elementTexts);
         
         // Insert the record after the item is saved. The idea here is that the 
@@ -183,7 +184,27 @@ abstract class Oaipmh_Harvest_Abstract
         // corresponding items.
         $this->_insertRecord($item);
         
-        // Release the item object from memory if indicated to do so. Return 
+        // Insert the files, if any.
+        // The default file transfer type is URL.
+        $fileTransferType = isset($fileMetadata['file_transfer_type']) 
+                          ? $fileMetadata['file_transfer_type'] 
+                          : 'Url';
+        // The default files are no files.
+        $files = isset($fileMetadata['files']) 
+               ? $fileMetadata['files'] 
+               : array();
+        // The default option is ignore invalid files.
+        $fileOptions = isset($fileMetadata['file_ingest_options']) 
+                     ? $fileMetadata['file_ingest_options'] 
+                     : array('ignore_invalid_files' => true);
+        // Insert one file at a time so that it can be released individually.
+        foreach ($files as $file) {
+            $file = insert_files_for_item($item, $fileTransferType, $file, $fileOptions);
+            // Release the File object from memory if indicated to do so. 
+            $this->_releaseObject($file);
+        }
+        
+        // Release the Item object from memory if indicated to do so. Return 
         // true instead of the item object.
         if ($this->_releaseObject($item)) {
             return true;

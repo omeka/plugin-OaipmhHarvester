@@ -6,7 +6,9 @@ abstract class Oaipmh_Harvest_Abstract
     
     private $_harvest;
     
-    private $_releaseObjects;
+    private $_releaseObjects = true;
+    
+    private $_ignoreDeletedRecords = true;
     
     // The current, cached Oaipmh_Xml object.
     private $_oaipmhXml;
@@ -14,7 +16,7 @@ abstract class Oaipmh_Harvest_Abstract
     // The current, cached SimpleXML record object.
     private $_record;
     
-    public function __construct(OaipmhHarvesterHarvest $harvest, $releaseObjects = true)
+    public function __construct(OaipmhHarvesterHarvest $harvest, array $options = array())
     {        
         // Set an error handler method to record run-time warnings (non-fatal 
         // errors). Fatal and parse errors cannot be called in this way.
@@ -22,7 +24,7 @@ abstract class Oaipmh_Harvest_Abstract
         
         $this->_harvest = $harvest;
         
-        $this->_releaseObjects = $releaseObjects;
+        $this->_setOptions($options);
         
         try {
             // Mark the harvest as in progress.
@@ -53,6 +55,12 @@ abstract class Oaipmh_Harvest_Abstract
     }
     
     abstract protected function harvestRecord($record);
+    
+    private function _setOptions($options)
+    {
+        $this->_releaseObjects = isset($options['release_objects']) ? $options['release_objects'] : true;
+        $this->_ignoreDeletedRecords = isset($options['ignore_deleted_records']) ? $options['ignore_deleted_records'] : true;
+    }
     
     private function _harvestRecords($resumptionToken = false)
     {
@@ -88,8 +96,15 @@ abstract class Oaipmh_Harvest_Abstract
         // Iterate through the records and hand off the mapping to the classes 
         // inheriting from this class.
         foreach ($this->_oaipmhXml->getRecords() as $record) {
+            
+            // Ignore (skip over) deleted records if indicated to do so.
+            if ($this->_oaipmhXml->isDeletedRecord($record) && $this->_ignoreDeletedRecords) {
+                continue;
+            }
+            
             // Cache the record for later use.
             $this->_record = $record;
+            
             $this->harvestRecord($record);
         }
         

@@ -28,6 +28,16 @@
     unused objects from memory, greatly reducing the chances of memory 
     allocation errors. Do not check this option if you want this plugin to 
     integrate with other plugins that use the after_save_item hook. If you are 
-    unsure, it's probably safe to check this option.
-</p>
+    unsure, it's probably safe to check this option.</p>
+<div class="field">
+    <label for="oaipmh_harvester_ignore_deleted_records">Ignore Deleted Records</label>
+    <?php echo __v()->formCheckbox('oaipmh_harvester_ignore_deleted_records', 
+                                   $ignoreDeletedRecords, 
+                                   null, 
+                                   array('yes', 'no')); ?>
+    <div style="clear:both" />
+    <p class="explanation">Sometimes OAI-PMH data providers will mark records as 
+    delted if they were deleted from their repository. If this is checked the 
+    harvest process will ignore deleted records. If this is unchecked, all such 
+    records will be inserted into Omeka as empty items.</p>
 </div>

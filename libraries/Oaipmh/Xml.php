@@ -44,6 +44,15 @@ class Oaipmh_Xml
         return $this->oaipmh->ListRecords->record;
     }
     
+    public function isDeletedRecord($record)
+    {
+        if (isset($record->header->attributes()->status) 
+            && $record->header->attributes()->status == 'deleted') {
+            return true;
+        }
+        return false;
+    }
+    
     public function getResumptionToken()
     {
         if (isset($this->oaipmh->ListRecords->resumptionToken)) {

@@ -24,8 +24,14 @@ $harvestId = $options['h'];
 // Set the set.
 $harvest = $db->getTable('OaipmhHarvesterHarvest')->find($harvestId);
 
+// Begin building the global options array.
+$options = array();
+
 // Set the release objects option.
-$releaseObjects = get_option('oaipmh_harvester_release_objects') == 'yes' ? true : false;
+$options['release_objects'] = get_option('oaipmh_harvester_release_objects') == 'yes' ? true : false;
+
+// Set the ignore deleted records option.
+$options['ignore_deleted_records'] = get_option('oaipmh_harvester_ignore_deleted_records') == 'yes' ? true : false;
 
 // Set the metadata prefix.
 $metadataPrefix = $harvest->metadata_prefix;
@@ -42,4 +48,4 @@ require_once 'Oaipmh/Xml.php';
 require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataPrefix.php";
 
 // Set the harvest object.
-new $metadataPrefixClassName($harvest, $releaseObjects);
+new $metadataPrefixClassName($harvest, $options);

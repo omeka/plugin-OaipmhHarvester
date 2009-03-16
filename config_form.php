@@ -9,7 +9,7 @@
 <div class="field">
     <label for="oaipmh_harvester_memory_limit">Memory Limit</label>
     <?php echo __v()->formText('oaipmh_harvester_memory_limit', $memoryLimit, null);?>
-    <p class="explanation">Set memory limit to avoid memory allocation errors 
+    <p class="explanation">Set a memory limit to avoid memory allocation errors 
     during harvesting. <strong>We recommend that you choose a high memory limit.</strong> 
     Examples include 128M, 1G, and -1. The available options are K (for 
     Kilobytes), M (for Megabytes) and G (for Gigabytes). Anything else assumes 
@@ -23,6 +23,11 @@
                                    $releaseObjects, 
                                    null, 
                                    array('yes', 'no')); ?>
-    <p class="explanation">Checking this will greatly reduce the chances of 
-    memory allocation errors.</p>
+    <div style="clear:both" />
+    <p class="explanation">This plugin offers a way to automatically "release" 
+    unused objects from memory, greatly reducing the chances of memory 
+    allocation errors. Do not check this option if you want this plugin to 
+    integrate with other plugins that use the after_save_item hook. If you are 
+    unsure, it's probably safe to check this option.
+</p>
 </div>

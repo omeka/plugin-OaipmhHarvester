@@ -6,8 +6,6 @@ abstract class Oaipmh_Harvest_Abstract
     
     private $_harvest;
     
-    private $_releaseObjects = true;
-    
     private $_ignoreDeletedRecords = true;
     
     // The current, cached Oaipmh_Xml object.
@@ -58,7 +56,6 @@ abstract class Oaipmh_Harvest_Abstract
     
     private function _setOptions($options)
     {
-        $this->_releaseObjects = isset($options['release_objects']) ? $options['release_objects'] : true;
         $this->_ignoreDeletedRecords = isset($options['ignore_deleted_records']) ? $options['ignore_deleted_records'] : true;
     }
     
@@ -147,15 +144,6 @@ abstract class Oaipmh_Harvest_Abstract
         return date('Y-m-d H:i:s');
     }
     
-    private function _releaseObject($obj)
-    {
-        if ($this->_releaseObjects) {
-            release_object($obj);
-            return true;
-        }
-        return false;
-    }
-    
     protected function beforeHarvest()
     {
     }
@@ -215,17 +203,13 @@ abstract class Oaipmh_Harvest_Abstract
         // Insert one file at a time so that it can be released individually.
         foreach ($files as $file) {
             $file = insert_files_for_item($item, $fileTransferType, $file, $fileOptions);
-            // Release the File object from memory if indicated to do so. 
-            $this->_releaseObject($file);
+            // Release the File object from memory. 
+            release_object($file);
         }
+        // Release the Item object from memory.
+        release_object($item);
         
-        // Release the Item object from memory if indicated to do so. Return 
-        // true instead of the item object.
-        if ($this->_releaseObject($item)) {
-            return true;
-        }
-        
-        return $item;
+        return true;
     }
     
     final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")

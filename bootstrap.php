@@ -27,9 +27,6 @@ $harvest = $db->getTable('OaipmhHarvesterHarvest')->find($harvestId);
 // Begin building the global options array.
 $options = array();
 
-// Set the release objects option.
-$options['release_objects'] = get_option('oaipmh_harvester_release_objects') == 'yes' ? true : false;
-
 // Set the ignore deleted records option.
 $options['ignore_deleted_records'] = get_option('oaipmh_harvester_ignore_deleted_records') == 'yes' ? true : false;
 

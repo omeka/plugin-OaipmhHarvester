@@ -18,18 +18,6 @@
     maximum allowable limit. Check with your web host for more information.</p>
 </div>
 <div class="field">
-    <label for="oaipmh_harvester_release_objects">Release Objects</label>
-    <?php echo __v()->formCheckbox('oaipmh_harvester_release_objects', 
-                                   $releaseObjects, 
-                                   null, 
-                                   array('yes', 'no')); ?>
-    <div style="clear:both" />
-    <p class="explanation">This plugin offers a way to automatically "release" 
-    unused objects from memory, greatly reducing the chances of memory 
-    allocation errors. Do not check this option if you want this plugin to 
-    integrate with other plugins that use the after_save_item hook. If you are 
-    unsure, it's probably safe to check this option.</p>
-<div class="field">
     <label for="oaipmh_harvester_ignore_deleted_records">Ignore Deleted Records</label>
     <?php echo __v()->formCheckbox('oaipmh_harvester_ignore_deleted_records', 
                                    $ignoreDeletedRecords, 

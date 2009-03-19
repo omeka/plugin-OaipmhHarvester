@@ -1,6 +1,6 @@
 <?php
 // Test via web interface: http://export.arxiv.org/oai2 || set=physics
-class Oaipmh_Harvest_Abstract_OaiDc extends Oaipmh_Harvest_Abstract
+class OaipmhHarvester_Harvest_Abstract_OaiDc extends OaipmhHarvester_Harvest_Abstract
 {
     protected $collection;
     

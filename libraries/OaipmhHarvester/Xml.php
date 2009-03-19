@@ -1,5 +1,5 @@
 <?php
-class Oaipmh_Xml
+class OaipmhHarvester_Xml
 {
     const ERROR_CODE_NO_SET_HIERARCHY = 'noSetHierarchy';
     

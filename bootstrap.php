@@ -37,10 +37,10 @@ $metadataPrefix = $harvest->metadata_prefix;
 $metadataPrefixClass = Inflector::camelize($metadataPrefix);
 
 // Set the metdata prefix class name.
-$metadataPrefixClassName = "Oaipmh_Harvest_Abstract_$metadataPrefixClass";
+$metadataPrefixClassName = "OaipmhHarvester_Harvest_Abstract_$metadataPrefixClass";
 
-require_once 'Oaipmh/Harvest/Abstract.php';
-require_once 'Oaipmh/Xml.php';
+require_once 'OaipmhHarvester/Harvest/Abstract.php';
+require_once 'OaipmhHarvester/Xml.php';
 
 require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataPrefix.php";
 

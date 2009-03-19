@@ -1,5 +1,5 @@
 <?php
-abstract class Oaipmh_Harvest_Abstract
+abstract class OaipmhHarvester_Harvest_Abstract
 {
     const MESSAGE_CODE_NOTICE = 1;
     const MESSAGE_CODE_ERROR = 2;
@@ -8,8 +8,8 @@ abstract class Oaipmh_Harvest_Abstract
     
     private $_ignoreDeletedRecords = true;
     
-    // The current, cached Oaipmh_Xml object.
-    private $_oaipmhXml;
+    // The current, cached OaipmhHarvester_Xml object.
+    private $_oaipmhHarvesterXml;
     
     // The current, cached SimpleXML record object.
     private $_record;
@@ -79,23 +79,23 @@ abstract class Oaipmh_Harvest_Abstract
             $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
         }
         
-        // Cache the Oaipmh_Xml object.
-        $this->_oaipmhXml = new Oaipmh_Xml($baseUrl, $requestArguments);
+        // Cache the OaipmhHarvester_Xml object.
+        $this->_oaipmhHarvesterXml = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
         
         // Throw an error if the response is an error.
-        if ($this->_oaipmhXml->isError()) {
-            $errorCode = (string) $this->_oaipmhXml->getErrorCode();
-            $error     = (string) $this->_oaipmhXml->getError();
+        if ($this->_oaipmhHarvesterXml->isError()) {
+            $errorCode = (string) $this->_oaipmhHarvesterXml->getErrorCode();
+            $error     = (string) $this->_oaipmhHarvesterXml->getError();
             $statusMessage = "$errorCode: $error";
             throw new Exception($statusMessage);
         }
 
         // Iterate through the records and hand off the mapping to the classes 
         // inheriting from this class.
-        foreach ($this->_oaipmhXml->getRecords() as $record) {
+        foreach ($this->_oaipmhHarvesterXml->getRecords() as $record) {
             
             // Ignore (skip over) deleted records if indicated to do so.
-            if ($this->_oaipmhXml->isDeletedRecord($record) && $this->_ignoreDeletedRecords) {
+            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record) && $this->_ignoreDeletedRecords) {
                 continue;
             }
             
@@ -106,7 +106,7 @@ abstract class Oaipmh_Harvest_Abstract
         }
         
         // If there is a resumption token, recurse this method.
-        if ($resumptionToken = $this->_oaipmhXml->getResumptionToken()) {
+        if ($resumptionToken = $this->_oaipmhHarvesterXml->getResumptionToken()) {
             $this->_harvestRecords($resumptionToken);
         }
         

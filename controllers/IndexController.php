@@ -19,7 +19,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         // Catch errors such as "String could not be parsed as XML"
         try {
-            $oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
+            $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
         } catch (Exception $e) {
             $this->flash($e->getMessage());
             $this->redirect->goto('index');
@@ -59,7 +59,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $requestArguments['resumptionToken'] = $_POST['resumption_token'];
         }
         
-        $oaipmh = new Oaipmh_Xml($baseUrl, $requestArguments);
+        $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
         
         // Handle returned errors, such as "noSetHierarchy". For a data provider 
         // that has no set hierarchy, see: http://solarphysics.livingreviews.org/register/oai
@@ -69,7 +69,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             
             // If the error code is "noSetHierarchy" set the sets to false to 
             // indicate that the repository does not have a set hierarchy.
-            if ($errorCode == Oaipmh_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
+            if ($errorCode == OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
                 $sets = false;
             } else {
                 $this->flash("$errorCode: $error");

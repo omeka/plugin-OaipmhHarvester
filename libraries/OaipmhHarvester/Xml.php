@@ -8,8 +8,10 @@ class OaipmhHarvester_Xml
     public function __construct($baseUrl, array $requestArguments)
     {
         $requestUrl = $this->getRequestUrl($baseUrl, $requestArguments);
+        ini_set('user_agent', 'Omeka OAI-PMH Harvester/' . OAIPMH_HARVESTER_PLUGIN_VERSION); 
         $requestContent = file_get_contents($requestUrl);
         $this->oaipmh = new SimpleXMLIterator($requestContent);
+        ini_restore('user_agent');
     }
     
     // Repositories must support both the GET and POST methods. Here we are 

@@ -187,25 +187,30 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // corresponding items.
         $this->_insertRecord($item);
         
-        // Insert the files, if any.
-        // The default file transfer type is URL.
-        $fileTransferType = isset($fileMetadata['file_transfer_type']) 
-                          ? $fileMetadata['file_transfer_type'] 
-                          : 'Url';
-        // The default files are no files.
-        $files = isset($fileMetadata['files']) 
-               ? $fileMetadata['files'] 
-               : array();
-        // The default option is ignore invalid files.
-        $fileOptions = isset($fileMetadata['file_ingest_options']) 
-                     ? $fileMetadata['file_ingest_options'] 
-                     : array('ignore_invalid_files' => true);
-        // Insert one file at a time so that it can be released individually.
-        foreach ($files as $file) {
-            $file = insert_files_for_item($item, $fileTransferType, $file, $fileOptions);
-            // Release the File object from memory. 
-            release_object($file);
+        // If there are files, insert one file at a time so the file objects can 
+        // be released individually.
+        if (isset($fileMetadata['files'])) {
+            
+            // The default file transfer type is URL.
+            $fileTransferType = isset($fileMetadata['file_transfer_type']) 
+                              ? $fileMetadata['file_transfer_type'] 
+                              : 'Url';
+            
+            // The default option is ignore invalid files.
+            $fileOptions = isset($fileMetadata['file_ingest_options']) 
+                         ? $fileMetadata['file_ingest_options'] 
+                         : array('ignore_invalid_files' => true);
+            
+            // Prepare the files value for one-file-at-a-time iteration.
+            $files = array($fileMetadata['files']);
+            
+            foreach ($files as $file) {
+                $file = insert_files_for_item($item, $fileTransferType, $file, $fileOptions);
+                // Release the File object from memory. 
+                release_object($file);
+            }
         }
+        
         // Release the Item object from memory.
         release_object($item);
         

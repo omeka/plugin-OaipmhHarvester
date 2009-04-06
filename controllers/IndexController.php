@@ -204,6 +204,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     // Launch a low-priority background process, returning control to the 
     // foreground. See: http://www.php.net/manual/en/ref.exec.php#70135
     private function _fork($command) {
-        exec("nice $command > /dev/null 2>&1 &");
+        exec("$command > /dev/null 2>&1 &");
     }
 }

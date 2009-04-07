@@ -277,10 +277,10 @@ class OaipmhHarvester_Harvest_Abstract_Cdwalite extends OaipmhHarvester_Harvest_
                 if ($linkResource = $resourceSet->linkResource) {
                     $source = (string) $linkResource;
                     $extension = strrchr($source, '.');
-                    $filename = isset($resourceSet->resourceID) 
-                              ? (string) $resourceSet->resourceID . $extension 
-                              : $source;
-                    $this->_fileMetadata['files'][] = array('source' => $source, 'filename' => $filename);
+                    $name = isset($resourceSet->resourceID) 
+                            ? (string) $resourceSet->resourceID . $extension 
+                            : $source;
+                    $this->_fileMetadata['files'][] = array('source' => $source, 'name' => $name);
                 }
             }
         }

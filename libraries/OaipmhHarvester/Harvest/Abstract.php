@@ -234,6 +234,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
         return $this->_harvest;
     }
     
+    final protected function buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
+    {
+        $elementTexts[$elementSet][$element][] = array('text' => (string) $text, 'html' => (bool) $html);
+        return $elementTexts;
+    }
+    
     public function errorHandler($errno, $errstr, $errfile, $errline)
     {
         $statusMessage = "$errstr in $errfile on line $errline";

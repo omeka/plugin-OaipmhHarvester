@@ -314,12 +314,4 @@ class OaipmhHarvester_Harvest_Abstract_Cdwalite extends OaipmhHarvester_Harvest_
     {
         $this->_elementTexts = $this->buildElementTexts($this->_elementTexts, 'Dublin Core', $element, $text);
     }
-    
-// TODO: This method needs to be moved to OaipmhHarvester_Harvest_Abstract after 
-// it has been adequately tested.
-    protected function buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
-    {
-        $elementTexts[$elementSet][$element][] = array('text' => (string) $text, 'html' => (bool) $html);
-        return $elementTexts;
-    }
 }

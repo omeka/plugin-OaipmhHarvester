@@ -1,41 +1,71 @@
 <?php
+/**
+ * Plugin hooks and filters.
+ * 
+ * @package OaipmhHarvester
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
+
+/** Plugin version number */
 define('OAIPMH_HARVESTER_PLUGIN_VERSION', '1.0');
+
+/** Path to plugin directory */
 define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
+
+/** Path to plugin maps directory */
 define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
                                         . DIRECTORY_SEPARATOR 
                                         . 'maps');
-
+/** OaipmhHarvester_Xml (library) */
 require_once 'OaipmhHarvester/Xml.php';
+
+/** OaipmhHarvesterHarvest (model) */
 require_once 'OaipmhHarvesterHarvest.php';
+
+/** OaipmhHarvesterHarvestTable (model) */
 require_once 'OaipmhHarvesterHarvestTable.php';
+
+/** OaipmhHarvesterRecord (model) */
 require_once 'OaipmhHarvesterRecord.php';
+
+/** OaipmhHarvesterRecordTable (model) */
 require_once 'OaipmhHarvesterRecordTable.php';
 
+/** Plugin hooks */
 add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
 add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
 add_plugin_hook('config', 'oaipmh_harvester_config');
 
+/** Plugin filters */
 add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
 
+/**
+ * install callback
+ * 
+ * Sets options and creates tables.
+ * 
+ * @return void
+ */
 function oaipmh_harvester_install()
 {
     set_option('oaipmh_harvester_plugin_version', OAIPMH_HARVESTER_PLUGIN_VERSION);
     
     $db = get_db();
     
-    // Harvested sets/collections.
-    /*
-    id: primary key
-    collection_id: the corresponding collection id in `collections`
-    base_url: the OAI-PMH base URL
-    metadata_prefix: the OAI-PMH metadata prefix used for this harvest
-    set_spec: the OAI-PMH set spec (unique identifier)
-    set_name: the OAI-PMH set name
-    status: the current harvest status for this set; in progress, completed, error
-    status_messages: any messages sent from the harvester, usually only during an error status
-    initiated: the datetime the harvest initiated
-    completed: the datetime the harvest completed
+    /* Harvests/collections:
+        id: primary key
+        collection_id: the corresponding collection id in `collections`
+        base_url: the OAI-PMH base URL
+        metadata_prefix: the OAI-PMH metadata prefix used for this harvest
+        set_spec: the OAI-PMH set spec (unique identifier)
+        set_name: the OAI-PMH set name
+        set_description: the Dublin Core description of the set, if any
+        status: the current harvest status for this set: starting, in progress, completed, error, deleted
+        status_messages: any messages sent from the harvester, usually during an error status
+        initiated: the datetime the harvest initiated
+        completed: the datetime the harvest completed
     */
     $sql = "
     CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_harvests` (
@@ -54,13 +84,12 @@ function oaipmh_harvester_install()
     ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
     $db->query($sql);
     
-    // Harvested records/items.
-    /*
-    id: primary key
-    set_id: the corresponding set id in `oaipmh_harvester_sets`
-    item_id: the corresponding item id in `items`
-    identifier: the OAI-PMH record identifier (unique identifier)
-    datestamp: the OAI-PMH record datestamp
+    /* Harvested records/items.
+        id: primary key
+        harvest_id: the corresponding set id in `oaipmh_harvester_harvests`
+        item_id: the corresponding item id in `items`
+        identifier: the OAI-PMH record identifier (unique identifier)
+        datestamp: the OAI-PMH record datestamp
     */
     $sql = "
     CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_records` (
@@ -74,6 +103,13 @@ function oaipmh_harvester_install()
     $db->query($sql);
 }
 
+/**
+ * uninstall callback.
+ * 
+ * Deletes options and drops tables.
+ * 
+ * @return void
+ */
 function oaipmh_harvester_uninstall()
 {
     delete_option('oaipmh_harvester_plugin_version');
@@ -86,6 +122,13 @@ function oaipmh_harvester_uninstall()
     $db->query($sql);
 }
 
+/**
+ * config_form callback.
+ * 
+ * Prepares and renders the plugin's configuration form.
+ * 
+ * @return void
+ */
 function oaipmh_harvester_config_form()
 {
     if (!$path = get_option('oaipmh_harvester_php_path')) {
@@ -108,6 +151,13 @@ function oaipmh_harvester_config_form()
     include 'config_form.php';
 }
 
+/**
+ * config callback.
+ * 
+ * Handles a submitted configuration form by setting options.
+ * 
+ * @return void
+ */
 function oaipmh_harvester_config()
 {
     $path = realpath($_POST['oaipmh_harvester_php_path']);
@@ -120,6 +170,12 @@ function oaipmh_harvester_config()
     set_option('oaipmh_harvester_ignore_deleted_records', $_POST['oaipmh_harvester_ignore_deleted_records']);
 }
 
+/**
+ * admin_navigation_main filter.
+ * 
+ * @param array $nav Array of main navigation tabs.
+ * @return array Filtered array of main navigation tabs.
+ */
 function oaipmh_harvester_admin_navigation_main($nav)
 {
     $nav['OAI-PMH Harvester'] = uri('oaipmh-harvester');

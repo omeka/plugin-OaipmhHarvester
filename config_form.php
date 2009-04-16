@@ -1,3 +1,13 @@
+<?php
+/**
+ * Configuration form include.
+ * 
+ * @package OaipmhHarvester
+ * @subpackage Views
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
+?>
 <div class="field">
     <label for="oaipmh_harvester_php_path">Path to PHP-CLI</label>
     <?php echo __v()->formText('oaipmh_harvester_php_path', $path, null);?>

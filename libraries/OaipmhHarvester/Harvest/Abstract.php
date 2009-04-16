@@ -1,19 +1,61 @@
 <?php
+/**
+ * @package OaipmhHarvester
+ * @subpackage Libraries
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
+
+
+/**
+ * Abstract class on which all other metadata format maps are based.
+ *
+ * @package OaipmhHarvester
+ * @subpackage Libraries
+ */
 abstract class OaipmhHarvester_Harvest_Abstract
 {
+    /**
+     * Notice message code, used for status messages.
+     */
     const MESSAGE_CODE_NOTICE = 1;
+    
+    /**
+     * Error message code, used for status messages.
+     */
     const MESSAGE_CODE_ERROR = 2;
     
+    /**
+     * @var OaipmhHarvesterHarvest The OaipmhHarvesterHarvest object model.
+     */
     private $_harvest;
     
+    /**
+     * @var bool Option to ignore deleted records.
+     */
     private $_ignoreDeletedRecords = true;
     
-    // The current, cached OaipmhHarvester_Xml object.
+    /**
+     * @var OaipmhHarvester_Xml The current, cached OaipmhHarvester_Xml object.
+     */
     private $_oaipmhHarvesterXml;
     
-    // The current, cached SimpleXML record object.
+    /**
+     * @var SimpleXMLIterator The current, cached SimpleXMLIterator record object.
+     */
     private $_record;
     
+    /**
+     * Class constructor.
+     * 
+     * Prepares the harvest process.
+     * 
+     * @param OaipmhHarvesterHarvest $harvest The OaipmhHarvesterHarvest object 
+     * model
+     * @param array $options Options used to configure behavior. These include: 
+     *  - ignore_deleted_records: ignores records with a status of deleted
+     * @return void
+     */
     public function __construct(OaipmhHarvesterHarvest $harvest, array $options = array())
     {        
         // Set an error handler method to record run-time warnings (non-fatal 
@@ -52,13 +94,33 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
     }
     
+    /**
+     * Abstract method that all class extentions must contain.
+     * 
+     * @param SimpleXMLIterator The current record object
+     */
     abstract protected function harvestRecord($record);
     
+    /**
+     * Sets class options
+     * 
+     * @param array $options
+     * @return void
+     */
     private function _setOptions($options)
     {
         $this->_ignoreDeletedRecords = isset($options['ignore_deleted_records']) ? $options['ignore_deleted_records'] : true;
     }
     
+    /**
+     * Recursive method that loops through all requested records
+     * 
+     * This method hands off mapping to the class that extends off this one and 
+     * recurses through all resumption tokens until the response is completed.
+     * 
+     * @param string|false $resumptionToken
+     * @return void
+     */
     private function _harvestRecords($resumptionToken = false)
     {
         
@@ -114,6 +176,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
         return;
     }
     
+    /**
+     * Insert a record into the database.
+     * 
+     * @param Item $item The item object corresponding to the record.
+     * @return void
+     */
     private function _insertRecord($item)
     {
         $record = new OaipmhHarvesterRecord;
@@ -125,6 +193,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $record->save();
     }
     
+    /**
+     * Return a message code text corresponding to its constant.
+     * 
+     * @param int $messageCode
+     * @return string
+     */
     private function _getMessageCodeText($messageCode)
     {
         switch ($messageCode) {
@@ -139,20 +213,47 @@ abstract class OaipmhHarvester_Harvest_Abstract
         return $messageCodeText;
     }
     
+    /**
+     * Return the current, formatted date.
+     * 
+     * @return string
+     */
     private function _getCurrentDateTime()
     {
         return date('Y-m-d H:i:s');
     }
     
+    /**
+     * Template method.
+     * 
+     * May be overwritten by classes that extend of this one. This method runs 
+     * once, prior to record iteration.
+     * 
+     * @see self::__construct()
+     */
     protected function beforeHarvest()
     {
     }
     
+    /**
+     * Template method.
+     * 
+     * May be overwritten by classes that extend of this one. This method runs 
+     * once, after record iteration.
+     * 
+     * @see self::__construct()
+     */
     protected function afterHarvest()
     {
     }
     
-    // Insert a collection.
+    /**
+     * Insert a collection.
+     * 
+     * @see insert_collection()
+     * @param array $metadata
+     * @return Collection
+     */
     final protected function insertCollection($metadata = array())
     {
         // There must be a collection name, so if there is none, like when the 
@@ -176,7 +277,21 @@ abstract class OaipmhHarvester_Harvest_Abstract
         return $collection;
     }
     
-    // Insert an item.
+    /**
+     * Convenience method for inserting an item and its files.
+     * 
+     * Method used by map writers that encapsulates item and file insertion. 
+     * Items are inserted first, then files are inserted individually. This is 
+     * done so Item and File objects can be released from memory, avoiding 
+     * memory allocation issues.
+     * 
+     * @see insert_item()
+     * @see insert_files_for_item()
+     * @param mixed $metadata Item metadata
+     * @param mixed $elementTexts The item's element texts
+     * @param mixed $fileMetadata The item's file metadata
+     * @return true
+     */
     final protected function insertItem($metadata = array(), $elementTexts = array(), $fileMetadata = array())
     {
         // Insert the item.
@@ -217,6 +332,13 @@ abstract class OaipmhHarvester_Harvest_Abstract
         return true;
     }
     
+    /**
+     * Adds a status message to the harvest.
+     * 
+     * @param string $message The error message
+     * @param int|null $messageCode The message code
+     * @param string $delimiter The string dilimiting each status message
+     */
     final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
         if (0 == strlen($this->_harvest->status_messages)) {
@@ -229,17 +351,39 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $this->_harvest->save();
     }
     
+    /**
+     * Return this instance's OaipmhHarvesterHarvest object.
+     * 
+     * @return OaipmhHarvesterHarvest
+     */
     final protected function getHarvest()
     {
         return $this->_harvest;
     }
     
+    /**
+     * Convenience method that facilitates the building of a correctly formatted 
+     * elementTexts array.
+     * 
+     * @see insert_item()
+     * @param array $elementTexts The previously build elementTexts array
+     * @param string $elementSet This element's element set
+     * @param string $element This element text's element
+     * @param mixed $text The text
+     * @param bool $html Flag whether this element text is HTML
+     * @return array
+     */
     final protected function buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
     {
         $elementTexts[$elementSet][$element][] = array('text' => (string) $text, 'html' => (bool) $html);
         return $elementTexts;
     }
     
+    /**
+     * Error handler callback.
+     * 
+     * @see self::__construct()
+     */
     public function errorHandler($errno, $errstr, $errfile, $errline)
     {
         $statusMessage = "$errstr in $errfile on line $errline";

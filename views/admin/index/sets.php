@@ -1,4 +1,12 @@
 <?php
+/**
+ * Admin sets view.
+ * 
+ * @package OaipmhHarvester
+ * @subpackage Views
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
 $head = array('body_class' => 'oaipmh-harvester primary', 
               'title'      => 'OAI-PMH Harvester | Sets');
 head($head);

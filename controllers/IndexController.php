@@ -1,12 +1,35 @@
 <?php
+/**
+ * @package OaipmhHarvester
+ * @subpackage Controllers
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
+
+/**
+ * Index controller
+ *
+ * @package OaipmhHarvester
+ * @subpackage Controllers
+ */
 class OaipmhHarvester_IndexController extends Omeka_Controller_Action
 {
+    /**
+     * Prepare the index view.
+     * 
+     * @return void
+     */
     public function indexAction()
     {
         $harvests = $this->getTable('OaipmhHarvesterHarvest')->findAllHarvests();
         $this->view->harvests = $harvests;
     }
     
+    /**
+     * Prepares the sets view.
+     * 
+     * @return void
+     */
     public function setsAction()
     {
         // Get the available OAI-PMH to Omeka maps, which should correspond to 
@@ -95,6 +118,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $this->view->baseUrl         = $baseUrl;
     }
     
+    /**
+     * Launch the harvest process.
+     * 
+     * @return void
+     */
     public function harvestAction()
     {
         $baseUrl        = $_POST['base_url'];
@@ -134,6 +162,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         exit;
     }
     
+    /**
+     * Prepare the status view.
+     * 
+     * @return void
+     */
     public function statusAction()
     {
         $harvestId = $_GET['harvest_id'];
@@ -143,6 +176,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $this->view->harvest = $harvest;
     }
     
+    /**
+     * Delete all items created during a harvest.
+     * 
+     * @return void
+     */
     public function deleteAction()
     {
         $harvestId = $_GET['harvest_id'];
@@ -160,7 +198,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         
         // Delete collection if exists.
-        
         if ($harvest->collection_id) {
             $collection = $this->getTable('Collection')->find($harvest->collection_id);
             $collection->delete();
@@ -175,13 +212,19 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $harvest->save();
         
         $this->flash('All items created for the harvest were deleted.');
+        
         $this->redirect->goto('index');
+        exit;
     }
     
+    /**
+     * Get the available OAI-PMH to Omeka maps, which should correspond to 
+     * OAI-PMH metadata formats.
+     * 
+     * @return array
+     */
     private function _getMaps()
     {
-        // Get the available OAI-PMH to Omeka maps, which should correspond to 
-        // OAI-PMH metadata formats.
         $dir = new DirectoryIterator(OAIPMH_HARVESTER_MAPS_DIRECTORY);
         $maps = array();
         foreach ($dir as $dirEntry) {
@@ -194,6 +237,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         return $maps;
     }
     
+    /**
+     * Get the path to the bootstrap file.
+     * 
+     * @return string
+     */
     private function _getBootstrapFilePath()
     {
         return OAIPMH_HARVESTER_PLUGIN_DIRECTORY
@@ -201,8 +249,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
              . 'bootstrap.php';
     }
     
-    // Launch a low-priority background process, returning control to the 
-    // foreground. See: http://www.php.net/manual/en/ref.exec.php#70135
+    /**
+     * Launch a background process, returning control to the foreground.
+     * 
+     * @link http://www.php.net/manual/en/ref.exec.php#70135
+     */
     private function _fork($command) {
         exec("$command > /dev/null 2>&1 &");
     }

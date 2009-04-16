@@ -1,4 +1,17 @@
 <?php
+/**
+ * @package OaipmhHarvester
+ * @subpackage Models
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
+
+/**
+ * Model class for a harvest.
+ *
+ * @package OaipmhHarvester
+ * @subpackage Models
+ */
 class OaipmhHarvesterHarvest extends Omeka_Record
 {
     const STATUS_STARTING    = 'starting';

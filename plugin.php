@@ -8,7 +8,7 @@
  */
 
 /** Plugin version number */
-define('OAIPMH_HARVESTER_PLUGIN_VERSION', '1.0');
+define('OAIPMH_HARVESTER_PLUGIN_VERSION', get_plugin_ini('OaipmhHarvester', 'version'));
 
 /** Path to plugin directory */
 define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));

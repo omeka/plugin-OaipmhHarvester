@@ -59,7 +59,7 @@ head($head);
     </table>
     <?php if ($this->harvest->status != OaipmhHarvesterHarvest::STATUS_DELETED): ?>
     <p><strong>Warning:</strong> clicking the following link will delete all items created for this harvest. 
-    <a href="<?php echo uri("oaipmh-harvester/index/delete?harvest_id={$this->harvest->id}"); ?>">Delete items</a></p>
+    <a href="<?php echo uri("oaipmh-harvester/index/delete?harvest_id={$this->harvest->id}"); ?>" class="delete">Delete Items</a></p>
     <?php endif; ?>
 </div>
 

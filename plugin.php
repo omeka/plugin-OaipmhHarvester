@@ -37,6 +37,7 @@ add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
 add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
 add_plugin_hook('config', 'oaipmh_harvester_config');
+add_plugin_hook('define_acl', 'oaipmh_harvester_define_acl');
 
 /** Plugin filters */
 add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
@@ -171,6 +172,22 @@ function oaipmh_harvester_config()
 }
 
 /**
+ * define_acl callback.
+ * 
+ * Defines the plugin's access control list.
+ * 
+ * @param object $acl
+ */
+function oaipmh_harvester_define_acl($acl)
+{
+    // Allow only super and admin roles to this plugin's controller's actions.
+    $acl->loadResourceList(array('OaipmhHarvester_Index' => array('index', 
+                                                                  'sets', 
+                                                                  'status', 
+                                                                  'delete')));
+}
+
+/**
  * admin_navigation_main filter.
  * 
  * @param array $nav Array of main navigation tabs.
@@ -178,6 +195,8 @@ function oaipmh_harvester_config()
  */
 function oaipmh_harvester_admin_navigation_main($nav)
 {
-    $nav['OAI-PMH Harvester'] = uri('oaipmh-harvester');
+    if (has_permission('OaipmhHarvester_Index', 'index')) {
+        $nav['OAI-PMH Harvester'] = uri('oaipmh-harvester');
+    }
     return $nav;
 }

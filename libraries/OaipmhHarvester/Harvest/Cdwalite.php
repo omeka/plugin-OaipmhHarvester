@@ -1,5 +1,5 @@
 <?php
-class OaipmhHarvester_Harvest_Abstract_Cdwalite extends OaipmhHarvester_Harvest_Abstract
+class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
 {
 	/*	XML schema and OAI prefix for the format represented by this class.
 		These constants are required for all maps. */

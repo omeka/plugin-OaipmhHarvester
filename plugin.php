@@ -15,8 +15,7 @@ define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 
 /** Path to plugin maps directory */
 define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
-                                        . DIRECTORY_SEPARATOR 
-                                        . 'maps');
+                                        . '/libraries/OaipmhHarvester/Harvest');
 /** OaipmhHarvester_Xml (library) */
 require_once 'OaipmhHarvester/Xml.php';
 

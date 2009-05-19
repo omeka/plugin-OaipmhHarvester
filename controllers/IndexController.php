@@ -77,7 +77,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         else {
             if (in_array('http://www.openarchives.org/OAI/2.0/oai_dc.xsd', $maps)) {
-                $availableMaps["OaipmhHarvester_Harvest_Abstract_OaiDc|oai_dc"] = 'oai_dc';
+                $availableMaps["OaipmhHarvester_Harvest_OaiDc|oai_dc"] = 'oai_dc';
             }
         }
         
@@ -244,11 +244,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             if ($dirEntry->isFile() && !$dirEntry->isDot()) {
                 $filename = $dirEntry->getFilename();
                 $pathname = $dirEntry->getPathname();
-                if(preg_match('/^(.+)\.php$/', $filename, $match)) {
+                if(preg_match('/^(.+)\.php$/', $filename, $match) && $match[1] != 'Abstract') {
                     // Get and set only the name of the file minus the extension.
                     require_once($pathname);
-                    $class = "OaipmhHarvester_Harvest_Abstract_${match[1]}";
-                    $object = new $class();
+                    $class = "OaipmhHarvester_Harvest_${match[1]}";
+                    $object = new $class(null, null);
                     $metadataSchema = $object->getMetadataSchema();
                     $metadataPrefix = $object->getMetadataPrefix();
                     $maps[$class] = $metadataSchema;

@@ -43,7 +43,7 @@ $metadataPrefix = $harvest->metadata_prefix;
 
 // Set the metadata prefix class.
 $metadataClass = $harvest->metadata_class;
-$metadataClassFile = ereg_replace('OaipmhHarvester_Harvest_Abstract_', '', $metadataClass);
+$metadataClassFile = ereg_replace('OaipmhHarvester_Harvest_', '', $metadataClass);
 
 require_once 'OaipmhHarvester/Harvest/Abstract.php';
 require_once 'OaipmhHarvester/Xml.php';

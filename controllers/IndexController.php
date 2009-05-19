@@ -73,7 +73,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         
         // Get the sets from the data provider.
-        $baseUrl = $_POST['base_url'];
         $requestArguments = array('verb' => 'ListSets');
         
         // If a resumption token exists, process it. For a data provider that 

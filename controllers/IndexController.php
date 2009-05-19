@@ -48,27 +48,36 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $this->redirect->goto('index');
         }
         
-        // Compare the available OAI-PMH metadataFormats with the available 
-        // Omeka maps and extract only those that are common to both. It's 
-        // important to consider that some repositories don't provide repository
-        // -wide metadata formats. Instead they only provide record level 
-        // metadata formats. Oai_dc is mandatory for all records, so if a 
-        // repository doesn't provide metadata formats using 
-        // ListMetadataFormats, only expose the oai_dc prefix. For a data 
-        // provider that doesn't offer repository-wide metadata formats, see: 
-        // http://www.informatik.uni-stuttgart.de/cgi-bin/OAI/OAI.pl
-         $availableMaps = array();
-           if (isset($oaipmh->getOaipmh()->ListMetadataFormats)) {
+        /* Compare the available OAI-PMH metadataFormats with the available 
+        Omeka maps and extract only those that are common to both. It's 
+        important to consider that some repositories don't provide repository
+        -wide metadata formats. Instead they only provide record level 
+        metadata formats. Oai_dc is mandatory for all records, so if a
+        repository doesn't provide metadata formats using 
+        ListMetadataFormats, only expose the oai_dc prefix. For a data 
+        provider that doesn't offer repository-wide metadata formats, see: 
+        http://www.informatik.uni-stuttgart.de/cgi-bin/OAI/OAI.pl
+        
+        The comparison is made between the metadata schemata, not the prefixes.
+        */
+        $availableMaps = array();
+        if (isset($oaipmh->getOaipmh()->ListMetadataFormats)) {
             $metadataFormats = $oaipmh->getOaipmh()->ListMetadataFormats->metadataFormat;
             foreach ($metadataFormats as $metadataFormat) {
                 $metadataPrefix = (string) $metadataFormat->metadataPrefix;
-                if (in_array($metadataPrefix, $maps)) {
-                    $availableMaps[$metadataPrefix] = $metadataPrefix;
+                $schema = (string) $metadataFormat->schema;
+                foreach($maps as $mapPrefix => $mapSchema) {
+                    if($mapSchema == $schema) {
+                        // Use the local-side metadata prefix for consistency.
+                        $availableMaps[$metadataPrefix] = $mapPrefix;
+                        break;
+                    }
                 }
             }
-        } else {
-            if (in_array('oai_dc', $maps)) {
-                $availableMaps['oai_dc'] = 'oai_dc';
+        }
+        else {
+            if (in_array('http://www.openarchives.org/OAI/2.0/oai_dc.xsd', $maps)) {
+                $availableMaps[] = 'oai_dc';
             }
         }
         
@@ -115,6 +124,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $this->view->sets            = $sets;
         $this->view->resumptionToken = $resumptionToken;
         $this->view->baseUrl         = $baseUrl;
+        $this->view->maps           = $maps;
     }
     
     /**
@@ -228,9 +238,17 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $maps = array();
         foreach ($dir as $dirEntry) {
             if ($dirEntry->isFile() && !$dirEntry->isDot()) {
-                // Get and set only the name of the file minus the extension.
-                preg_match('/^(.+)\.php$/', $dirEntry->getFilename(), $map);
-                $maps[] = $map[1];
+                $filename = $dirEntry->getFilename();
+                $pathname = $dirEntry->getPathname();
+                if(preg_match('/^(.+)\.php$/', $filename, $match)) {
+                    // Get and set only the name of the file minus the extension.
+                    require_once($pathname);
+                    $class = "OaipmhHarvester_Harvest_Abstract_${match[1]}";
+                    $object = new $class();
+                    $metadataSchema = $object->getMetadataSchema();
+                    $metadataPrefix = $object->getMetadataPrefix();
+                    $maps[$metadataPrefix] = $metadataSchema;
+                }
             }
         }
         return $maps;

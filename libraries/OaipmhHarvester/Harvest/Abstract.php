@@ -56,8 +56,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
      *  - ignore_deleted_records: ignores records with a status of deleted
      * @return void
      */
-    public function __construct(OaipmhHarvesterHarvest $harvest, array $options = array())
-    {        
+    public function __construct($harvest, $options = array())
+    {   
+        if($harvest && $options) {     
         // Set an error handler method to record run-time warnings (non-fatal 
         // errors). Fatal and parse errors cannot be called in this way.
         set_error_handler(array($this, 'errorHandler'), E_WARNING);
@@ -92,6 +93,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         $peakUsage = memory_get_peak_usage();
         $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
+    }
     }
     
     /**

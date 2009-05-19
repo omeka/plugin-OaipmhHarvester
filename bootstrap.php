@@ -42,15 +42,13 @@ $options['ignore_deleted_records'] = get_option('oaipmh_harvester_ignore_deleted
 $metadataPrefix = $harvest->metadata_prefix;
 
 // Set the metadata prefix class.
-$metadataPrefixClass = Inflector::camelize($metadataPrefix);
-
-// Set the metdata prefix class name.
-$metadataPrefixClassName = "OaipmhHarvester_Harvest_Abstract_$metadataPrefixClass";
+$metadataClass = $harvest->metadata_class;
+$metadataClassFile = ereg_replace('OaipmhHarvester_Harvest_Abstract_', '', $metadataClass);
 
 require_once 'OaipmhHarvester/Harvest/Abstract.php';
 require_once 'OaipmhHarvester/Xml.php';
 
-require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataPrefix.php";
+require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataClassFile.php";
 
 // Set the harvest object.
-new $metadataPrefixClassName($harvest, $options);
+new $metadataClass($harvest, $options);

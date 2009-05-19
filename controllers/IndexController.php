@@ -66,10 +66,10 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             foreach ($metadataFormats as $metadataFormat) {
                 $metadataPrefix = (string) $metadataFormat->metadataPrefix;
                 $schema = (string) $metadataFormat->schema;
-                foreach($maps as $mapPrefix => $mapSchema) {
+                foreach($maps as $mapClass => $mapSchema) {
                     if($mapSchema == $schema) {
                         // Use the local-side metadata prefix for consistency.
-                        $availableMaps[$metadataPrefix] = $mapPrefix;
+                        $availableMaps["$mapClass|$metadataPrefix"] = $metadataPrefix;
                         break;
                     }
                 }
@@ -77,7 +77,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         else {
             if (in_array('http://www.openarchives.org/OAI/2.0/oai_dc.xsd', $maps)) {
-                $availableMaps[] = 'oai_dc';
+                $availableMaps["OaipmhHarvester_Harvest_Abstract_OaiDc|oai_dc"] = 'oai_dc';
             }
         }
         
@@ -124,7 +124,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $this->view->sets            = $sets;
         $this->view->resumptionToken = $resumptionToken;
         $this->view->baseUrl         = $baseUrl;
-        $this->view->maps           = $maps;
+        $this->view->maps            = $maps;
     }
     
     /**
@@ -135,10 +135,13 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     public function harvestAction()
     {
         $baseUrl        = $_POST['base_url'];
-        $metadataPrefix = $_POST['metadata_prefix'];
+        $metadataSpec   = explode('|', $_POST['metadata_spec']);
         $setSpec        = isset($_POST['set_spec']) ? $_POST['set_spec'] : null;
         $setName        = isset($_POST['set_name']) ? $_POST['set_name'] : null;
         $setDescription = isset($_POST['set_description']) ? $_POST['set_description'] : null;
+        
+        $metadataClass = $metadataSpec[0];
+        $metadataPrefix = $metadataSpec[1];
         
         // Insert the set.
         $harvest = new OaipmhHarvesterHarvest;
@@ -147,6 +150,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $harvest->set_name        = $setName;
         $harvest->set_description = $setDescription;
         $harvest->metadata_prefix = $metadataPrefix;
+        $harvest->metadata_class  = $metadataClass;
         $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
         $harvest->initiated       = date('Y:m:d H:i:s');
         $harvest->save();
@@ -247,7 +251,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                     $object = new $class();
                     $metadataSchema = $object->getMetadataSchema();
                     $metadataPrefix = $object->getMetadataPrefix();
-                    $maps[$metadataPrefix] = $metadataSchema;
+                    $maps[$class] = $metadataSchema;
                 }
             }
         }

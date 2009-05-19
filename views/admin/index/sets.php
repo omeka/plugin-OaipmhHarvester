@@ -51,7 +51,7 @@ head($head);
                 <td><?php echo $set->setName; ?></td>
                 <td><?php echo @ $setDc->description; ?></td>
                 <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
-                <?php echo $this->formSelect('metadata_prefix', null, null, $this->availableMaps); ?>
+                <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
                 <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
                 <?php echo $this->formHidden('set_spec', $set->setSpec); ?>
                 <?php echo $this->formHidden('set_name', $set->setName); ?>

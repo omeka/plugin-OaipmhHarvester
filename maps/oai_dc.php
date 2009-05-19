@@ -1,6 +1,11 @@
 <?php
 class OaipmhHarvester_Harvest_Abstract_OaiDc extends OaipmhHarvester_Harvest_Abstract
 {
+	/*	XML schema and OAI prefix for the format represented by this class.
+		These constants are required for all maps. */
+	const METADATA_SCHEMA = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
+	const METADATA_PREFIX = "oai_dc";
+	
     protected $collection;
     
     protected function beforeHarvest()

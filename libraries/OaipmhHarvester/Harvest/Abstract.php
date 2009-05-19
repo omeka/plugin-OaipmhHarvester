@@ -390,4 +390,18 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $this->addStatusMessage($statusMessage, self::MESSAGE_CODE_ERROR);
         return true;
     }
+
+	/**
+	 * Returns the metadataPrefix for the format the mapper supports.
+	 *
+	 * @return string metadataPrefix
+	 */
+	public abstract function getMetadataPrefix();
+	
+	/**
+	 * Returns the XML schema for the format the mapper supports.
+	 *
+	 * @return string XML schema
+	 */
+	public abstract function getMetadataSchema();
 }

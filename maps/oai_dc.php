@@ -46,4 +46,14 @@ class OaipmhHarvester_Harvest_Abstract_OaiDc extends OaipmhHarvester_Harvest_Abs
         
         $this->insertItem($itemMetadata, $elementTexts);
     }
+
+	public function getMetadataSchema()
+	{
+		return self::METADATA_SCHEMA;
+	}
+	
+	public function getMetadataPrefix()
+	{
+		return self::METADATA_PREFIX;
+	}
 }

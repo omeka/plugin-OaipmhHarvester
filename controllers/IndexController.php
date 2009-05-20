@@ -164,7 +164,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         // Set the command and run the script in the background.
         $command = "$phpCommandPath $bootstrapFilePath -h $harvestId";
-        $this->_fork($command);
+        $pid = $this->_fork($command);
+        
+        // Set the PID after the background process is started.
+        // Save twice to assure the process has access to the data it needs.
+        $harvest->pid = $pid;
+        $harvest->save();
         
         if ($setSpec) {
             $message = "Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
@@ -232,6 +237,33 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         exit;
     }
     
+    public function killAction()
+    {
+        $harvestId = $_POST['harvest_id'];
+        $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvestId);
+        
+        $pid = $harvest->pid;
+        
+        if($pid) {
+            if($harvest->status == OaipmhHarvesterHarvest::STATUS_STARTING ||
+               $harvest->status == OaipmhHarvesterHarvest::STATUS_IN_PROGRESS)
+                {
+                    exec("kill -9 $pid");
+                    $harvest->pid = null;
+                    $harvest->status = OaipmhHarvesterHarvest::STATUS_KILLED;
+                    $statusMessage = 'This harvest was killed by an administrator on ' 
+                                  . date('Y-m-d H:i:s');
+                    $harvest->status_messages = strlen($harvest->status_messages) == 0 
+                                             ? $statusMessage 
+                                             : "\n\n" . $statusMessage;
+                    $harvest->save(); 
+                    $this->flash("Harvest process $pid was killed.");
+               }
+        }
+        $this->redirect->goto('index');
+        exit;
+    }
+    
     /**
      * Get the available OAI-PMH to Omeka maps, which should correspond to 
      * OAI-PMH metadata formats.
@@ -276,8 +308,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      * Launch a background process, returning control to the foreground.
      * 
      * @link http://www.php.net/manual/en/ref.exec.php#70135
+     * @return int The background process' PID
      */
     private function _fork($command) {
-        exec("$command > /dev/null 2>&1 &");
+        return exec("$command > /dev/null 2>&1 & echo $!");
     }
 }

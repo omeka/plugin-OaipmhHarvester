@@ -19,6 +19,7 @@ class OaipmhHarvesterHarvest extends Omeka_Record
     const STATUS_COMPLETED   = 'completed';
     const STATUS_ERROR       = 'error';
     const STATUS_DELETED     = 'deleted';
+    const STATUS_KILLED      = 'killed';
     
     public $id;
     public $collection_id;
@@ -32,4 +33,5 @@ class OaipmhHarvesterHarvest extends Omeka_Record
     public $status_messages;
     public $initiated;
     public $completed;
+    public $pid;
 }

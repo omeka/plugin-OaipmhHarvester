@@ -237,6 +237,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         exit;
     }
     
+    /**
+     * Kill the background process for a harvest if it is still running.
+     */
     public function killAction()
     {
         $harvestId = $_POST['harvest_id'];

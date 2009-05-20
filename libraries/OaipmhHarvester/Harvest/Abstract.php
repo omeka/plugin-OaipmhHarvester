@@ -31,11 +31,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
     private $_harvest;
     
     /**
-     * @var bool Option to ignore deleted records.
-     */
-    private $_ignoreDeletedRecords = true;
-    
-    /**
      * @var OaipmhHarvester_Xml The current, cached OaipmhHarvester_Xml object.
      */
     private $_oaipmhHarvesterXml;
@@ -111,7 +106,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     private function _setOptions($options)
     {
-        $this->_ignoreDeletedRecords = isset($options['ignore_deleted_records']) ? $options['ignore_deleted_records'] : true;
+        // Placeholder for class options that will potentially be added.
     }
     
     /**
@@ -125,7 +120,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     private function _harvestRecords($resumptionToken = false)
     {
-        
         // Get the base URL.
         $baseUrl = $this->_harvest->base_url;
         
@@ -159,7 +153,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         foreach ($this->_oaipmhHarvesterXml->getRecords() as $record) {
             
             // Ignore (skip over) deleted records if indicated to do so.
-            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record) && $this->_ignoreDeletedRecords) {
+            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record)) {
                 continue;
             }
             

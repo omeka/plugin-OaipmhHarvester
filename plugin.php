@@ -145,10 +145,6 @@ function oaipmh_harvester_config_form()
         $memoryLimit = ini_get('memory_limit');
     }
     
-    if (!$ignoreDeletedRecords = get_option('oaipmh_harvester_ignore_deleted_records')) {
-        $ignoreDeletedRecords = 'yes';
-    }
-    
     include 'config_form.php';
 }
 
@@ -168,7 +164,6 @@ function oaipmh_harvester_config()
     
     set_option('oaipmh_harvester_php_path', $path);
     set_option('oaipmh_harvester_memory_limit', $_POST['oaipmh_harvester_memory_limit']);
-    set_option('oaipmh_harvester_ignore_deleted_records', $_POST['oaipmh_harvester_ignore_deleted_records']);
 }
 
 /**

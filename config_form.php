@@ -31,16 +31,3 @@
         maximum allowable limit. Check with your web host for more information.</p>
     </div>
 </div>
-<div class="field">
-    <label for="oaipmh_harvester_ignore_deleted_records">Ignore Deleted Records</label>
-    <div class="inputs">
-        <?php echo __v()->formCheckbox('oaipmh_harvester_ignore_deleted_records', 
-                                       $ignoreDeletedRecords, 
-                                       null, 
-                                       array('yes', 'no')); ?>
-        <p class="explanation">Sometimes OAI-PMH data providers will mark records as 
-        delted if they were deleted from their repository. If this is checked the 
-        harvest process will ignore deleted records. If this is unchecked, all such 
-        records will be inserted into Omeka as empty items.</p>
-    </div>
-</div>

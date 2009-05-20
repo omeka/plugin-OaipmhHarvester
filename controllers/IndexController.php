@@ -135,6 +135,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     public function harvestAction()
     {
         $baseUrl        = $_POST['base_url'];
+        // metadataSpec is of the form "class|prefix", explode on pipe to get
+        // the individual items, 0 => class, 1 => prefix
         $metadataSpec   = explode('|', $_POST['metadata_spec']);
         $setSpec        = isset($_POST['set_spec']) ? $_POST['set_spec'] : null;
         $setName        = isset($_POST['set_name']) ? $_POST['set_name'] : null;

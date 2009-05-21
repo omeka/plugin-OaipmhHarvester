@@ -112,6 +112,40 @@ abstract class OaipmhHarvester_Harvest_Abstract
     }
     
     /**
+     * Checks whether the current record has already been harvested, and
+     * returns the record if it does.
+     *
+     * @return OaipmhHarvesterRecord|false The model object of the record,
+     *      if it exists, or false otherwise.
+     */
+    private function _recordExists()
+    {   
+        $existing = false;
+        
+        $identifier = $this->_record->identifier;
+        $datestamp = $this->_record->datestamp;
+        
+        $records = get_db()->getTable('OaipmhHarvesterRecord')->findByOaiIdentifier($identifier);
+        /* Ideally, the OAI identifier would be globally-unique, but for
+           poorly configured servers that might not be the case.  However,
+           the identifier is always unique for that repository, so given
+           already-existing identifiers, check against the base URL.
+        */
+        foreach($records as $record)
+        {
+            $harvest_id = $record->harvest_id;
+            $recordHarvest = get_db()->getTable('OaipmhHarvesterHarvest')->find($harvest_id);
+            $base_url = $recordHarvest->base_url;
+            // Check against the URL of the cached harvest object.
+            if($base_url = $_harvest->base_url)
+            {
+                $existing = $record;
+            }
+        }
+        return $existing;
+    }
+    
+    /**
      * Recursive method that loops through all requested records
      * 
      * This method hands off mapping to the class that extends off this one and 
@@ -154,7 +188,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // inheriting from this class.
         foreach ($this->_oaipmhHarvesterXml->getRecords() as $record) {
             
-            // Ignore (skip over) deleted records if indicated to do so.
+            // Ignore (skip over) deleted records.
             if ($this->_oaipmhHarvesterXml->isDeletedRecord($record)) {
                 continue;
             }

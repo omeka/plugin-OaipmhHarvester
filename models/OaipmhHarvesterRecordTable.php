@@ -26,4 +26,17 @@ class OaipmhHarvesterRecordTable extends Omeka_Db_Table
         $select->where('harvest_id = ?');
         return $this->fetchObjects($select, array($harvestId));
     }
+    
+    /**
+     * Return records by OAI-PMH identifier.
+     * 
+     * @param string $identifier OAI-PMH identifier
+     * @return array An array of OaipmhHarvesterRecord objects.
+     */
+    public function findByOaiIdentifier($identifier)
+    {
+        $select = $this->getSelect();
+        $select->where('identifier = ?');
+        return $this->fetchObjects($select, array($identifier));
+    }
 }

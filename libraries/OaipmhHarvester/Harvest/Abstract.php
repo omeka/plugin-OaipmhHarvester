@@ -115,31 +115,34 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * Checks whether the current record has already been harvested, and
      * returns the record if it does.
      *
+     * @param SimpleXMLElement record to be harvested
      * @return OaipmhHarvesterRecord|false The model object of the record,
      *      if it exists, or false otherwise.
      */
-    private function _recordExists()
+    private function _recordExists($record)
     {   
         $existing = false;
         
-        $identifier = $this->_record->identifier;
-        $datestamp = $this->_record->datestamp;
+        $identifier = $record->header->identifier;
+        $datestamp = $record->header->datestamp;
         
         $records = get_db()->getTable('OaipmhHarvesterRecord')->findByOaiIdentifier($identifier);
+        
         /* Ideally, the OAI identifier would be globally-unique, but for
            poorly configured servers that might not be the case.  However,
            the identifier is always unique for that repository, so given
            already-existing identifiers, check against the base URL.
         */
-        foreach($records as $record)
+        foreach($records as $existingRecord)
         {
-            $harvest_id = $record->harvest_id;
+            $harvest_id = $existingRecord->harvest_id;
             $recordHarvest = get_db()->getTable('OaipmhHarvesterHarvest')->find($harvest_id);
             $base_url = $recordHarvest->base_url;
             // Check against the URL of the cached harvest object.
-            if($base_url = $_harvest->base_url)
+            if($base_url == $this->_harvest->base_url)
             {
-                $existing = $record;
+                $existing = $existingRecord;
+                break;
             }
         }
         return $existing;
@@ -189,7 +192,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
         foreach ($this->_oaipmhHarvesterXml->getRecords() as $record) {
             
             // Ignore (skip over) deleted records.
-            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record)) {
+            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record) ||
+                $this->_recordExists($record)) {
                 continue;
             }
             

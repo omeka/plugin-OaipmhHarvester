@@ -7,6 +7,7 @@
  */
 
 
+
 /**
  * Abstract class on which all other metadata format maps are based.
  *
@@ -57,7 +58,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
             // Set an error handler method to record run-time warnings (non-fatal 
             // errors). Fatal and parse errors cannot be called in this way.
             //set_error_handler(array($this, 'errorHandler'), E_WARNING);
-        
+            error_reporting(E_ALL);
+            ini_set('display_errors', '1');
             $this->_harvest = $harvest;
         
             $this->_setOptions($options);
@@ -115,7 +117,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * Checks whether the current record has already been harvested, and
      * returns the record if it does.
      *
-     * @param SimpleXMLElement record to be harvested
+     * @param SimpleXMLIterator record to be harvested
      * @return OaipmhHarvesterRecord|false The model object of the record,
      *      if it exists, or false otherwise.
      */
@@ -192,15 +194,31 @@ abstract class OaipmhHarvester_Harvest_Abstract
         foreach ($this->_oaipmhHarvesterXml->getRecords() as $record) {
             
             // Ignore (skip over) deleted records.
-            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record) ||
-                $this->_recordExists($record)) {
+            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record)) {
                 continue;
             }
+            $existingRecord = $this->_recordExists($record);
+            $harvestedRecord = $this->harvestRecord($record);
+            
+            // Record has already been harvested
+            if($existingRecord) {
+                // If datestamp has changed, update the record, otherwise ignore.
+                if($existingRecord->datestamp != $record->header->datestamp) {
+                    $this->updateItem($existingRecord->item_id,
+                                      $harvestedRecord['elementTexts'],
+                                      $harvestedRecord['fileMetadata']);
+                }
+                release_object($existingRecord);
+            }
+            else $this->insertItem($harvestedRecord['itemMetadata'],
+                                   $harvestedRecord['elementTexts'],
+                                   $harvestedRecord['fileMetadata']);
             
             // Cache the record for later use.
             $this->_record = $record;
             
             $this->harvestRecord($record);
+            
         }
         
         // If there is a resumption token, recurse this method.
@@ -362,6 +380,61 @@ abstract class OaipmhHarvester_Harvest_Abstract
             }
         }
         
+        // Release the Item object from memory.
+        release_object($item);
+        
+        return true;
+    }
+    
+    /**
+     * Convenience method for inserting an item and its files.
+     * 
+     * Method used by map writers that encapsulates item and file insertion. 
+     * Items are inserted first, then files are inserted individually. This is 
+     * done so Item and File objects can be released from memory, avoiding 
+     * memory allocation issues.
+     * 
+     * @see insert_item()
+     * @see insert_files_for_item()
+     * @param mixed $itemId ID of item to update
+     * @param mixed $elementTexts The item's element texts
+     * @param mixed $fileMetadata The item's file metadata
+     * @return true
+     */
+    final protected function updateItem($itemId, $elementTexts = array(), $fileMetadata = array())
+    {
+        // Insert the item
+        $item = update_item($itemId, array('overwriteElementTexts' => true), $elementTexts);
+        
+        // Insert the record after the item is saved. The idea here is that the 
+        // OaipmhHarvesterRecords table should only contain records that have 
+        // corresponding items.
+        //$this->_insertRecord($item);
+        /*
+        // If there are files, insert one file at a time so the file objects can 
+        // be released individually.
+        if (isset($fileMetadata['files'])) {
+            
+            // The default file transfer type is URL.
+            $fileTransferType = isset($fileMetadata['file_transfer_type']) 
+                              ? $fileMetadata['file_transfer_type'] 
+                              : 'Url';
+            
+            // The default option is ignore invalid files.
+            $fileOptions = isset($fileMetadata['file_ingest_options']) 
+                         ? $fileMetadata['file_ingest_options'] 
+                         : array('ignore_invalid_files' => true);
+            
+            // Prepare the files value for one-file-at-a-time iteration.
+            $files = array($fileMetadata['files']);
+            
+            foreach ($files as $file) {
+                $file = insert_files_for_item($item, $fileTransferType, $file, $fileOptions);
+                // Release the File object from memory. 
+                release_object($file);
+            }
+        }
+        */
         // Release the Item object from memory.
         release_object($item);
         

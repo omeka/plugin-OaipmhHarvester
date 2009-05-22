@@ -304,12 +304,16 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
 //print_r($this->_fileMetadata);
         
         // Insert the item and files.
-        $this->insertItem($itemMetadata, $this->_elementTexts, $this->_fileMetadata);
+        //$this->insertItem($itemMetadata, $this->_elementTexts, $this->_fileMetadata);
+        $harvestedRecord = array('itemMetadata' => $itemMetadata,
+                                 'elementTexts' => $this->_elementTexts,
+                                 'fileMetadata' => $this->_fileMetadata);
         
         // Reset the built properties before the next record iteration.
         $this->_elementTexts = array();
         $this->_fileMetadata = array();
         
+        return $harvestedRecord;
 //exit;
     }
     

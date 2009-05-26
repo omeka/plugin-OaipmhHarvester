@@ -32,11 +32,13 @@ class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
      *
      * @param string $baseUrl Base URL of the harvest
      * @param string $setSpec Set spec of the harvest
+     * @param string $metadataPrefix Metadata prefix of the harvest
      * @return OaipmhHarvesterHarvest Record of existing harvest.
      */
-    public function findUniqueHarvest($baseUrl, $setSpec)
+    public function findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix)
     {
-        $select = $this->getSelect()->where('base_url = ?', $baseUrl);
+        $select = $this->getSelect()->where('base_url = ?', $baseUrl)
+                                    ->where('metadata_prefix = ?', $metadataPrefix);
         if($setSpec) 
             $select->where('set_spec = ?', $setSpec);
         else

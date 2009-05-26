@@ -151,9 +151,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // If true, this is a re-harvest, all parameters will be the same
         if($harvest_id) {
             $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvest_id);
-            $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
-            $harvest->initiated       = date('Y:m:d H:i:s');
-            $harvest->save();
             
             // Set vars for flash message
             $setSpec = $harvest->set_spec;
@@ -161,7 +158,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $metadataPrefix = $harvest->metadata_prefix;
         }
         else {
-            $harvest = $this->getTable('OaipmhHarvesterHarvest')->findUniqueHarvest($baseUrl, $setSpec);
+            $harvest = $this->getTable('OaipmhHarvesterHarvest')->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
         
             // If $harvest is not null, use the existing harvest record.
             if(!$harvest) {
@@ -171,11 +168,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $harvest->set_spec        = $setSpec;
                 $harvest->set_name        = $setName;
                 $harvest->set_description = $setDescription;
+                $harvest->metadata_prefix = $metadataPrefix;
+                $harvest->metadata_class  = $metadataClass;
             }
         
             // Insert the set.
-            $harvest->metadata_prefix = $metadataPrefix;
-            $harvest->metadata_class  = $metadataClass;
             $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
             $harvest->initiated       = date('Y:m:d H:i:s');
             $harvest->save();

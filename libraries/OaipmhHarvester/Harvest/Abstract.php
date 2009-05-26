@@ -6,8 +6,6 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 
-
-
 /**
  * Abstract class on which all other metadata format maps are based.
  *
@@ -138,9 +136,13 @@ abstract class OaipmhHarvester_Harvest_Abstract
         {
             $harvest_id = $existingRecord->harvest_id;
             $recordHarvest = get_db()->getTable('OaipmhHarvesterHarvest')->find($harvest_id);
-            $base_url = $recordHarvest->base_url;
+            $baseUrl = $recordHarvest->base_url;
+            $setSpec = $recordHarvest->set_spec;
+            $metadataPrefix = $recordHarvest->metadata_prefix;
             // Check against the URL of the cached harvest object.
-            if($base_url == $this->_harvest->base_url)
+            if($baseUrl == $this->_harvest->base_url &&
+                $setSpec == $this->_harvest->set_spec &&
+                $metadataPrefix == $this->_harvest->metadata_prefix)
             {
                 $existing = $existingRecord;
                 break;
@@ -322,7 +324,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     {
         // If collection_id is not null, use the existing collection, do not
         // create a new one.
-        if($this->_harvest->collection_id) {
+        if(($collection_id = $this->_harvest->collection_id)) {
             $collection = get_db()->getTable('Collection')->find($collection_id);
         }
         else {
@@ -424,31 +426,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         // Update the datestamp stored in the database for this record.
         $this->_updateRecord($record);
-        /*
-        // If there are files, insert one file at a time so the file objects can 
-        // be released individually.
-        if (isset($fileMetadata['files'])) {
-            
-            // The default file transfer type is URL.
-            $fileTransferType = isset($fileMetadata['file_transfer_type']) 
-                              ? $fileMetadata['file_transfer_type'] 
-                              : 'Url';
-            
-            // The default option is ignore invalid files.
-            $fileOptions = isset($fileMetadata['file_ingest_options']) 
-                         ? $fileMetadata['file_ingest_options'] 
-                         : array('ignore_invalid_files' => true);
-            
-            // Prepare the files value for one-file-at-a-time iteration.
-            $files = array($fileMetadata['files']);
-            
-            foreach ($files as $file) {
-                $file = insert_files_for_item($item, $fileTransferType, $file, $fileOptions);
-                // Release the File object from memory. 
-                release_object($file);
-            }
-        }
-        */
+
         // Release the Item object from memory.
         release_object($item);
         

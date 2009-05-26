@@ -25,4 +25,22 @@ class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
         $select = $this->getSelect()->order('id');
         return $this->fetchObjects($select);
     }
+    
+    /**
+     * Find a harvest by base URL and set spec.  These are the components
+     * required to make a harvest unique.
+     *
+     * @param string $baseUrl Base URL of the harvest
+     * @param string $setSpec Set spec of the harvest
+     * @return OaipmhHarvesterHarvest Record of existing harvest.
+     */
+    public function findUniqueHarvest($baseUrl, $setSpec)
+    {
+        $select = $this->getSelect()->where('base_url = ?', $baseUrl);
+        if($setSpec) 
+            $select->where('set_spec = ?', $setSpec);
+        else
+            $select->where('set_spec IS NULL');
+        return $this->fetchObject($select);
+    }
 }

@@ -68,7 +68,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $schema = (string) $metadataFormat->schema;
                 foreach($maps as $mapClass => $mapSchema) {
                     if($mapSchema == $schema) {
-                        // Use the local-side metadata prefix for consistency.
+                        // Encode the class and prefix together with a pipe.
                         $availableMaps["$mapClass|$metadataPrefix"] = $metadataPrefix;
                         break;
                     }
@@ -145,12 +145,19 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $metadataClass = $metadataSpec[0];
         $metadataPrefix = $metadataSpec[1];
         
+        $harvest = $this->getTable('OaipmhHarvesterHarvest')->findUniqueHarvest($baseUrl, $setSpec);
+        
+        // If $harvest is not null, use the existing harvest record.
+        if(!$harvest) {
+            // There is no existing identical harvest, create a new entry.
+            $harvest = new OaipmhHarvesterHarvest;
+            $harvest->base_url        = $baseUrl;
+            $harvest->set_spec        = $setSpec;
+            $harvest->set_name        = $setName;
+            $harvest->set_description = $setDescription;
+        }
+        
         // Insert the set.
-        $harvest = new OaipmhHarvesterHarvest;
-        $harvest->base_url        = $baseUrl;
-        $harvest->set_spec        = $setSpec;
-        $harvest->set_name        = $setName;
-        $harvest->set_description = $setDescription;
         $harvest->metadata_prefix = $metadataPrefix;
         $harvest->metadata_class  = $metadataClass;
         $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;

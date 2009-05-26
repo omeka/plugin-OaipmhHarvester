@@ -57,9 +57,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
         if($harvest && $options) {     
             // Set an error handler method to record run-time warnings (non-fatal 
             // errors). Fatal and parse errors cannot be called in this way.
-            //set_error_handler(array($this, 'errorHandler'), E_WARNING);
-            error_reporting(E_ALL);
-            ini_set('display_errors', '1');
+            set_error_handler(array($this, 'errorHandler'), E_WARNING);
+            
             $this->_harvest = $harvest;
         
             $this->_setOptions($options);
@@ -200,11 +199,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $existingRecord = $this->_recordExists($record);
             $harvestedRecord = $this->harvestRecord($record);
             
+            // Cache the record for later use.
+            $this->_record = $record;
+            
             // Record has already been harvested
             if($existingRecord) {
                 // If datestamp has changed, update the record, otherwise ignore.
                 if($existingRecord->datestamp != $record->header->datestamp) {
-                    $this->updateItem($existingRecord->item_id,
+                    $this->updateItem($existingRecord,
                                       $harvestedRecord['elementTexts'],
                                       $harvestedRecord['fileMetadata']);
                 }
@@ -213,12 +215,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
             else $this->insertItem($harvestedRecord['itemMetadata'],
                                    $harvestedRecord['elementTexts'],
                                    $harvestedRecord['fileMetadata']);
-            
-            // Cache the record for later use.
-            $this->_record = $record;
-            
-            $this->harvestRecord($record);
-            
         }
         
         // If there is a resumption token, recurse this method.
@@ -243,6 +239,20 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $record->harvest_id = $this->_harvest->id;
         $record->item_id    = $item->id;
         $record->identifier = (string) $this->_record->header->identifier;
+        $record->datestamp  = (string) $this->_record->header->datestamp;
+        $record->save();
+    }
+    
+    /**
+     * Update a record in the database with information from this harvest.
+     * 
+     * @param OaipmhHarvesterRecord The model object corresponding to the record.
+     */
+    private function _updateRecord(OaipmhHarvesterRecord $record)
+    {   
+        //$record->harvest_id = $this->_harvest->id;
+        //$record->item_id    = $item->id;
+        //$record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
         $record->save();
     }
@@ -310,24 +320,30 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     final protected function insertCollection($metadata = array())
     {
-        // There must be a collection name, so if there is none, like when the 
-        // harvest is repository-wide, set it to the base URL.
-        if (!isset($metadata['name']) || !$metadata['name']) {
-            $metadata['name'] = $this->_harvest->base_url;
+        // If collection_id is not null, use the existing collection, do not
+        // create a new one.
+        if($this->_harvest->collection_id) {
+            $collection = get_db()->getTable('Collection')->find($collection_id);
         }
+        else {
+            // There must be a collection name, so if there is none, like when the 
+            // harvest is repository-wide, set it to the base URL.
+            if (!isset($metadata['name']) || !$metadata['name']) {
+                $metadata['name'] = $this->_harvest->base_url;
+            }
         
-        // The `collections` table does not allow NULL descriptions, so set to 
-        // an empty string. This is most likely a bug in Omeka's core.
-        if (!isset($metadata['description']) || !$metadata['description']) {
-            $metadata['description'] = '';
+            // The `collections` table does not allow NULL descriptions, so set to 
+            // an empty string. This is most likely a bug in Omeka's core.
+            if (!isset($metadata['description']) || !$metadata['description']) {
+                $metadata['description'] = '';
+            }
+        
+            $collection = insert_collection($metadata);
+        
+            // Remember to set the harvest's collection ID once it has been saved.
+            $this->_harvest->collection_id = $collection->id;
+            $this->_harvest->save();
         }
-        
-        $collection = insert_collection($metadata);
-        
-        // Remember to set the harvest's collection ID once it has been saved.
-        $this->_harvest->collection_id = $collection->id;
-        $this->_harvest->save();
-        
         return $collection;
     }
     
@@ -396,20 +412,18 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @see insert_item()
      * @see insert_files_for_item()
-     * @param mixed $itemId ID of item to update
+     * @param OaipmhHarvesterRecord $itemId ID of item to update
      * @param mixed $elementTexts The item's element texts
      * @param mixed $fileMetadata The item's file metadata
      * @return true
      */
-    final protected function updateItem($itemId, $elementTexts = array(), $fileMetadata = array())
+    final protected function updateItem($record, $elementTexts = array(), $fileMetadata = array())
     {
-        // Insert the item
-        $item = update_item($itemId, array('overwriteElementTexts' => true), $elementTexts);
+        // Update the item
+        $item = update_item($record->item_id, array('overwriteElementTexts' => true), $elementTexts);
         
-        // Insert the record after the item is saved. The idea here is that the 
-        // OaipmhHarvesterRecords table should only contain records that have 
-        // corresponding items.
-        //$this->_insertRecord($item);
+        // Update the datestamp stored in the database for this record.
+        $this->_updateRecord($record);
         /*
         // If there are files, insert one file at a time so the file objects can 
         // be released individually.

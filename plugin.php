@@ -38,7 +38,7 @@ add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
 add_plugin_hook('config', 'oaipmh_harvester_config');
 add_plugin_hook('define_acl', 'oaipmh_harvester_define_acl');
 
-add_plugin_hook('admin_append_to_items_show_secondary', 'expose_duplicates');
+add_plugin_hook('admin_append_to_items_show_secondary', 'oaipmh_harvester_expose_duplicates');
 
 /** Plugin filters */
 add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
@@ -203,7 +203,7 @@ function oaipmh_harvester_admin_navigation_main($nav)
  * Outputs any duplicate harvested records.
  * Appended to admin item show pages.
  */
-function expose_duplicates()
+function oaipmh_harvester_expose_duplicates()
 {
     $id = item('id');
     $recordTable = get_db()->getTable('OaipmhHarvesterRecord');

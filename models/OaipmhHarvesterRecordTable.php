@@ -39,4 +39,17 @@ class OaipmhHarvesterRecordTable extends Omeka_Db_Table
         $select->where('identifier = ?');
         return $this->fetchObjects($select, array($identifier));
     }
+    
+    /**
+     * Return records by item ID.
+     * 
+     * @param mixes $itemId Item ID
+     * @return OaipmhHarvesterRecord Record corresponding to item id.
+     */
+    public function findByItemId($itemId)
+    {
+        $select = $this->getSelect();
+        $select->where('item_id = ?');
+        return $this->fetchObject($select, array($itemId));
+    }
 }

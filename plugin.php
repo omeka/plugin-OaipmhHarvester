@@ -38,6 +38,8 @@ add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
 add_plugin_hook('config', 'oaipmh_harvester_config');
 add_plugin_hook('define_acl', 'oaipmh_harvester_define_acl');
 
+add_plugin_hook('admin_append_to_items_show_secondary', 'expose_duplicates');
+
 /** Plugin filters */
 add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
 
@@ -195,4 +197,37 @@ function oaipmh_harvester_admin_navigation_main($nav)
         $nav['OAI-PMH Harvester'] = uri('oaipmh-harvester');
     }
     return $nav;
+}
+
+/**
+ * Outputs any duplicate harvested records.
+ * Appended to admin item show pages.
+ */
+function expose_duplicates()
+{
+    $id = item('id');
+    $recordTable = get_db()->getTable('OaipmhHarvesterRecord');
+    $record = $recordTable->findByItemId($id);
+    $duplicates = $recordTable->findByOaiIdentifier($record->identifier);
+    
+    foreach($duplicates as $duplicate) {
+        if($duplicate->item_id == $id) continue;
+        $items[] = $duplicate->item_id;
+    }
+    
+    if(count($items) > 0) { ?>
+        <div id="harvester-duplicates" class="info-panel">
+        <h2>Duplicate Harvested Items</h2>
+        <ul>
+        <?php foreach($items as $itemId) {
+            $item = get_db()->getTable('Item')->find($itemId);
+            $uri = item_uri('show', $item); ?>
+            <li>
+            <?php echo "<a href=\"$uri\">Item $itemId</a>"; ?>
+            </li>
+            <?php release_object($item);
+        } ?>
+        </ul>
+        </div>
+    <?php }
 }

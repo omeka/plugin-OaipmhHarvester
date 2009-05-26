@@ -134,6 +134,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function harvestAction()
     {
+        // Only set on re-harvest
+        $harvest_id     = $_POST['harvest_id'];
+        
         $baseUrl        = $_POST['base_url'];
         // metadataSpec is of the form "class|prefix", explode on pipe to get
         // the individual items, 0 => class, 1 => prefix
@@ -145,24 +148,38 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $metadataClass = $metadataSpec[0];
         $metadataPrefix = $metadataSpec[1];
         
-        $harvest = $this->getTable('OaipmhHarvesterHarvest')->findUniqueHarvest($baseUrl, $setSpec);
-        
-        // If $harvest is not null, use the existing harvest record.
-        if(!$harvest) {
-            // There is no existing identical harvest, create a new entry.
-            $harvest = new OaipmhHarvesterHarvest;
-            $harvest->base_url        = $baseUrl;
-            $harvest->set_spec        = $setSpec;
-            $harvest->set_name        = $setName;
-            $harvest->set_description = $setDescription;
+        // If true, this is a re-harvest, all parameters will be the same
+        if($harvest_id) {
+            $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvest_id);
+            $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
+            $harvest->initiated       = date('Y:m:d H:i:s');
+            $harvest->save();
+            
+            // Set vars for flash message
+            $setSpec = $harvest->set_spec;
+            $baseUrl = $harvest->base_url;
+            $metadataPrefix = $harvest->metadata_prefix;
         }
+        else {
+            $harvest = $this->getTable('OaipmhHarvesterHarvest')->findUniqueHarvest($baseUrl, $setSpec);
         
-        // Insert the set.
-        $harvest->metadata_prefix = $metadataPrefix;
-        $harvest->metadata_class  = $metadataClass;
-        $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
-        $harvest->initiated       = date('Y:m:d H:i:s');
-        $harvest->save();
+            // If $harvest is not null, use the existing harvest record.
+            if(!$harvest) {
+                // There is no existing identical harvest, create a new entry.
+                $harvest = new OaipmhHarvesterHarvest;
+                $harvest->base_url        = $baseUrl;
+                $harvest->set_spec        = $setSpec;
+                $harvest->set_name        = $setName;
+                $harvest->set_description = $setDescription;
+            }
+        
+            // Insert the set.
+            $harvest->metadata_prefix = $metadataPrefix;
+            $harvest->metadata_class  = $metadataClass;
+            $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
+            $harvest->initiated       = date('Y:m:d H:i:s');
+            $harvest->save();
+        }
         
         // Set the command arguments.
         $phpCommandPath    = get_option('oaipmh_harvester_php_path');

@@ -50,6 +50,7 @@ head($head);
                 <th>Set Name</th>
                 <th>Status</th>
                 <th>PID</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -67,6 +68,15 @@ head($head);
                 <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/kill');?>">
                     <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
                     <?php echo $this->formSubmit('submit_kill', 'Kill Process'); ?>
+                    </form>
+                </td>
+                <?php else: ?>
+                <td></td>
+                <?php endif; ?>
+                <?php if ($harvest->status == OaipmhHarvesterHarvest::STATUS_COMPLETED): ?>
+                <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest');?>">
+                    <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
+                    <?php echo $this->formSubmit('submit_reharvest', 'Re-Harvest'); ?>
                     </form>
                 </td>
                 <?php endif; ?>

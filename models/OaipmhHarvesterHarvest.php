@@ -33,5 +33,6 @@ class OaipmhHarvesterHarvest extends Omeka_Record
     public $status_messages;
     public $initiated;
     public $completed;
+    public $start_from;
     public $pid;
 }

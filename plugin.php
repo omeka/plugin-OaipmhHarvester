@@ -83,6 +83,7 @@ function oaipmh_harvester_install()
         `status_messages` text collate utf8_unicode_ci NULL,
         `initiated` datetime default NULL,
         `completed` datetime default NULL,
+        `start_from` datetime default NULL,
         `pid` int(10) unsigned default NULL,
         PRIMARY KEY  (`id`)
     ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
@@ -228,6 +229,6 @@ function oaipmh_harvester_expose_duplicates()
             <?php release_object($item);
         } ?>
         </ul>
-        </div>
-    <?php }
+        </div> <?php
+    }
 }

@@ -25,6 +25,13 @@ abstract class OaipmhHarvester_Harvest_Abstract
     const MESSAGE_CODE_ERROR = 2;
     
     /**
+     * Date format for OAI-PMH requests.
+     * Only use day-level granularity for maximum compatibility with
+     * repositories.
+     */
+    const OAI_DATE_FORMAT = 'Y-m-d';
+    
+    /**
      * @var OaipmhHarvesterHarvest The OaipmhHarvesterHarvest object model.
      */
     private $_harvest;
@@ -152,6 +159,18 @@ abstract class OaipmhHarvester_Harvest_Abstract
     }
     
     /**
+     * Converts the given MySQL datetime to an OAI datestamp, for
+     * sending dates in OAI-PMH requests.
+     *
+     * @param string $datestamp MySQL datetime
+     * @return string OAI-PMH datestamp
+     */
+    private function _datetimeToOai($datestamp)
+    {
+        return gmdate(self::OAI_DATE_FORMAT, strtotime($datestamp));
+    }
+    
+    /**
      * Recursive method that loops through all requested records
      * 
      * This method hands off mapping to the class that extends off this one and 
@@ -170,13 +189,25 @@ abstract class OaipmhHarvester_Harvest_Abstract
         if ($resumptionToken) {
             // Harvest a list reissue. 
             $requestArguments['resumptionToken'] = $resumptionToken;
-        } else if ($this->_harvest->set_spec) {
-            // Harvest a set.
-            $requestArguments['set']            = $this->_harvest->set_spec;
-            $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
-        } else {
-            // Harvest a repository.
-            $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
+        } 
+        else {
+            if ($this->_harvest->set_spec) {
+                // Harvest a set.
+                $requestArguments['set']            = $this->_harvest->set_spec;
+                $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
+            } 
+            else {
+                // Harvest a repository.
+                $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
+            }
+
+            // Perform date-selective harvesting if a "from" date is
+            // specified.
+            if(($startFrom = $this->_harvest->start_from)) {
+                $oaiDate = $this->_datetimeToOai($startFrom);
+                $requestArguments['from'] = $oaiDate;
+                $this->addStatusMessage("Resuming harvest from $oaiDate.", self::MESSAGE_CODE_NOTICE);
+            }
         }
         
         // Cache the OaipmhHarvester_Xml object.
@@ -186,8 +217,17 @@ abstract class OaipmhHarvester_Harvest_Abstract
         if ($this->_oaipmhHarvesterXml->isError()) {
             $errorCode = (string) $this->_oaipmhHarvesterXml->getErrorCode();
             $error     = (string) $this->_oaipmhHarvesterXml->getError();
-            $statusMessage = "$errorCode: $error";
-            throw new Exception($statusMessage);
+            
+            // Especially with selective harvesting, no records is not
+            // necessarily an error.  Print a notice and exit.
+            if($errorCode = 'noRecordsMatch') {
+                $this->addStatusMessage("The repository returned no records.", self::MESSAGE_CODE_NOTICE);
+                return;
+            }
+            else {
+                $statusMessage = "$errorCode: $error";
+                throw new Exception($statusMessage);
+            }
         }
 
         // Iterate through the records and hand off the mapping to the classes 

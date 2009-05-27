@@ -156,11 +156,18 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $setSpec = $harvest->set_spec;
             $baseUrl = $harvest->base_url;
             $metadataPrefix = $harvest->metadata_prefix;
+            
+            // Only on successfully-completed harvests: use date-selective
+            // harvesting to limit results.
+            if($harvest->status == OaipmhHarvesterHarvest::STATUS_COMPLETED)
+                $harvest->start_from = $harvest->initiated;
+            else 
+                $harvest->start_from = null;
         }
         else {
+            // If $harvest is not null, use the existing harvest record.
             $harvest = $this->getTable('OaipmhHarvesterHarvest')->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
         
-            // If $harvest is not null, use the existing harvest record.
             if(!$harvest) {
                 // There is no existing identical harvest, create a new entry.
                 $harvest = new OaipmhHarvesterHarvest;
@@ -171,12 +178,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $harvest->metadata_prefix = $metadataPrefix;
                 $harvest->metadata_class  = $metadataClass;
             }
-        
-            // Insert the set.
-            $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
-            $harvest->initiated       = date('Y:m:d H:i:s');
-            $harvest->save();
         }
+            
+        // Insert the harvest.
+        $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
+        $harvest->initiated       = date('Y:m:d H:i:s');
+        $harvest->save();
         
         // Set the command arguments.
         $phpCommandPath    = get_option('oaipmh_harvester_php_path');
@@ -197,6 +204,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         } else {
             $message = "Repository \"$baseUrl\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
         }
+        if($harvest->start_from)
+            $message = $message." Harvesting is continued from $harvest->start_from .";
+        
         $this->flashSuccess($message);
         
         $this->redirect->goto('index');

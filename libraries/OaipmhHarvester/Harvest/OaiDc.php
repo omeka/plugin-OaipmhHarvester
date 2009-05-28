@@ -1,4 +1,17 @@
 <?php
+/**
+ * @package OaipmhHarvester
+ * @subpackage Libraries
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
+
+/**
+ * Metadata format map for the required oai_dc Dublin Core format
+ *
+ * @package OaipmhHarvester
+ * @subpackage Libraries
+ */
 class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
 {
     /*  XML schema and OAI prefix for the format represented by this class.
@@ -47,8 +60,6 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
         return array('itemMetadata' => $itemMetadata,
                      'elementTexts' => $elementTexts,
                      'fileMetadata' => array());
-        
-        //$this->insertItem($itemMetadata, $elementTexts);
     }
 
     public function getMetadataSchema()

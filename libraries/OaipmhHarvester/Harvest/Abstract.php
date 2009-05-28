@@ -292,9 +292,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     private function _updateRecord(OaipmhHarvesterRecord $record)
     {   
-        //$record->harvest_id = $this->_harvest->id;
-        //$record->item_id    = $item->id;
-        //$record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
         $record->save();
     }

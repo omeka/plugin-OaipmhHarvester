@@ -1,4 +1,18 @@
 <?php
+/**
+ * @package OaipmhHarvester
+ * @subpackage Libraries
+ * @copyright Copyright (c) 2009 Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ */
+
+/**
+ * Metadata format map for CDWA Lite.
+ *
+ * @package OaipmhHarvester
+ * @subpackage Libraries
+ * @link http://www.getty.edu/research/conducting_research/standards/cdwa/cdwalite.html
+ */
 class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
 {
     /*	XML schema and OAI prefix for the format represented by this class.
@@ -300,11 +314,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
             }
         }
         
-//var_dump($this->_elementTexts);
-//print_r($this->_fileMetadata);
-        
         // Insert the item and files.
-        //$this->insertItem($itemMetadata, $this->_elementTexts, $this->_fileMetadata);
         $harvestedRecord = array('itemMetadata' => $itemMetadata,
                                  'elementTexts' => $this->_elementTexts,
                                  'fileMetadata' => $this->_fileMetadata);
@@ -314,7 +324,6 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         $this->_fileMetadata = array();
         
         return $harvestedRecord;
-//exit;
     }
     
     // Wrapper method for buildElementTexts() that sets properties common to all 

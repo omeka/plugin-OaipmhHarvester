@@ -19,6 +19,8 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
 	    These constants are required for all maps. */
     const METADATA_SCHEMA = 'http://www.getty.edu/CDWA/CDWALite/CDWALite-xsd-public-v1-1.xsd';
     const METADATA_PREFIX = 'cdwalite';
+    
+    const CDWALITE_NAMESPACE = 'http://www.getty.edu/CDWA/CDWALite';
 	
     protected $collection;
     protected $_elementTexts = array();
@@ -53,7 +55,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                               'featured'      => false);
         $cdwalite = $record
                   ->metadata
-                  ->children('cdwalite', true)
+                  ->children(self::CDWALITE_NAMESPACE)
                   ->cdwaliteWrap
                   ->cdwalite;
         

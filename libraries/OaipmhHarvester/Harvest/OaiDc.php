@@ -19,6 +19,9 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
     const METADATA_SCHEMA = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd';
     const METADATA_PREFIX = 'oai_dc';
     
+    const OAI_DC_NAMESPACE = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
+    const DUBLIN_CORE_NAMESPACE = 'http://purl.org/dc/elements/1.1/';
+    
     protected $collection;
     
     protected function beforeHarvest()
@@ -40,8 +43,8 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
         
         $dcMetadata = $record
                     ->metadata
-                    ->children('oai_dc', true)
-                    ->children('dc', true);
+                    ->children(self::OAI_DC_NAMESPACE)
+                    ->children(self::DUBLIN_CORE_NAMESPACE);
         
         $elementTexts = array();
         $elements = array('contributor', 'coverage', 'creator', 

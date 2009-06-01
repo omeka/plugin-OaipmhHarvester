@@ -8,7 +8,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 $head = array('body_class' => 'oaipmh-harvester primary', 
-              'title'      => 'OAI-PMH Harvester | Sets');
+              'title'      => 'OAI-PMH Harvester | Harvest');
 head($head);
 ?>
 
@@ -23,16 +23,18 @@ head($head);
     this repository. You will not be able to harvest from this repository.</div>
     <?php endif; ?>
     
-    <h2>Sets in data provider: <?php echo $this->baseUrl; ?></h2>
-    <!-- This interface needs to be vastly improved at some point. -->
-    <p>Harvest the entire repository:
+    <h2>Data provider: <?php echo $this->baseUrl; ?></h2>
+    <h3>Harvest the entire repository:</h3>
+    <p>
     <form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
         <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
         <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
         <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
     </form>
+    <br />
     </p>
-
+    
+    <h3>Harvest a set:</h3>
     <table>
         <thead>
             <tr>

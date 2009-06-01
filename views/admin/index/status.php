@@ -54,7 +54,7 @@ head($head);
         </tr>
         <tr>
             <td>Status Messages</td>
-            <td><?php echo nl2br($this->harvest->status_messages); ?></td>
+            <td><?php echo html_escape($this->harvest->status_messages); ?></td>
         </tr>
     </table>
     <?php if ($this->harvest->status != OaipmhHarvesterHarvest::STATUS_DELETED): ?>

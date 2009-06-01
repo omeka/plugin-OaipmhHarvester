@@ -21,14 +21,22 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
     const METADATA_PREFIX = 'cdwalite';
     
     const CDWALITE_NAMESPACE = 'http://www.getty.edu/CDWA/CDWALite';
-	
+    
+    /**
+     * Collection to insert items into.
+     * @var Collection
+     */
     protected $collection;
+    
     protected $_elementTexts = array();
     protected $_fileMetadata = array();
     
     // Flag to determine if qualified Dublin Core elements are available.
     protected $_qualified = true;
     
+    /**
+     * Actions to be carried out before the harvest of any items begins.
+     */
     protected function beforeHarvest()
     {
         // Detect if the Dublin Core Extended plugin is installed. If not, add a 
@@ -47,7 +55,12 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         $this->collection = $this->insertCollection($collectionMetadata);
     }
     
-    // Mapping goes here, per record.
+    /**
+     * Harvest one record.
+     *
+     * @param SimpleXMLIterator $record XML metadata record
+     * @return array Array of item-level, element texts and file metadata.
+     */
     protected function harvestRecord($record)
     {
         $itemMetadata = array('collection_id' => $this->collection->id, 
@@ -328,18 +341,33 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         return $harvestedRecord;
     }
     
-    // Wrapper method for buildElementTexts() that sets properties common to all 
-    // CDWA Lite elements.
+    /** 
+     * Wrapper method for buildElementTexts() that sets properties common to
+     * all CDWA Lite elements.
+     *
+     * @param string $element Element name
+     * @param string $text Element text
+     */
     protected function _buildElementTexts($element, $text)
     {
         $this->_elementTexts = $this->buildElementTexts($this->_elementTexts, 'Dublin Core', $element, $text);
     }
 
+    /**
+     * Return the metadata schema URI.
+     *
+     * @return string Schema URI
+     */
 	public function getMetadataSchema()
 	{
 		return self::METADATA_SCHEMA;
 	}
 	
+	/**
+	 * Return the metadata prefix.
+	 *
+	 * @return string Metadata prefix
+	 */
 	public function getMetadataPrefix()
 	{
 		return self::METADATA_PREFIX;

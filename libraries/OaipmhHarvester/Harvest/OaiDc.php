@@ -18,12 +18,19 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
         These constants are required for all maps. */
     const METADATA_SCHEMA = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd';
     const METADATA_PREFIX = 'oai_dc';
-    
+
     const OAI_DC_NAMESPACE = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
     const DUBLIN_CORE_NAMESPACE = 'http://purl.org/dc/elements/1.1/';
-    
+
+    /**
+     * Collection to insert items into.
+     * @var Collection
+     */
     protected $collection;
     
+    /**
+     * Actions to be carried out before the harvest of any items begins.
+     */
     protected function beforeHarvest()
     {
         $harvest = $this->getHarvest();
@@ -34,7 +41,12 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
         $this->collection = $this->insertCollection($collectionMetadata);
     }
     
-    // Mapping goes here, per record.
+    /**
+     * Harvest one record.
+     *
+     * @param SimpleXMLIterator $record XML metadata record
+     * @return array Array of item-level, element texts and file metadata.
+     */
     protected function harvestRecord($record)
     {
         $itemMetadata = array('collection_id' => $this->collection->id, 
@@ -64,12 +76,22 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
                      'elementTexts' => $elementTexts,
                      'fileMetadata' => array());
     }
-
+    
+    /**
+     * Return the metadata schema URI.
+     *
+     * @return string Schema URI
+     */
     public function getMetadataSchema()
     {
         return self::METADATA_SCHEMA;
     }
     
+    /**
+	 * Return the metadata prefix.
+	 *
+	 * @return string Metadata prefix
+	 */
     public function getMetadataPrefix()
     {
         return self::METADATA_PREFIX;

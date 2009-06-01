@@ -245,6 +245,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             if ($record->item_id) {
                 $item = $this->getTable('Item')->find($record->item_id);
                 $item->delete();
+                $record->delete();
             }
         }
         
@@ -252,6 +253,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         if ($harvest->collection_id) {
             $collection = $this->getTable('Collection')->find($harvest->collection_id);
             $collection->delete();
+            $harvest->collection_id = null;
         }
         
         $harvest->status = OaipmhHarvesterHarvest::STATUS_DELETED;

@@ -283,6 +283,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
         $record->save();
+        
+        release_object($record);
     }
     
     /**

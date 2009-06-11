@@ -196,9 +196,10 @@ function oaipmh_harvester_before_delete_item(Item $item)
     $id = $item->id;
     $recordTable = get_db()->getTable('OaipmhHarvesterRecord');
     $record = $recordTable->findByItemId($id);
-    
-    $record->delete();
-    release_object($record);
+    if($record) {
+        $record->delete();
+        release_object($record);
+    }
 }
 
 /**

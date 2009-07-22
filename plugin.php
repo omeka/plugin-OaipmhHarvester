@@ -120,6 +120,7 @@ function oaipmh_harvester_uninstall()
 {
     delete_option('oaipmh_harvester_plugin_version');
     delete_option('oaipmh_harvester_php_path');
+    delete_option('oaipmh_harvester_memory_limit');
     
     $db = get_db();
     $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_harvests`;";

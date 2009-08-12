@@ -262,6 +262,10 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $harvest->status_messages = strlen($harvest->status_messages) == 0 
                                   ? $statusMessage 
                                   : "\n\n" . $statusMessage;
+        // Reset the harvest start_from time if an error occurs during 
+        // processing. Since there's no way to know exactly when the 
+        // error occured, re-harvests need to start from the beginning.
+        $harvest->start_from = null;
         $harvest->save();
         
         $this->flash('All items created for the harvest were deleted.');

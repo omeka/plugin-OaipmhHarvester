@@ -91,6 +91,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
                 $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_ERROR;
                 $this->_harvest->pid = null;
+                // Reset the harvest start_from time if an error occurs during 
+                // processing. Since there's no way to know exactly when the 
+                // error occured, re-harvests need to start from the beginning.
+                $this->_harvest->start_from = null;
                 $this->_harvest->save();
             }
         
@@ -220,11 +224,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
             
             // Especially with selective harvesting, no records is not
             // necessarily an error.  Print a notice and exit.
-            if($errorCode = 'noRecordsMatch') {
+            if ($errorCode == 'noRecordsMatch') {
                 $this->addStatusMessage("The repository returned no records.", self::MESSAGE_CODE_NOTICE);
                 return;
-            }
-            else {
+            } else {
                 $statusMessage = "$errorCode: $error";
                 throw new Exception($statusMessage);
             }

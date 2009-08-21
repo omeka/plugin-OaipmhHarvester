@@ -7,9 +7,6 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 
-/** Plugin version number */
-define('OAIPMH_HARVESTER_PLUGIN_VERSION', get_plugin_ini('OaipmhHarvester', 'version'));
-
 /** Path to plugin directory */
 define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 
@@ -52,9 +49,7 @@ add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
  * @return void
  */
 function oaipmh_harvester_install()
-{
-    set_option('oaipmh_harvester_plugin_version', OAIPMH_HARVESTER_PLUGIN_VERSION);
-    
+{    
     $db = get_db();
     
     /* Harvests/collections:
@@ -118,7 +113,6 @@ function oaipmh_harvester_install()
  */
 function oaipmh_harvester_uninstall()
 {
-    delete_option('oaipmh_harvester_plugin_version');
     delete_option('oaipmh_harvester_php_path');
     delete_option('oaipmh_harvester_memory_limit');
     

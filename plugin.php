@@ -34,6 +34,7 @@ add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
 add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
 add_plugin_hook('config', 'oaipmh_harvester_config');
 add_plugin_hook('define_acl', 'oaipmh_harvester_define_acl');
+add_plugin_hook('admin_append_to_plugin_uninstall_message', 'oaipmh_harvester_admin_append_to_plugin_uninstall_message');
 
 add_plugin_hook('before_delete_item', 'oaipmh_harvester_before_delete_item');
 add_plugin_hook('admin_append_to_items_show_secondary', 'oaipmh_harvester_expose_duplicates');
@@ -113,7 +114,6 @@ function oaipmh_harvester_install()
  */
 function oaipmh_harvester_uninstall()
 {
-    delete_option('oaipmh_harvester_php_path');
     delete_option('oaipmh_harvester_memory_limit');
     
     $db = get_db();
@@ -121,6 +121,13 @@ function oaipmh_harvester_uninstall()
     $db->query($sql);
     $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_records`;";
     $db->query($sql);
+}
+
+function oaipmh_harvester_admin_append_to_plugin_uninstall_message()
+{
+    echo '<p>While you will not lose the items and collections created by your 
+    harvests, you will lose all harvest-specific metadata and the ability to 
+    re-harvest.</p>';
 }
 
 /**
@@ -132,15 +139,6 @@ function oaipmh_harvester_uninstall()
  */
 function oaipmh_harvester_config_form()
 {
-    if (!$path = get_option('oaipmh_harvester_php_path')) {
-        // Get the path to the PHP-CLI command. This does not account for 
-        // servers without a PHP CLI or those with a different command name for 
-        // PHP, such as "php5".
-        $command = 'which php 2>&0';
-        $lastLineOutput = exec($command, $output, $returnVar);
-        $path = $returnVar == 0 ? trim($lastLineOutput) : '';
-    }
-    
     if (!$memoryLimit = get_option('oaipmh_harvester_memory_limit')) {
         $memoryLimit = ini_get('memory_limit');
     }
@@ -157,12 +155,6 @@ function oaipmh_harvester_config_form()
  */
 function oaipmh_harvester_config()
 {
-    $path = realpath($_POST['oaipmh_harvester_php_path']);
-    if (!$path) {
-        throw new Exception('Error: The path to PHP-CLI is invalid.');
-    }
-    
-    set_option('oaipmh_harvester_php_path', $path);
     set_option('oaipmh_harvester_memory_limit', $_POST['oaipmh_harvester_memory_limit']);
 }
 

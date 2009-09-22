@@ -186,7 +186,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $harvest->save();
         
         // Set the command arguments.
-        $phpCommandPath    = get_option('oaipmh_harvester_php_path');
+        $phpCommandPath    = ProcessDispatcher::getPHPCliPath();
         $bootstrapFilePath = $this->_getBootstrapFilePath();
         $harvestId         = escapeshellarg($harvest->id);
         

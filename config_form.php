@@ -9,16 +9,6 @@
  */
 ?>
 <div class="field">
-    <label for="oaipmh_harvester_php_path">Path to PHP-CLI</label>
-    <div class="inputs">
-        <?php echo __v()->formText('oaipmh_harvester_php_path', $path, null);?>
-        <p class="explanation">Path to your server's PHP-CLI command. The PHP 
-        version must correspond to normal Omeka requirements. Some web hosts use PHP 
-        4.x for their default PHP-CLI, but many provide an alternative path to a 
-        PHP-CLI 5 binary. Check with your web host for more information.</p>
-    </div>
-</div>
-<div class="field">
     <label for="oaipmh_harvester_memory_limit">Memory Limit</label>
     <div class="inputs">
         <?php echo __v()->formText('oaipmh_harvester_memory_limit', $memoryLimit, null);?>

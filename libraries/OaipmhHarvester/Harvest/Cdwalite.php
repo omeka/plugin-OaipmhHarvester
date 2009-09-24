@@ -66,11 +66,12 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         $itemMetadata = array('collection_id' => $this->collection->id, 
                               'public'        => true, 
                               'featured'      => false);
-        $cdwalite = $record
-                  ->metadata
-                  ->children(self::CDWALITE_NAMESPACE)
-                  ->cdwaliteWrap
-                  ->cdwalite;
+                              
+        if (isset($record->metadata->children(self::CDWALITE_NAMESPACE)->cdwaliteWrap->cdwalite)) {
+            $cdwalite = $record->metadata->children(self::CDWALITE_NAMESPACE)->cdwaliteWrap->cdwalite;
+        } else {
+            $cdwalite = $record->metadata->children(self::CDWALITE_NAMESPACE)->cdwalite;
+        }
         
         // CDWA Lite to Dublin Core crosswalk:
         // http://www.getty.edu/research/conducting_research/standards/intrometadata/crosswalks.html

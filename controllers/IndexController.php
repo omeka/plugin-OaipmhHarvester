@@ -44,7 +44,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         try {
             $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
         } catch (Exception $e) {
-            $this->flash($e->getMessage());
+            $this->flashError($e->getMessage());
             $this->redirect->goto('index');
         }
         
@@ -98,12 +98,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $error     = (string) $oaipmh->getError();
             $errorCode = (string) $oaipmh->getErrorCode();
             
-            // If the error code is "noSetHierarchy" set the sets to false to 
+            // If the error code is "noSetHierarchy" set the sets to an empty array to 
             // indicate that the repository does not have a set hierarchy.
             if ($errorCode == OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
-                $sets = false;
+                $sets = array();
             } else {
-                $this->flash("$errorCode: $error");
+                $this->flashError("$errorCode: $error");
                 $this->redirect->goto('index');
             }
             
@@ -268,7 +268,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $harvest->start_from = null;
         $harvest->save();
         
-        $this->flash('All items created for the harvest were deleted.');
+        $this->flashSuccess('All items created for the harvest were deleted.');
         
         $this->redirect->goto('index');
         exit;
@@ -297,7 +297,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                                              ? $statusMessage 
                                              : "\n\n" . $statusMessage;
                     $harvest->save(); 
-                    $this->flash("Harvest process $pid was killed.");
+                    $this->flashSuccess("Harvest process $pid was killed.");
                }
         }
         $this->redirect->goto('index');

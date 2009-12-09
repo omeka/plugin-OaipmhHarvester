@@ -23,7 +23,7 @@ head($head);
     this repository. You will not be able to harvest from this repository.</div>
     <?php endif; ?>
     
-    <h2>Data provider: <?php echo $this->baseUrl; ?></h2>
+    <h2>Data provider: <?php echo html_escape($this->baseUrl); ?></h2>
     <h3>Harvest the entire repository:</h3>
     <p>
     <form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
@@ -35,6 +35,7 @@ head($head);
     </p>
     
     <h3>Harvest a set:</h3>
+    <?php if ($this->sets): ?>
     <table>
         <thead>
             <tr>
@@ -49,8 +50,8 @@ head($head);
     <?php $setDc = @ $set->setDescription->children('oai_dc', true)->children('dc', true); ?>
             <tr>
                 <td><strong><?php echo wordwrap($set->setSpec, 20, '<br />', true); ?></strong></td>
-                <td><?php echo $set->setName; ?></td>
-                <td><?php echo @ $setDc->description; ?></td>
+                <td><?php echo html_escape($set->setName); ?></td>
+                <td><?php echo @ html_escape($setDc->description); ?></td>
                 <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
                 <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
                 <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
@@ -63,6 +64,9 @@ head($head);
     <?php endforeach; ?>
         </tbody>
     </table>
+    <?php else: ?>
+        <p>This repository does not allow you to harvest individual sets.</p>
+    <?php endif; ?>
     <?php if ($this->resumptionToken): ?>
     <div>
         <form method="post">

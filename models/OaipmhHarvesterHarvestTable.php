@@ -22,7 +22,7 @@ class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
      */
     public function findAllHarvests()
     {
-        $select = $this->getSelect()->order('id');
+        $select = $this->getSelect()->order('id DESC');
         return $this->fetchObjects($select);
     }
     
@@ -43,6 +43,7 @@ class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
             $select->where('set_spec = ?', $setSpec);
         else
             $select->where('set_spec IS NULL');
+                
         return $this->fetchObject($select);
     }
 }

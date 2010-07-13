@@ -13,20 +13,6 @@ define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 /** Path to plugin maps directory */
 define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
                                         . '/libraries/OaipmhHarvester/Harvest');
-/** OaipmhHarvester_Xml (library) */
-require_once 'OaipmhHarvester/Xml.php';
-
-/** OaipmhHarvesterHarvest (model) */
-require_once 'OaipmhHarvesterHarvest.php';
-
-/** OaipmhHarvesterHarvestTable (model) */
-require_once 'OaipmhHarvesterHarvestTable.php';
-
-/** OaipmhHarvesterRecord (model) */
-require_once 'OaipmhHarvesterRecord.php';
-
-/** OaipmhHarvesterRecordTable (model) */
-require_once 'OaipmhHarvesterRecordTable.php';
 
 /** Plugin hooks */
 add_plugin_hook('install', 'oaipmh_harvester_install');

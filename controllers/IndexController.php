@@ -90,33 +90,39 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $requestArguments['resumptionToken'] = $_POST['resumption_token'];
         }
         
-        $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
+        try {
+            $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
         
-        // Handle returned errors, such as "noSetHierarchy". For a data provider 
-        // that has no set hierarchy, see: http://solarphysics.livingreviews.org/register/oai
-        if ($oaipmh->isError()) {
-            $error     = (string) $oaipmh->getError();
-            $errorCode = (string) $oaipmh->getErrorCode();
+            // Handle returned errors, such as "noSetHierarchy". For a data provider 
+            // that has no set hierarchy, see: http://solarphysics.livingreviews.org/register/oai
+            if ($oaipmh->isError()) {
+                $error     = (string) $oaipmh->getError();
+                $errorCode = (string) $oaipmh->getErrorCode();
             
-            // If the error code is "noSetHierarchy" set the sets to an empty array to 
-            // indicate that the repository does not have a set hierarchy.
-            if ($errorCode == OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
-                $sets = array();
+                // If the error code is "noSetHierarchy" set the sets to an empty array to 
+                // indicate that the repository does not have a set hierarchy.
+                if ($errorCode == OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
+                    $sets = array();
+                } else {
+                    $this->flashError("$errorCode: $error");
+                    $this->redirect->goto('index');
+                }
+            
+            // If no error was returned, it is a valid ListSets response.
             } else {
-                $this->flashError("$errorCode: $error");
-                $this->redirect->goto('index');
+                $sets = $oaipmh->getOaipmh()->ListSets->set;
             }
             
-        // If no error was returned, it is a valid ListSets response.
-        } else {
-            $sets = $oaipmh->getOaipmh()->ListSets->set;
-        }
-        
-        // Set the resumption token, if any.
-        if (isset($oaipmh->getOaipmh()->ListSets->resumptionToken)) {
-            $resumptionToken = $oaipmh->getOaipmh()->ListSets->resumptionToken;
-        } else {
-            $resumptionToken = false;
+            // Set the resumption token, if any.
+            if (isset($oaipmh->getOaipmh()->ListSets->resumptionToken)) {
+                $resumptionToken = $oaipmh->getOaipmh()->ListSets->resumptionToken;
+            } else {
+                $resumptionToken = false;
+            }
+        } catch(Exception $e) {
+            // If we're here, the provider didn't even respond with valid XML.
+            // Try to continue with no sets.
+            $sets = array();
         }
         
         // Set the variables to the view object.

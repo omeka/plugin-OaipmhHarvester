@@ -64,8 +64,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         if (isset($oaipmh->getOaipmh()->ListMetadataFormats)) {
             $metadataFormats = $oaipmh->getOaipmh()->ListMetadataFormats->metadataFormat;
             foreach ($metadataFormats as $metadataFormat) {
-                $metadataPrefix = (string) $metadataFormat->metadataPrefix;
-                $schema = (string) $metadataFormat->schema;
+                $metadataPrefix = trim((string) $metadataFormat->metadataPrefix);
+                $schema = trim((string) $metadataFormat->schema);
                 foreach($maps as $mapClass => $mapSchema) {
                     if($mapSchema == $schema) {
                         // Encode the class and prefix together with a pipe.

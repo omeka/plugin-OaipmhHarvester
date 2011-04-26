@@ -27,7 +27,10 @@ class OaipmhHarvester_Xml
      * @var SimpleXMLIterator The OAI-PMH object
      */
     private $oaipmh;
-    
+
+    private $_baseUrl;
+    private $_requestArguments = array();
+
     /**
      * Class constructor
      * 
@@ -39,12 +42,8 @@ class OaipmhHarvester_Xml
      */
     public function __construct($baseUrl, array $requestArguments)
     {
-        $requestUrl = $this->getRequestUrl($baseUrl, $requestArguments);
-        // Set an arbitrary user agent to circumvent some request restrictions.
-        ini_set('user_agent', 'Omeka OAI-PMH Harvester/' . OAIPMH_HARVESTER_PLUGIN_VERSION); 
-        $requestContent = file_get_contents($requestUrl);
-        $this->oaipmh = new SimpleXMLIterator($requestContent);
-        ini_restore('user_agent');
+        $this->_baseUrl = $baseUrl;
+        $this->_requestArguments = $requestArguments;
     }
     
     /**
@@ -69,6 +68,9 @@ class OaipmhHarvester_Xml
      */
     public function getOaipmh()
     {
+        if (!$this->oaipmh) {
+            $this->oaipmh = $this->_request();
+        }
         return $this->oaipmh;
     }
     
@@ -141,5 +143,15 @@ class OaipmhHarvester_Xml
             }
         }
         return false;
+    }
+
+    private function _request()
+    {
+        $requestUrl = $this->getRequestUrl($this->_baseUrl, $this->_requestArguments);
+        // Set an arbitrary user agent to circumvent some request restrictions.
+        ini_set('user_agent', 'Omeka OAI-PMH Harvester/' . OAIPMH_HARVESTER_PLUGIN_VERSION); 
+        $requestContent = file_get_contents($requestUrl);
+        ini_restore('user_agent');
+        return new SimpleXMLIterator($requestContent);
     }
 }

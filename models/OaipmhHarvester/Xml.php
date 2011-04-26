@@ -81,7 +81,7 @@ class OaipmhHarvester_Xml
      */
     public function isError()
     {
-        return isset($this->oaipmh->error);
+        return (boolean)$this->getError();
     }
     
     /**
@@ -91,7 +91,7 @@ class OaipmhHarvester_Xml
      */
     public function getError()
     {
-        return $this->oaipmh->error;
+        return $this->getOaipmh()->error;
     }
     
     /**
@@ -101,7 +101,7 @@ class OaipmhHarvester_Xml
      */
     public function getErrorCode()
     {
-        return $this->oaipmh->error->attributes()->code;
+        return $this->getError()->attributes()->code;
     }
     
     /**
@@ -111,7 +111,7 @@ class OaipmhHarvester_Xml
      */
     public function getRecords()
     {
-        return $this->oaipmh->ListRecords->record;
+        return $this->getOaipmh()->ListRecords->record;
     }
     
     /**
@@ -136,8 +136,8 @@ class OaipmhHarvester_Xml
      */
     public function getResumptionToken()
     {
-        if (isset($this->oaipmh->ListRecords->resumptionToken)) {
-            $resumptionToken = (string) $this->oaipmh->ListRecords->resumptionToken;
+        if (isset($this->getOaipmh()->ListRecords->resumptionToken)) {
+            $resumptionToken = (string) $this->getOaipmh()->ListRecords->resumptionToken;
             if (!empty($resumptionToken)) {
                 return $resumptionToken;
             }

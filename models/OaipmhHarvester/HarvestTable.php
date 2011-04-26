@@ -12,7 +12,7 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
+class OaipmhHarvester_HarvestTable extends Omeka_Db_Table
 {
     /**
      * Return all harvests.

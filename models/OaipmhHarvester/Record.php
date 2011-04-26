@@ -12,7 +12,7 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvesterRecord extends Omeka_Record
+class OaipmhHarvester_Record extends Omeka_Record
 {
     public $id;
     public $harvest_id;

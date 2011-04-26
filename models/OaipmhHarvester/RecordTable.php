@@ -12,13 +12,13 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvesterRecordTable extends Omeka_Db_Table
+class OaipmhHarvester_RecordTable extends Omeka_Db_Table
 {
     /**
      * Return records by harvest ID.
      * 
      * @param int $harvsetId
-     * @return array An array of OaipmhHarvesterRecord objects.
+     * @return array An array of OaipmhHarvester_Record objects.
      */
     public function findByHarvestId($harvestId)
     {
@@ -31,7 +31,7 @@ class OaipmhHarvesterRecordTable extends Omeka_Db_Table
      * Return records by OAI-PMH identifier.
      * 
      * @param string $identifier OAI-PMH identifier
-     * @return array An array of OaipmhHarvesterRecord objects.
+     * @return array An array of OaipmhHarvester_Record objects.
      */
     public function findByOaiIdentifier($identifier)
     {
@@ -44,7 +44,7 @@ class OaipmhHarvesterRecordTable extends Omeka_Db_Table
      * Return records by item ID.
      * 
      * @param mixes $itemId Item ID
-     * @return OaipmhHarvesterRecord Record corresponding to item id.
+     * @return OaipmhHarvester_Record Record corresponding to item id.
      */
     public function findByItemId($itemId)
     {

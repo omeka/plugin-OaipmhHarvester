@@ -14,7 +14,7 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
         }
         
         // Set the set.
-        $harvest = $this->_db->getTable('OaipmhHarvesterHarvest')->find($this->_harvestId);
+        $harvest = $this->_db->getTable('OaipmhHarvester_Harvest')->find($this->_harvestId);
         if (!$harvest) {
             throw new UnexpectedValueException("Harvest with id = '$this->_harvestId' does not exist.");
         }

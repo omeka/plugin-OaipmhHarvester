@@ -32,7 +32,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     const OAI_DATE_FORMAT = 'Y-m-d';
     
     /**
-     * @var OaipmhHarvesterHarvest The OaipmhHarvesterHarvest object model.
+     * @var OaipmhHarvester_Harvest The OaipmhHarvester_Harvest object model.
      */
     private $_harvest;
     
@@ -51,7 +51,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * Prepares the harvest process.
      * 
-     * @param OaipmhHarvesterHarvest $harvest The OaipmhHarvesterHarvest object 
+     * @param OaipmhHarvester_Harvest $harvest The OaipmhHarvester_Harvest object 
      * model
      * @param array $options Options used to configure behavior. These include: 
      *  - ignore_deleted_records: ignores records with a status of deleted
@@ -91,7 +91,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * returns the record if it does.
      *
      * @param SimpleXMLIterator record to be harvested
-     * @return OaipmhHarvesterRecord|false The model object of the record,
+     * @return OaipmhHarvester_Record|false The model object of the record,
      *      if it exists, or false otherwise.
      */
     private function _recordExists($record)
@@ -101,7 +101,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $identifier = $record->header->identifier;
         $datestamp = $record->header->datestamp;
         
-        $records = get_db()->getTable('OaipmhHarvesterRecord')->findByOaiIdentifier($identifier);
+        $records = get_db()->getTable('OaipmhHarvester_Record')->findByOaiIdentifier($identifier);
         
         /* Ideally, the OAI identifier would be globally-unique, but for
            poorly configured servers that might not be the case.  However,
@@ -111,7 +111,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         foreach($records as $existingRecord)
         {
             $harvest_id = $existingRecord->harvest_id;
-            $recordHarvest = get_db()->getTable('OaipmhHarvesterHarvest')->find($harvest_id);
+            $recordHarvest = get_db()->getTable('OaipmhHarvester_Harvest')->find($harvest_id);
             $baseUrl = $recordHarvest->base_url;
             $setSpec = $recordHarvest->set_spec;
             $metadataPrefix = $recordHarvest->metadata_prefix;
@@ -244,7 +244,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     private function _insertRecord($item)
     {
-        $record = new OaipmhHarvesterRecord;
+        $record = new OaipmhHarvester_Record;
         
         $record->harvest_id = $this->_harvest->id;
         $record->item_id    = $item->id;
@@ -258,9 +258,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
     /**
      * Update a record in the database with information from this harvest.
      * 
-     * @param OaipmhHarvesterRecord The model object corresponding to the record.
+     * @param OaipmhHarvester_Record The model object corresponding to the record.
      */
-    private function _updateRecord(OaipmhHarvesterRecord $record)
+    private function _updateRecord(OaipmhHarvester_Record $record)
     {   
         $record->datestamp  = (string) $this->_record->header->datestamp;
         $record->save();
@@ -377,7 +377,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $item = insert_item($metadata, $elementTexts);
         
         // Insert the record after the item is saved. The idea here is that the 
-        // OaipmhHarvesterRecords table should only contain records that have 
+        // OaipmhHarvester_Records table should only contain records that have 
         // corresponding items.
         $this->_insertRecord($item);
         
@@ -421,7 +421,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @see insert_item()
      * @see insert_files_for_item()
-     * @param OaipmhHarvesterRecord $itemId ID of item to update
+     * @param OaipmhHarvester_Record $itemId ID of item to update
      * @param mixed $elementTexts The item's element texts
      * @param mixed $fileMetadata The item's file metadata
      * @return true
@@ -460,9 +460,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
     }
     
     /**
-     * Return this instance's OaipmhHarvesterHarvest object.
+     * Return this instance's OaipmhHarvester_Harvest object.
      * 
-     * @return OaipmhHarvesterHarvest
+     * @return OaipmhHarvester_Harvest
      */
     final protected function getHarvest()
     {
@@ -520,7 +520,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     {
         try {
             // Mark the harvest as in progress.
-            $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_IN_PROGRESS;
+            $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_IN_PROGRESS;
             $this->_harvest->save();
         
             // Call the template method that runs before the harvest.
@@ -531,7 +531,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $this->afterHarvest();
         
             // Mark the set as completed.
-            $this->_harvest->status    = OaipmhHarvesterHarvest::STATUS_COMPLETED;
+            $this->_harvest->status    = OaipmhHarvester_Harvest::STATUS_COMPLETED;
             $this->_harvest->completed = $this->_getCurrentDateTime();
             $this->_harvest->pid = null;
             $this->_harvest->save();
@@ -539,7 +539,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         } catch (Exception $e) {
             // Record the error.
             $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
-            $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_ERROR;
+            $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_ERROR;
             $this->_harvest->pid = null;
             // Reset the harvest start_from time if an error occurs during 
             // processing. Since there's no way to know exactly when the 

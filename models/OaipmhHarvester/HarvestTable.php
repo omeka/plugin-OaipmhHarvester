@@ -12,12 +12,12 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
+class OaipmhHarvester_HarvestTable extends Omeka_Db_Table
 {
     /**
      * Return all harvests.
      * 
-     * @return array An array of all OaipmhHarvesterHarvest objects, ordered by 
+     * @return array An array of all OaipmhHarvester_Harvest objects, ordered by 
      * ID.
      */
     public function findAllHarvests()
@@ -33,7 +33,7 @@ class OaipmhHarvesterHarvestTable extends Omeka_Db_Table
      * @param string $baseUrl Base URL of the harvest
      * @param string $setSpec Set spec of the harvest
      * @param string $metadataPrefix Metadata prefix of the harvest
-     * @return OaipmhHarvesterHarvest Record of existing harvest.
+     * @return OaipmhHarvester_Harvest Record of existing harvest.
      */
     public function findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix)
     {

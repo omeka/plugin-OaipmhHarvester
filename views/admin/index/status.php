@@ -57,7 +57,7 @@ head($head);
             <td><?php echo html_escape($this->harvest->status_messages); ?></td>
         </tr>
     </table>
-    <?php if ($this->harvest->status != OaipmhHarvesterHarvest::STATUS_DELETED): ?>
+    <?php if ($this->harvest->status != OaipmhHarvester_Harvest::STATUS_DELETED): ?>
     <p><strong>Warning:</strong> Clicking the following link will delete all items created for this harvest. 
     <?php echo delete_button(uri(array('id' => $this->harvest->id, 'action' => 'delete'), 'default'), null, $value = 'Delete Items', array('class' => 'delete-button')); ?>
     <?php endif; ?>

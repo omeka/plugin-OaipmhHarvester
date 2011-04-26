@@ -21,7 +21,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function indexAction()
     {
-        $harvests = $this->getTable('OaipmhHarvesterHarvest')->findAllHarvests();
+        $harvests = $this->getTable('OaipmhHarvester_Harvest')->findAllHarvests();
         $this->view->harvests = $harvests;
     }
     
@@ -156,7 +156,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         // If true, this is a re-harvest, all parameters will be the same
         if($harvest_id) {
-            $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvest_id);
+            $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvest_id);
             
             // Set vars for flash message
             $setSpec = $harvest->set_spec;
@@ -165,18 +165,18 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             
             // Only on successfully-completed harvests: use date-selective
             // harvesting to limit results.
-            if($harvest->status == OaipmhHarvesterHarvest::STATUS_COMPLETED)
+            if($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED)
                 $harvest->start_from = $harvest->initiated;
             else 
                 $harvest->start_from = null;
         }
         else {
             // If $harvest is not null, use the existing harvest record.
-            $harvest = $this->getTable('OaipmhHarvesterHarvest')->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
+            $harvest = $this->getTable('OaipmhHarvester_Harvest')->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
         
             if(!$harvest) {
                 // There is no existing identical harvest, create a new entry.
-                $harvest = new OaipmhHarvesterHarvest;
+                $harvest = new OaipmhHarvester_Harvest;
                 $harvest->base_url        = $baseUrl;
                 $harvest->set_spec        = $setSpec;
                 $harvest->set_name        = $setName;
@@ -187,7 +187,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
             
         // Insert the harvest.
-        $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
+        $harvest->status          = OaipmhHarvester_Harvest::STATUS_STARTING;
         $harvest->initiated       = date('Y:m:d H:i:s');
         $harvest->forceSave();
         
@@ -217,7 +217,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     {
         $harvestId = $_GET['harvest_id'];
         
-        $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvestId);
+        $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvestId);
         
         $this->view->harvest = $harvest;
     }
@@ -232,9 +232,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         if (!$this->getRequest()->isPost()) {
             return $this->_helper->redirector->goto('index'); 
         }
-        $this->_helper->db->setDefaultModelName('OaipmhHarvesterHarvest');
+        $this->_helper->db->setDefaultModelName('OaipmhHarvester_Harvest');
         $harvest = $this->findById();
-        $records = $this->getTable('OaipmhHarvesterRecord')->findByHarvestId($harvest->id);
+        $records = $this->getTable('OaipmhHarvester_Record')->findByHarvestId($harvest->id);
         
         // Delete items if they exist.
         foreach ($records as $record) {
@@ -252,7 +252,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $harvest->collection_id = null;
         }
         
-        $harvest->status = OaipmhHarvesterHarvest::STATUS_DELETED;
+        $harvest->status = OaipmhHarvester_Harvest::STATUS_DELETED;
         $statusMessage = 'All items created for this harvest were deleted on ' 
                        . date('Y-m-d H:i:s');
         $harvest->status_messages = strlen($harvest->status_messages) == 0 
@@ -275,17 +275,17 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     public function killAction()
     {
         $harvestId = $_POST['harvest_id'];
-        $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvestId);
+        $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvestId);
         
         $pid = $harvest->pid;
         
         if($pid) {
-            if($harvest->status == OaipmhHarvesterHarvest::STATUS_STARTING ||
-               $harvest->status == OaipmhHarvesterHarvest::STATUS_IN_PROGRESS)
+            if($harvest->status == OaipmhHarvester_Harvest::STATUS_STARTING ||
+               $harvest->status == OaipmhHarvester_Harvest::STATUS_IN_PROGRESS)
                 {
                     exec("kill -9 $pid");
                     $harvest->pid = null;
-                    $harvest->status = OaipmhHarvesterHarvest::STATUS_KILLED;
+                    $harvest->status = OaipmhHarvester_Harvest::STATUS_KILLED;
                     $statusMessage = 'This harvest was killed by an administrator on ' 
                                   . date('Y-m-d H:i:s');
                     $harvest->status_messages = strlen($harvest->status_messages) == 0 

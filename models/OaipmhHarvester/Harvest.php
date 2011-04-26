@@ -12,7 +12,7 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvesterHarvest extends Omeka_Record
+class OaipmhHarvester_Harvest extends Omeka_Record
 {
     const STATUS_STARTING    = 'starting';
     const STATUS_IN_PROGRESS = 'in progress';

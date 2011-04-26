@@ -167,7 +167,7 @@ function oaipmh_harvester_define_acl($acl)
 function oaipmh_harvester_before_delete_item(Item $item)
 {
     $id = $item->id;
-    $recordTable = get_db()->getTable('OaipmhHarvesterRecord');
+    $recordTable = get_db()->getTable('OaipmhHarvester_Record');
     $record = $recordTable->findByItemId($id);
     if($record) {
         $record->delete();
@@ -182,7 +182,7 @@ function oaipmh_harvester_before_delete_item(Item $item)
 function oaipmh_harvester_expose_duplicates()
 {
     $id = item('id');
-    $recordTable = get_db()->getTable('OaipmhHarvesterRecord');
+    $recordTable = get_db()->getTable('OaipmhHarvester_Record');
     $record = $recordTable->findByItemId($id);
     $duplicates = $recordTable->findByOaiIdentifier($record->identifier);
     

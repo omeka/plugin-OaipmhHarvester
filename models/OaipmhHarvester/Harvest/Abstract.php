@@ -59,48 +59,13 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     public function __construct($harvest, $options = array())
     {   
-        if($harvest && $options) {     
-            // Set an error handler method to record run-time warnings (non-fatal 
-            // errors). Fatal and parse errors cannot be called in this way.
-            set_error_handler(array($this, 'errorHandler'), E_WARNING);
-            
-            $this->_harvest = $harvest;
+        // Set an error handler method to record run-time warnings (non-fatal 
+        // errors). Fatal and parse errors cannot be called in this way.
+        set_error_handler(array($this, 'errorHandler'), E_WARNING);
         
-            $this->_setOptions($options);
-        
-            try {
-                // Mark the harvest as in progress.
-                $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_IN_PROGRESS;
-                $this->_harvest->save();
-            
-                // Call the template method that runs before the harvest.
-                $this->beforeHarvest();
-                // Initiate the harvest.
-                $this->_harvestRecords();
-                // Call the template method that runs after the harvest.
-                $this->afterHarvest();
-            
-                // Mark the set as completed.
-                $this->_harvest->status    = OaipmhHarvesterHarvest::STATUS_COMPLETED;
-                $this->_harvest->completed = $this->_getCurrentDateTime();
-                $this->_harvest->pid = null;
-                $this->_harvest->save();
-            
-            } catch (Exception $e) {
-                // Record the error.
-                $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
-                $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_ERROR;
-                $this->_harvest->pid = null;
-                // Reset the harvest start_from time if an error occurs during 
-                // processing. Since there's no way to know exactly when the 
-                // error occured, re-harvests need to start from the beginning.
-                $this->_harvest->start_from = null;
-                $this->_harvest->save();
-            }
-        
-            $peakUsage = memory_get_peak_usage();
-            $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
-        }
+        $this->_harvest = $harvest;
+    
+        $this->_setOptions($options);
     }
     
     /**
@@ -547,4 +512,43 @@ abstract class OaipmhHarvester_Harvest_Abstract
 	 * @return string XML schema
 	 */
 	public abstract function getMetadataSchema();
+
+    /**
+     * Harvest records from the OAI-PMH repository.
+     */
+    final public function harvest()
+    {
+        try {
+            // Mark the harvest as in progress.
+            $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_IN_PROGRESS;
+            $this->_harvest->save();
+        
+            // Call the template method that runs before the harvest.
+            $this->beforeHarvest();
+            // Initiate the harvest.
+            $this->_harvestRecords();
+            // Call the template method that runs after the harvest.
+            $this->afterHarvest();
+        
+            // Mark the set as completed.
+            $this->_harvest->status    = OaipmhHarvesterHarvest::STATUS_COMPLETED;
+            $this->_harvest->completed = $this->_getCurrentDateTime();
+            $this->_harvest->pid = null;
+            $this->_harvest->save();
+        
+        } catch (Exception $e) {
+            // Record the error.
+            $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
+            $this->_harvest->status = OaipmhHarvesterHarvest::STATUS_ERROR;
+            $this->_harvest->pid = null;
+            // Reset the harvest start_from time if an error occurs during 
+            // processing. Since there's no way to know exactly when the 
+            // error occured, re-harvests need to start from the beginning.
+            $this->_harvest->start_from = null;
+            $this->_harvest->save();
+        }
+    
+        $peakUsage = memory_get_peak_usage();
+        $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
+    }
 }

@@ -265,8 +265,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         $this->flashSuccess('All items created for the harvest were deleted.');
         
-        $this->redirect->goto('index');
-        exit;
+        return $this->_helper->redirector->goto('index');
     }
     
     /**
@@ -295,8 +294,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                     $this->flashSuccess("Harvest process $pid was killed.");
                }
         }
-        $this->redirect->goto('index');
-        exit;
+        return $this->_helper->redirector->goto('index');
     }
     
     /**

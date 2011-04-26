@@ -38,7 +38,8 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
         require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataClassFile.php";
 
         // Set the harvest object.
-        new $metadataClass($harvest, $options);
+        $harvester = new $metadataClass($harvest, $options);
+        $harvester->harvest();
     }
 
     public function setHarvestId($id)

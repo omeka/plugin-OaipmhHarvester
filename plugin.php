@@ -12,7 +12,7 @@ define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 
 /** Path to plugin maps directory */
 define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
-                                        . '/libraries/OaipmhHarvester/Harvest');
+                                        . '/models/OaipmhHarvester/Harvest');
 
 /** Plugin hooks */
 add_plugin_hook('install', 'oaipmh_harvester_install');

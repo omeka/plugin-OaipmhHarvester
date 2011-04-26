@@ -229,10 +229,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function deleteAction()
     {
-        $harvestId = $_GET['harvest_id'];
-        
-        $harvest = $this->getTable('OaipmhHarvesterHarvest')->find($harvestId);
-        
+        if (!$this->getRequest()->isPost()) {
+            return $this->_helper->redirector->goto('index'); 
+        }
+        $this->_helper->db->setDefaultModelName('OaipmhHarvesterHarvest');
+        $harvest = $this->findById();
         $records = $this->getTable('OaipmhHarvesterRecord')->findByHarvestId($harvest->id);
         
         // Delete items if they exist.

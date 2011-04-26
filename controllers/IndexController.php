@@ -189,21 +189,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // Insert the harvest.
         $harvest->status          = OaipmhHarvesterHarvest::STATUS_STARTING;
         $harvest->initiated       = date('Y:m:d H:i:s');
-        $harvest->save();
+        $harvest->forceSave();
         
-        // Set the command arguments.
-        $phpCommandPath    = ProcessDispatcher::getPHPCliPath();
-        $bootstrapFilePath = $this->_getBootstrapFilePath();
-        $harvestId         = escapeshellarg($harvest->id);
-        
-        // Set the command and run the script in the background.
-        $command = "$phpCommandPath $bootstrapFilePath -h $harvestId";
-        $pid = $this->_fork($command);
-        
-        // Set the PID after the background process is started.
-        // Save twice to assure the process has access to the data it needs.
-        $harvest->pid = $pid;
-        $harvest->save();
+        $jobDispatcher = Zend_Registry::get('job_dispatcher');
+        $jobDispatcher->setQueueName('imports');
+        $jobDispatcher->send('OaipmhHarvester_Job', array('harvestId' => $harvest->id));
         
         if ($setSpec) {
             $message = "Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
@@ -215,8 +205,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         $this->flashSuccess($message);
         
-        $this->redirect->goto('index');
-        exit;
+        return $this->_helper->redirector->goto('index');
     }
     
     /**
@@ -336,27 +325,5 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             }
         }
         return $maps;
-    }
-    
-    /**
-     * Get the path to the bootstrap file.
-     * 
-     * @return string
-     */
-    private function _getBootstrapFilePath()
-    {
-        return OAIPMH_HARVESTER_PLUGIN_DIRECTORY
-             . DIRECTORY_SEPARATOR 
-             . 'bootstrap.php';
-    }
-    
-    /**
-     * Launch a background process, returning control to the foreground.
-     * 
-     * @link http://www.php.net/manual/en/ref.exec.php#70135
-     * @return int The background process' PID
-     */
-    private function _fork($command) {
-        return exec("$command > /dev/null 2>&1 & echo $!");
     }
 }

@@ -22,6 +22,8 @@ class OaipmhHarvester_Xml
      * OAI-PMH error code for a repository with no set hierarchy
      */
     const ERROR_CODE_NO_SET_HIERARCHY = 'noSetHierarchy';
+
+    const ERROR_XML_PARSE = 'String could not be parsed as XML';
     
     /**
      * @var SimpleXMLIterator The OAI-PMH object

@@ -47,6 +47,13 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         } catch (Zend_Http_Client_Exception $e) {
             $this->flashError($e->getMessage());
             $this->redirect->goto('index');
+        } catch (Exception $e) {
+            if (OaipmhHarvester_Xml::ERROR_XML_PARSE == $e->getMessage()) {
+                $this->flashError("Response error: " . $e->getMessage());
+                $this->redirect->goto('index');
+            } else {
+                throw $e;
+            }
         }
         
         /* Compare the available OAI-PMH metadataFormats with the available 

@@ -471,6 +471,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     public function errorHandler($errno, $errstr, $errfile, $errline)
     {
+        if (error_reporting() & $errno) {
+            throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+        }
+        
         $statusMessage = "$errstr in $errfile on line $errline";
         $this->addStatusMessage($statusMessage, self::MESSAGE_CODE_ERROR);
         return true;

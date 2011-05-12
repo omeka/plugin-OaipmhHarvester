@@ -152,10 +152,10 @@ class OaipmhHarvester_Xml
         $client = new Zend_Http_Client($requestUrl, array(
                 'useragent' => $userAgent));
         $response = $client->request('GET');
-        if ($response->isError()) {
-            return false;
-        } else {
+        if ($response->isSuccessful() && !$response->isRedirect()) {
             return new SimpleXMLIterator($response->getBody());
+        } else {
+            return false;
         }
     }
 }

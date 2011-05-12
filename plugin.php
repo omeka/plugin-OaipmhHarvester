@@ -54,8 +54,8 @@ function oaipmh_harvester_install()
     */
     $sql = "
     CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_harvests` (
-        `id` int(10) unsigned NOT NULL auto_increment,
-        `collection_id` int(10) unsigned default NULL,
+        `id` int unsigned NOT NULL auto_increment,
+        `collection_id` int unsigned default NULL,
         `base_url` text collate utf8_unicode_ci NOT NULL,
         `metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
         `metadata_class` text collate utf8_unicode_ci NOT NULL,
@@ -67,9 +67,9 @@ function oaipmh_harvester_install()
         `initiated` datetime default NULL,
         `completed` datetime default NULL,
         `start_from` datetime default NULL,
-        `pid` int(10) unsigned default NULL,
+        `pid` int unsigned default NULL,
         PRIMARY KEY  (`id`)
-    ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
     $db->query($sql);
     
     /* Harvested records/items.
@@ -81,13 +81,13 @@ function oaipmh_harvester_install()
     */
     $sql = "
     CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_records` (
-        `id` int(10) unsigned NOT NULL auto_increment,
-        `harvest_id` int(10) unsigned NOT NULL,
-        `item_id` int(10) unsigned default NULL,
+        `id` int unsigned NOT NULL auto_increment,
+        `harvest_id` int unsigned NOT NULL,
+        `item_id` int unsigned default NULL,
         `identifier` text collate utf8_unicode_ci NOT NULL,
         `datestamp` tinytext collate utf8_unicode_ci NOT NULL,
         PRIMARY KEY  (`id`)
-    ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
     $db->query($sql);
 }
 

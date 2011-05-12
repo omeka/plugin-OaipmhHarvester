@@ -47,17 +47,25 @@ head($head);
         </thead>
         <tbody>
     <?php foreach ($this->sets as $set): ?>
-    <?php $setDc = @ $set->setDescription->children('oai_dc', true)->children('dc', true); ?>
+    <?php 
+    if ($set->setDescription 
+        && ($dcWrapper = $set->setDescription->children('oai_dc', true))
+        && ($descWrapper = $dcWrapper->children('dc', true))
+    ):
+        $setDescription = $descWrapper->description;
+    else:
+        $setDescription = null;
+    endif; ?>
             <tr>
                 <td><strong><?php echo wordwrap($set->setSpec, 20, '<br />', true); ?></strong></td>
                 <td><?php echo html_escape($set->setName); ?></td>
-                <td><?php echo @ html_escape($setDc->description); ?></td>
+                <td><?php echo @ html_escape($setDescription); ?></td>
                 <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
                 <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
                 <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
                 <?php echo $this->formHidden('set_spec', $set->setSpec); ?>
                 <?php echo $this->formHidden('set_name', $set->setName); ?>
-                <?php echo $this->formHidden('set_description', @ $setDc->description); ?>
+                <?php echo $this->formHidden('set_description', @ $setDescription); ?>
                 <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
                 </form></td>
             </tr>

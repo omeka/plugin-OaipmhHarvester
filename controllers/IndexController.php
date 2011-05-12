@@ -43,7 +43,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // Catch errors such as "String could not be parsed as XML"
         try {
             $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
-        } catch (Exception $e) {
+            $oaipmh->getOaipmh();
+        } catch (Zend_Http_Client_Exception $e) {
             $this->flashError($e->getMessage());
             $this->redirect->goto('index');
         }

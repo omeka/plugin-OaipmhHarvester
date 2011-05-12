@@ -267,26 +267,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
     }
     
     /**
-     * Return a message code text corresponding to its constant.
-     * 
-     * @param int $messageCode
-     * @return string
-     */
-    private function _getMessageCodeText($messageCode)
-    {
-        switch ($messageCode) {
-            case self::MESSAGE_CODE_ERROR:
-                $messageCodeText = 'Error';
-                break;
-            case self::MESSAGE_CODE_NOTICE:
-            default:
-                $messageCodeText = 'Notice';
-                break;
-        }
-        return $messageCodeText;
-    }
-    
-    /**
      * Return the current, formatted date.
      * 
      * @return string
@@ -449,14 +429,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
-        if (0 == strlen($this->_harvest->status_messages)) {
-            $delimiter = '';
+        if ($this->_harvest) {
+            $this->_harvest->addStatusMessage($message, $messageCode, $delimiter);
+        } else {
+            die("$messageCode: $message");
         }
-        $date = $this->_getCurrentDateTime();
-        $messageCodeText = $this->_getMessageCodeText($messageCode);
-        
-        $this->_harvest->status_messages = "{$this->_harvest->status_messages}$delimiter$messageCodeText: $message ($date)";
-        $this->_harvest->save();
     }
     
     /**

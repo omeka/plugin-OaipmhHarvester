@@ -35,4 +35,37 @@ class OaipmhHarvester_Harvest extends Omeka_Record
     public $completed;
     public $start_from;
     public $pid;
+
+    public function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
+    {
+        if (0 == strlen($this->status_messages)) {
+            $delimiter = '';
+        }
+        $date = $this->_getCurrentDateTime();
+        $messageCodeText = $this->_getMessageCodeText($messageCode);
+        
+        $this->status_messages = "{$this->_harvest->status_messages}$delimiter$messageCodeText: $message ($date)";
+        $this->save();
+    }
+
+    /**
+     * Return a message code text corresponding to its constant.
+     * 
+     * @param int $messageCode
+     * @return string
+     */
+    private function _getMessageCodeText($messageCode)
+    {
+        switch ($messageCode) {
+            case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_ERROR:
+                $messageCodeText = 'Error';
+                break;
+            case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_NOTICE:
+            default:
+                $messageCodeText = 'Notice';
+                break;
+        }
+        return $messageCodeText;
+    }
+    
 }

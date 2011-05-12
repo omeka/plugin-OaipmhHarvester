@@ -155,7 +155,9 @@ class OaipmhHarvester_Xml
         if ($response->isSuccessful() && !$response->isRedirect()) {
             return new SimpleXMLIterator($response->getBody());
         } else {
-            return false;
+            throw new Zend_Http_Client_Exception("Invalid URL (" 
+                . $response->getStatus() . " " . $response->getMessage() 
+                . ").");
         }
     }
 }

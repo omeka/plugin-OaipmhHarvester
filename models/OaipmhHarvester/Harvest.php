@@ -68,4 +68,14 @@ class OaipmhHarvester_Harvest extends Omeka_Record
         return $messageCodeText;
     }
     
+    /**
+     * Return the current, formatted date.
+     * 
+     * @return string
+     */
+    private function _getCurrentDateTime()
+    {
+        return date('Y-m-d H:i:s');
+    }
+    
 }

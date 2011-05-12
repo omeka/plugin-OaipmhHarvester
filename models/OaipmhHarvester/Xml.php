@@ -147,11 +147,15 @@ class OaipmhHarvester_Xml
 
     private function _request()
     {
+        $userAgent = 'Omeka OAI-PMH Harvester/' . OAIPMH_HARVESTER_PLUGIN_VERSION; 
         $requestUrl = $this->getRequestUrl($this->_baseUrl, $this->_requestArguments);
-        // Set an arbitrary user agent to circumvent some request restrictions.
-        ini_set('user_agent', 'Omeka OAI-PMH Harvester/' . OAIPMH_HARVESTER_PLUGIN_VERSION); 
-        $requestContent = file_get_contents($requestUrl);
-        ini_restore('user_agent');
-        return new SimpleXMLIterator($requestContent);
+        $client = new Zend_Http_Client($requestUrl, array(
+                'useragent' => $userAgent));
+        $response = $client->request('GET');
+        if ($response->isError()) {
+            return false;
+        } else {
+            return new SimpleXMLIterator($response->getBody());
+        }
     }
 }

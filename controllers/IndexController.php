@@ -195,7 +195,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
             
         // Insert the harvest.
-        $harvest->status          = OaipmhHarvester_Harvest::STATUS_STARTING;
+        $harvest->status          = OaipmhHarvester_Harvest::STATUS_QUEUED;
         $harvest->initiated       = date('Y:m:d H:i:s');
         $harvest->forceSave();
         
@@ -288,7 +288,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $pid = $harvest->pid;
         
         if($pid) {
-            if($harvest->status == OaipmhHarvester_Harvest::STATUS_STARTING ||
+            if($harvest->status == OaipmhHarvester_Harvest::STATUS_QUEUED ||
                $harvest->status == OaipmhHarvester_Harvest::STATUS_IN_PROGRESS)
                 {
                     exec("kill -9 $pid");

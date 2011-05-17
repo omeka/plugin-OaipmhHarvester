@@ -409,7 +409,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     final protected function updateItem($record, $elementTexts = array(), $fileMetadata = array())
     {
         // Update the item
-        $item = update_item($record->item_id, array('overwriteElementTexts' => true), $elementTexts);
+        $item = update_item($record->item_id, array('overwriteElementTexts' => true), $elementTexts, $fileMetadata);
         
         // Update the datestamp stored in the database for this record.
         $this->_updateRecord($record);

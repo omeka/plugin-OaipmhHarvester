@@ -34,7 +34,9 @@ class OaipmhHarvester_DeleteJob extends Omeka_JobAbstract
                 $item = $this->_db
                     ->getTable('Item')
                     ->find($record->item_id);
-                $item->delete();
+                if ($item) {
+                    $item->delete();
+                }
                 $record->delete();
             }
         }
@@ -45,7 +47,9 @@ class OaipmhHarvester_DeleteJob extends Omeka_JobAbstract
                 ->getTable('Collection')
                 ->find($harvest->collection_id);
 
-            $collection->delete();
+            if ($collection) {
+                $collection->delete();
+            }
             $harvest->collection_id = null;
         }
         

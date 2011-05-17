@@ -241,39 +241,17 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             return $this->_helper->redirector->goto('index'); 
         }
         $this->_helper->db->setDefaultModelName('OaipmhHarvester_Harvest');
+        // Throw if harvest does not exist or access is disallowed.
         $harvest = $this->findById();
-        $records = $this->getTable('OaipmhHarvester_Record')->findByHarvestId($harvest->id);
-        
-        // Delete items if they exist.
-        foreach ($records as $record) {
-            if ($record->item_id) {
-                $item = $this->getTable('Item')->find($record->item_id);
-                $item->delete();
-                $record->delete();
-            }
-        }
-        
-        // Delete collection if exists.
-        if ($harvest->collection_id) {
-            $collection = $this->getTable('Collection')->find($harvest->collection_id);
-            $collection->delete();
-            $harvest->collection_id = null;
-        }
-        
-        $harvest->status = OaipmhHarvester_Harvest::STATUS_DELETED;
-        $statusMessage = 'All items created for this harvest were deleted on ' 
-                       . date('Y-m-d H:i:s');
-        $harvest->status_messages = strlen($harvest->status_messages) == 0 
-                                  ? $statusMessage 
-                                  : "\n\n" . $statusMessage;
-        // Reset the harvest start_from time if an error occurs during 
-        // processing. Since there's no way to know exactly when the 
-        // error occured, re-harvests need to start from the beginning.
-        $harvest->start_from = null;
-        $harvest->save();
-        
-        $this->flashSuccess('All items created for the harvest were deleted.');
-        
+        $jobDispatcher = Zend_Registry::get('job_dispatcher');
+        $jobDispatcher->send('OaipmhHarvester_DeleteJob',
+            array(
+                'harvestId' => $harvest->id,
+            )
+        );
+        $this->flashSuccess(
+            'Harvest has been successfully marked for deletion.'
+        );
         return $this->_helper->redirector->goto('index');
     }
     

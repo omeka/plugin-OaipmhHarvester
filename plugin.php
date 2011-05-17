@@ -62,7 +62,7 @@ function oaipmh_harvester_install()
         `set_spec` text collate utf8_unicode_ci NULL,
         `set_name` text collate utf8_unicode_ci NULL,
         `set_description` text collate utf8_unicode_ci NULL,
-        `status` enum('starting','in progress','completed','error','deleted','killed') collate utf8_unicode_ci NOT NULL default 'starting',
+        `status` enum('queued','in progress','completed','error','deleted','killed') collate utf8_unicode_ci NOT NULL default 'queued',
         `status_messages` text collate utf8_unicode_ci NULL,
         `initiated` datetime default NULL,
         `completed` datetime default NULL,

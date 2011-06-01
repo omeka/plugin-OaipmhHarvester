@@ -64,8 +64,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
         set_error_handler(array($this, 'errorHandler'), E_WARNING);
         
         $this->_harvest = $harvest;
-    
-        $this->_setOptions($options);
     }
     
     /**
@@ -74,17 +72,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param SimpleXMLIterator The current record object
      */
     abstract protected function harvestRecord($record);
-    
-    /**
-     * Sets class options
-     * 
-     * @param array $options
-     * @return void
-     */
-    private function _setOptions($options)
-    {
-        // Placeholder for class options that will potentially be added.
-    }
     
     /**
      * Checks whether the current record has already been harvested, and

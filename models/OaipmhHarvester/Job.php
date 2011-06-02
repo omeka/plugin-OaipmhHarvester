@@ -40,6 +40,9 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
         // Set the harvest object.
         $harvester = new $metadataClass($harvest, $options);
         $harvester->harvest();
+        if ($harvest->isResumable()) {
+            $this->resend();
+        }
     }
 
     public function setHarvestId($id)

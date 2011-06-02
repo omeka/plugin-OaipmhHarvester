@@ -415,11 +415,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
-        if ($this->_harvest) {
-            $this->_harvest->addStatusMessage($message, $messageCode, $delimiter);
-        } else {
-            die("$messageCode: $message");
-        }
+        $this->_harvest->addStatusMessage($message, $messageCode, $delimiter);
     }
     
     /**

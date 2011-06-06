@@ -9,8 +9,10 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
 
     public function perform()
     {
-        if ($this->_memoryLimit) {
-            ini_set('memory_limit', $this->_memoryLimit);
+        $config = Omeka_Context::getInstance()->config;
+        $harvesterConfig = $config->plugins->OaipmhHarvester;
+        if ($harvesterConfig && $harvesterConfig->memoryLimit) {
+            ini_set('memory_limit', $harvesterConfig->memoryLimit);
         }
         
         // Set the set.
@@ -48,10 +50,5 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
     public function setHarvestId($id)
     {
         $this->_harvestId = $id;
-    }
-
-    public function setMemoryLimit($limit)
-    {
-        $this->_memoryLimit = $limit;
     }
 }

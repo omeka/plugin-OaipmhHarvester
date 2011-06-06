@@ -136,7 +136,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // Set the variables to the view object.
         $this->view->availableMaps   = $availableMaps;
         $this->view->sets            = $sets;
-        $this->view->resumptionToken = $resumptionToken;
+        $this->view->resumptionToken = isset($resumptionToken) ? $resumptionToken : false;
         $this->view->baseUrl         = $baseUrl;
         $this->view->maps            = $maps;
     }

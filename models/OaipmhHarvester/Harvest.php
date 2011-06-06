@@ -31,10 +31,16 @@ class OaipmhHarvester_Harvest extends Omeka_Record
     public $set_description;
     public $status;
     public $status_messages;
+    public $resumption_token;
     public $initiated;
     public $completed;
     public $start_from;
     public $pid;
+
+    public function isResumable()
+    {
+        return ($this->resumption_token !== null);
+    }
 
     public function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
@@ -44,8 +50,8 @@ class OaipmhHarvester_Harvest extends Omeka_Record
         $date = $this->_getCurrentDateTime();
         $messageCodeText = $this->_getMessageCodeText($messageCode);
         
-        $this->status_messages = "{$this->_harvest->status_messages}$delimiter$messageCodeText: $message ($date)";
-        $this->save();
+        $this->status_messages .= "$delimiter$messageCodeText: $message ($date)";
+        $this->forceSave();
     }
 
     /**
@@ -77,5 +83,4 @@ class OaipmhHarvester_Harvest extends Omeka_Record
     {
         return date('Y-m-d H:i:s');
     }
-    
 }

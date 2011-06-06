@@ -133,15 +133,17 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * recurses through all resumption tokens until the response is completed.
      * 
      * @param string|false $resumptionToken
-     * @return void
+     * @return string|boolean Resumption token if one exists, otherwise true
+     * if the harvest is finished.
      */
-    private function _harvestRecords($resumptionToken = false)
+    private function _harvestRecords()
     {
         // Get the base URL.
         $baseUrl = $this->_harvest->base_url;
         
         // Set the request arguments.
         $requestArguments = array('verb' => 'ListRecords');
+        $resumptionToken = $this->_harvest->resumption_token;
         if ($resumptionToken) {
             // Harvest a list reissue. 
             $requestArguments['resumptionToken'] = $resumptionToken;
@@ -214,13 +216,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
                                    $harvestedRecord['fileMetadata']);
         }
         
-        // If there is a resumption token, recurse this method.
-        if ($resumptionToken = $this->_oaipmhHarvesterXml->getResumptionToken()) {
-            $this->_harvestRecords($resumptionToken);
-        }
-        
-        // If there is no resumption token, we're all done here.
-        return;
+        $resumptionToken = $this->_oaipmhHarvesterXml->getResumptionToken();
+        $this->addStatusMessage("Received resumption token: $resumptionToken");
+
+        return ($resumptionToken ? $resumptionToken : true);
     }
     
     /**
@@ -416,11 +415,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
-        if ($this->_harvest) {
-            $this->_harvest->addStatusMessage($message, $messageCode, $delimiter);
-        } else {
-            die("$messageCode: $message");
-        }
+        $this->_harvest->addStatusMessage($message, $messageCode, $delimiter);
     }
     
     /**
@@ -487,22 +482,30 @@ abstract class OaipmhHarvester_Harvest_Abstract
     final public function harvest()
     {
         try {
-            // Mark the harvest as in progress.
-            $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_IN_PROGRESS;
+            $this->_harvest->status = 
+                OaipmhHarvester_Harvest::STATUS_IN_PROGRESS;
             $this->_harvest->save();
         
-            // Call the template method that runs before the harvest.
             $this->beforeHarvest();
-            // Initiate the harvest.
-            $this->_harvestRecords();
-            // Call the template method that runs after the harvest.
-            $this->afterHarvest();
+            // This method does most of the actual work.
+            $resumptionToken = $this->_harvestRecords();
+
+            // A return value of true just indicates success, all other values
+            // must be valid resumption tokens.
+            if ($resumptionToken === true) {
+                $this->afterHarvest();
+                $this->_harvest->status = 
+                    OaipmhHarvester_Harvest::STATUS_COMPLETED;
+                $this->_harvest->completed = $this->_getCurrentDateTime();
+                $this->_harvest->pid = null;
+                $this->_harvest->resumption_token = null;
+            } else {
+                $this->_harvest->resumption_token = $resumptionToken;
+                $this->_harvest->status =
+                    OaipmhHarvester_Harvest::STATUS_QUEUED;
+            }
         
-            // Mark the set as completed.
-            $this->_harvest->status    = OaipmhHarvester_Harvest::STATUS_COMPLETED;
-            $this->_harvest->completed = $this->_getCurrentDateTime();
-            $this->_harvest->pid = null;
-            $this->_harvest->save();
+            $this->_harvest->forceSave();
         
         } catch (Exception $e) {
             // Record the error.
@@ -513,7 +516,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
             // processing. Since there's no way to know exactly when the 
             // error occured, re-harvests need to start from the beginning.
             $this->_harvest->start_from = null;
-            $this->_harvest->save();
+            $this->_harvest->forceSave();
         }
     
         $peakUsage = memory_get_peak_usage();

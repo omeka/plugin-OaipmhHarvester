@@ -498,6 +498,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
                     OaipmhHarvester_Harvest::STATUS_COMPLETED;
                 $this->_harvest->completed = $this->_getCurrentDateTime();
                 $this->_harvest->pid = null;
+                $this->_harvest->resumption_token = null;
             } else {
                 $this->_harvest->resumption_token = $resumptionToken;
                 $this->_harvest->status =

@@ -68,7 +68,6 @@ function oaipmh_harvester_install()
         `initiated` datetime default NULL,
         `completed` datetime default NULL,
         `start_from` datetime default NULL,
-        `pid` int unsigned default NULL,
         PRIMARY KEY  (`id`)
     ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
     $db->query($sql);

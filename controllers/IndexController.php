@@ -256,35 +256,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     }
     
     /**
-     * Kill the background process for a harvest if it is still running.
-     */
-    public function killAction()
-    {
-        $harvestId = $_POST['harvest_id'];
-        $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvestId);
-        
-        $pid = $harvest->pid;
-        
-        if($pid) {
-            if($harvest->status == OaipmhHarvester_Harvest::STATUS_QUEUED ||
-               $harvest->status == OaipmhHarvester_Harvest::STATUS_IN_PROGRESS)
-                {
-                    exec("kill -9 $pid");
-                    $harvest->pid = null;
-                    $harvest->status = OaipmhHarvester_Harvest::STATUS_KILLED;
-                    $statusMessage = 'This harvest was killed by an administrator on ' 
-                                  . date('Y-m-d H:i:s');
-                    $harvest->status_messages = strlen($harvest->status_messages) == 0 
-                                             ? $statusMessage 
-                                             : "\n\n" . $statusMessage;
-                    $harvest->save(); 
-                    $this->flashSuccess("Harvest process $pid was killed.");
-               }
-        }
-        return $this->_helper->redirector->goto('index');
-    }
-    
-    /**
      * Get the available OAI-PMH to Omeka maps, which should correspond to 
      * OAI-PMH metadata formats.
      * 

@@ -115,18 +115,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
     }
     
     /**
-     * Converts the given MySQL datetime to an OAI datestamp, for
-     * sending dates in OAI-PMH requests.
-     *
-     * @param string $datestamp MySQL datetime
-     * @return string OAI-PMH datestamp
-     */
-    private function _datetimeToOai($datestamp)
-    {
-        return gmdate(self::OAI_DATE_FORMAT, strtotime($datestamp));
-    }
-    
-    /**
      * Recursive method that loops through all requested records
      * 
      * This method hands off mapping to the class that extends off this one and 
@@ -138,61 +126,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     private function _harvestRecords()
     {
-        // Get the base URL.
-        $baseUrl = $this->_harvest->base_url;
-        
-        // Set the request arguments.
-        $requestArguments = array('verb' => 'ListRecords');
-        $resumptionToken = $this->_harvest->resumption_token;
-        if ($resumptionToken) {
-            // Harvest a list reissue. 
-            $requestArguments['resumptionToken'] = $resumptionToken;
-        } 
-        else {
-            if ($this->_harvest->set_spec) {
-                // Harvest a set.
-                $requestArguments['set']            = $this->_harvest->set_spec;
-                $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
-            } 
-            else {
-                // Harvest a repository.
-                $requestArguments['metadataPrefix'] = $this->_harvest->metadata_prefix;
-            }
-
-            // Perform date-selective harvesting if a "from" date is
-            // specified.
-            if(($startFrom = $this->_harvest->start_from)) {
-                $oaiDate = $this->_datetimeToOai($startFrom);
-                $requestArguments['from'] = $oaiDate;
-                $this->addStatusMessage("Resuming harvest from $oaiDate.", self::MESSAGE_CODE_NOTICE);
-            }
-        }
-        
-        // Cache the OaipmhHarvester_Xml object.
-        $this->_oaipmhHarvesterXml = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
-        
-        // Throw an error if the response is an error.
-        if ($this->_oaipmhHarvesterXml->isError()) {
-            $errorCode = (string) $this->_oaipmhHarvesterXml->getErrorCode();
-            $error     = (string) $this->_oaipmhHarvesterXml->getError();
-            
-            // Especially with selective harvesting, no records is not
-            // necessarily an error.  Print a notice and exit.
-            if ($errorCode == 'noRecordsMatch') {
-                $this->addStatusMessage("The repository returned no records.", self::MESSAGE_CODE_NOTICE);
-                return;
-            } else {
-                $statusMessage = "$errorCode: $error";
-                throw new Exception($statusMessage);
-            }
-        }
 
         // Iterate through the records and hand off the mapping to the classes 
         // inheriting from this class.
-        foreach ($this->_oaipmhHarvesterXml->getRecords() as $record) {
+        $response = $this->_harvest->listRecords();
+        foreach ($response['records'] as $record) {
             
             // Ignore (skip over) deleted records.
-            if ($this->_oaipmhHarvesterXml->isDeletedRecord($record)) {
+            if ($this->isDeletedRecord($record)) {
                 continue;
             }
             $existingRecord = $this->_recordExists($record);
@@ -216,10 +157,25 @@ abstract class OaipmhHarvester_Harvest_Abstract
                                    $harvestedRecord['fileMetadata']);
         }
         
-        $resumptionToken = $this->_oaipmhHarvesterXml->getResumptionToken();
+        $resumptionToken = $response['resumptionToken'];
         $this->addStatusMessage("Received resumption token: $resumptionToken");
 
         return ($resumptionToken ? $resumptionToken : true);
+    }
+    
+    /**
+     * Return whether the record is deleted
+     * 
+     * @param SimpleXMLIterator The record object
+     * @return bool
+     */
+    public function isDeletedRecord($record)
+    {
+        if (isset($record->header->attributes()->status) 
+            && $record->header->attributes()->status == 'deleted') {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -467,14 +423,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
 	 *
 	 * @return string metadataPrefix
 	 */
-	public abstract function getMetadataPrefix();
+	public static abstract function getMetadataPrefix();
 	
 	/**
 	 * Returns the XML schema for the format the mapper supports.
 	 *
 	 * @return string XML schema
 	 */
-	public abstract function getMetadataSchema();
+	public static abstract function getMetadataSchema();
 
     /**
      * Harvest records from the OAI-PMH repository.
@@ -519,5 +475,16 @@ abstract class OaipmhHarvester_Harvest_Abstract
     
         $peakUsage = memory_get_peak_usage();
         $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
+    }
+
+    public static function factory($harvest, $options)
+    {
+        $classSuffix = Inflector::camelize($harvest->metadata_prefix);
+        $class = 'OaipmhHarvester_Harvest_' . $classSuffix;
+        require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$classSuffix.php";
+
+        // Set the harvest object.
+        $harvester = new $class($harvest, $options);
+        return $harvester;
     }
 }

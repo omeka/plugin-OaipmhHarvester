@@ -41,6 +41,44 @@ class OaipmhHarvester_Harvest extends Omeka_Record
         return ($this->resumption_token !== null);
     }
 
+    public function listRecords()
+    {
+        $query = array();
+        $resumptionToken = $this->resumption_token;
+        if ($resumptionToken) {
+            // Harvest a list reissue. 
+            $query['resumptionToken'] = $resumptionToken;
+        } 
+        else {
+            if ($this->set_spec) {
+                // Harvest a set.
+                $query['set'] = $this->set_spec;
+            } 
+            $query['metadataPrefix'] = $this->metadata_prefix;
+
+            // Perform date-selective harvesting if a "from" date is
+            // specified.
+            if(($startFrom = $this->start_from)) {
+                $oaiDate = $this->_datetimeToOai($startFrom);
+                $query['from'] = $oaiDate;
+                $this->addStatusMessage("Resuming harvest from $oaiDate.");
+            }
+        }
+        
+        $client = new OaipmhHarvester_Request($this->base_url);
+        $response = $client->listRecords($query);
+
+        if (isset($response['error'])) {
+            if ($response['error']['code'] == 'noRecordsMatch') {
+                $this->addStatusMessage("The repository returned no records.");
+            } else {
+                $this->addStatusMessage($response['error']['code'] . ': '
+                    . $response['error']['message']);
+            }
+        } 
+        return $response;
+    }
+
     public function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
         if (0 == strlen($this->status_messages)) {
@@ -71,6 +109,18 @@ class OaipmhHarvester_Harvest extends Omeka_Record
                 break;
         }
         return $messageCodeText;
+    }
+    
+    /**
+     * Converts the given MySQL datetime to an OAI datestamp, for
+     * sending dates in OAI-PMH requests.
+     *
+     * @param string $datestamp MySQL datetime
+     * @return string OAI-PMH datestamp
+     */
+    private function _datetimeToOai($datestamp)
+    {
+        return gmdate(self::OAI_DATE_FORMAT, strtotime($datestamp));
     }
     
     /**

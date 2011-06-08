@@ -21,7 +21,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function indexAction()
     {
-        $harvests = $this->getTable('OaipmhHarvester_Harvest')->findAllHarvests();
+        $harvests = $this->getTable('OaipmhHarvester_Harvest')->findAll();
         $this->view->harvests = $harvests;
     }
     
@@ -36,14 +36,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // OAI-PMH metadata formats.
         $maps = $this->_getMaps();
         
-        // Get the available metadata formats from the data provider.
-        $baseUrl = trim($_POST['base_url']);
-        $requestArguments = array('verb' => 'ListMetadataFormats');
+        $request = new OaipmhHarvester_Request($this->_getParam('base_url'));
         
         // Catch errors such as "String could not be parsed as XML"
         try {
-            $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
-            $oaipmh->getOaipmh();
+            $metadataFormats = $request->listMetadataFormats();
         } catch (Zend_Http_Client_Exception $e) {
             $this->flashError($e->getMessage());
             $this->redirect->goto('index');
@@ -57,87 +54,25 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         
         /* Compare the available OAI-PMH metadataFormats with the available 
-        Omeka maps and extract only those that are common to both. It's 
-        important to consider that some repositories don't provide repository
-        -wide metadata formats. Instead they only provide record level 
-        metadata formats. Oai_dc is mandatory for all records, so if a
-        repository doesn't provide metadata formats using 
-        ListMetadataFormats, only expose the oai_dc prefix. For a data 
-        provider that doesn't offer repository-wide metadata formats, see: 
-        http://www.informatik.uni-stuttgart.de/cgi-bin/OAI/OAI.pl
-        
+        Omeka maps and extract only those that are common to both.         
         The comparison is made between the metadata schemata, not the prefixes.
         */
-        $availableMaps = array();
-        if (isset($oaipmh->getOaipmh()->ListMetadataFormats)) {
-            $metadataFormats = $oaipmh->getOaipmh()->ListMetadataFormats->metadataFormat;
-            foreach ($metadataFormats as $metadataFormat) {
-                $metadataPrefix = trim((string) $metadataFormat->metadataPrefix);
-                $schema = trim((string) $metadataFormat->schema);
-                foreach($maps as $mapClass => $mapSchema) {
-                    if($mapSchema == $schema) {
-                        // Encode the class and prefix together with a pipe.
-                        $availableMaps["$mapClass|$metadataPrefix"] = $metadataPrefix;
-                        break;
-                    }
-                }
-            }
-        }
-        else {
-            if (in_array('http://www.openarchives.org/OAI/2.0/oai_dc.xsd', $maps)) {
-                $availableMaps["OaipmhHarvester_Harvest_OaiDc|oai_dc"] = 'oai_dc';
-            }
-        }
+        $availableMaps = array_intersect($maps, $metadataFormats);
         
-        // Get the sets from the data provider.
-        $requestArguments = array('verb' => 'ListSets');
-        
-        // If a resumption token exists, process it. For a data provider that 
-        // uses a resumption token for sets, see: http://www.ajol.info/oai/
-        if (isset($_POST['resumption_token'])) {
-            $requestArguments['resumptionToken'] = $_POST['resumption_token'];
-        }
-        
-        try {
-            $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
-        
-            // Handle returned errors, such as "noSetHierarchy". For a data provider 
-            // that has no set hierarchy, see: http://solarphysics.livingreviews.org/register/oai
-            if ($oaipmh->isError()) {
-                $error     = (string) $oaipmh->getError();
-                $errorCode = (string) $oaipmh->getErrorCode();
-            
-                // If the error code is "noSetHierarchy" set the sets to an empty array to 
-                // indicate that the repository does not have a set hierarchy.
-                if ($errorCode == OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
-                    $sets = array();
-                } else {
-                    $this->flashError("$errorCode: $error");
-                    $this->redirect->goto('index');
-                }
-            
-            // If no error was returned, it is a valid ListSets response.
-            } else {
-                $sets = $oaipmh->getOaipmh()->ListSets->set;
-            }
-            
-            // Set the resumption token, if any.
-            if (isset($oaipmh->getOaipmh()->ListSets->resumptionToken)) {
-                $resumptionToken = $oaipmh->getOaipmh()->ListSets->resumptionToken;
-            } else {
-                $resumptionToken = false;
-            }
-        } catch(Exception $e) {
-            // If we're here, the provider didn't even respond with valid XML.
-            // Try to continue with no sets.
-            $sets = array();
-        }
+        // For a data provider that uses a resumption token for sets, see: 
+        // http://www.ajol.info/oai/
+        $response = $request->listSets($this->_getParam('resumption_token'));
         
         // Set the variables to the view object.
-        $this->view->availableMaps   = $availableMaps;
-        $this->view->sets            = $sets;
-        $this->view->resumptionToken = isset($resumptionToken) ? $resumptionToken : false;
-        $this->view->baseUrl         = $baseUrl;
+        $this->view->availableMaps   = array_combine(
+            array_keys($availableMaps),
+            array_keys($availableMaps)
+        );
+        $this->view->sets            = $response['sets'];
+        $this->view->resumptionToken = 
+            array_key_exists('resumptionToken', $response)
+            ? $response['resumptionToken'] : false;
+        $this->view->baseUrl         = $this->_getParam('base_url'); // Watch out for injection!
         $this->view->maps            = $maps;
     }
     
@@ -149,18 +84,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     public function harvestAction()
     {
         // Only set on re-harvest
-        $harvest_id     = $_POST['harvest_id'];
+        $harvest_id = $this->_getParam('harvest_id');
         
-        $baseUrl        = $_POST['base_url'];
-        // metadataSpec is of the form "class|prefix", explode on pipe to get
-        // the individual items, 0 => class, 1 => prefix
-        $metadataSpec   = explode('|', $_POST['metadata_spec']);
-        $setSpec        = isset($_POST['set_spec']) ? $_POST['set_spec'] : null;
-        $setName        = isset($_POST['set_name']) ? $_POST['set_name'] : null;
-        $setDescription = isset($_POST['set_description']) ? $_POST['set_description'] : null;
-        
-        $metadataClass = $metadataSpec[0];
-        $metadataPrefix = $metadataSpec[1];
         
         // If true, this is a re-harvest, all parameters will be the same
         if($harvest_id) {
@@ -179,8 +104,15 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $harvest->start_from = null;
         }
         else {
-            // If $harvest is not null, use the existing harvest record.
-            $harvest = $this->getTable('OaipmhHarvester_Harvest')->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
+            $baseUrl        = $this->_getParam('base_url');
+            $metadataSpec   = $this->_getParam('metadata_spec');
+            $setSpec        = $this->_getParam('set_spec');
+            $setName        = $this->_getParam('set_name');
+            $setDescription = $this->_getParam('set_description');
+        
+            $metadataPrefix = $metadataSpec;
+            $harvest = $this->getTable('OaipmhHarvester_Harvest')
+                ->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
         
             if(!$harvest) {
                 // There is no existing identical harvest, create a new entry.
@@ -190,7 +122,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $harvest->set_name        = $setName;
                 $harvest->set_description = $setDescription;
                 $harvest->metadata_prefix = $metadataPrefix;
-                $harvest->metadata_class  = $metadataClass;
+                // FIXME REMOVE this column.
+                $harvest->metadata_class  = '';
             }
         }
             
@@ -223,7 +156,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function statusAction()
     {
-        $harvestId = $_GET['harvest_id'];
+        $harvestId = $this->_getParam('harvest_id');
         
         $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvestId);
         
@@ -273,10 +206,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                     // Get and set only the name of the file minus the extension.
                     require_once($pathname);
                     $class = "OaipmhHarvester_Harvest_${match[1]}";
-                    $object = new $class(null, null);
-                    $metadataSchema = $object->getMetadataSchema();
-                    $metadataPrefix = $object->getMetadataPrefix();
-                    $maps[$class] = $metadataSchema;
+                    $metadataSchema = call_user_func(array($class, 'getMetadataSchema'));
+                    $metadataPrefix = call_user_func(array($class, 'getMetadataPrefix'));
+                    $maps[$metadataPrefix] = $metadataSchema;
                 }
             }
         }

@@ -117,21 +117,6 @@ class OaipmhHarvester_Xml
     }
     
     /**
-     * Return whether the record is deleted
-     * 
-     * @param SimpleXMLIterator The record object
-     * @return bool
-     */
-    public function isDeletedRecord($record)
-    {
-        if (isset($record->header->attributes()->status) 
-            && $record->header->attributes()->status == 'deleted') {
-            return true;
-        }
-        return false;
-    }
-    
-    /**
      * Return the response resumption token, if any
      * 
      * @return string|false

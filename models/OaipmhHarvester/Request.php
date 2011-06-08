@@ -2,15 +2,26 @@
 
 class OaipmhHarvester_Request
 {
+    /**
+     * @var string
+     */
     private $_baseUrl;
 
+    /**
+     * Constructor.
+     *
+     * @param string $baseUrl
+     */
     public function __construct($baseUrl) 
     {
         $this->_baseUrl = $baseUrl;
     }
 
     /**
+     * List metadata response formats for the provider.
      *
+     * @return array Keyed array, where key is the metadataPrefix and value
+     * is the schema.
      */
     public function listMetadataFormats()
     {
@@ -40,8 +51,15 @@ class OaipmhHarvester_Request
         return $formats;
     }
 
+    /**
+     * List all records for a given request.
+     *
+     * @param array $query Args may include: metadataPrefix, set, 
+     * resumptionToken, from.
+     */
     public function listRecords(array $query)
     {
+        $query['verb'] = 'ListRecords';
         $xml = $this->_makeRequest($query);
         $response = array(
             'records' => $xml->ListRecords->record,
@@ -55,6 +73,13 @@ class OaipmhHarvester_Request
         return $response;
     }
 
+    /**
+     * List all available sets from the provider.
+     *
+     * Resumption token can be given for incomplete lists.
+     * 
+     * @param string|null $resumptionToken
+     */
     public function listSets($resumptionToken = null)
     {
         $query = array(
@@ -77,7 +102,6 @@ class OaipmhHarvester_Request
                         OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY
                 ) {
                     $sets = array();
-                    $retVal['noSetHierarchy'] = true;
                 }
             } else {
                 $sets = $xml->ListSets->set;
@@ -85,10 +109,6 @@ class OaipmhHarvester_Request
             if (isset($xml->ListSets->resumptionToken)) {
                 $retVal['resumptionToken'] = $xml->ListSets->resumptionToken;
             }
-                    //$this->flashError("$errorCode: $error");
-                    //$this->redirect->goto('index');
-                //}
-            
         } catch(Exception $e) {
             // If we're here, the provider didn't even respond with valid XML.
             // Try to continue with no sets.

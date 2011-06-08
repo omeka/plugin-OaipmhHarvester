@@ -43,8 +43,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record
 
     public function listRecords()
     {
-        // Set the request arguments.
-        $query = array('verb' => 'ListRecords');
+        $query = array();
         $resumptionToken = $this->resumption_token;
         if ($resumptionToken) {
             // Harvest a list reissue. 
@@ -53,13 +52,9 @@ class OaipmhHarvester_Harvest extends Omeka_Record
         else {
             if ($this->set_spec) {
                 // Harvest a set.
-                $query['set']            = $this->set_spec;
-                $query['metadataPrefix'] = $this->metadata_prefix;
+                $query['set'] = $this->set_spec;
             } 
-            else {
-                // Harvest a repository.
-                $query['metadataPrefix'] = $this->metadata_prefix;
-            }
+            $query['metadataPrefix'] = $this->metadata_prefix;
 
             // Perform date-selective harvesting if a "from" date is
             // specified.

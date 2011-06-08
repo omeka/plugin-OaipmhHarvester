@@ -35,7 +35,6 @@ class OaipmhHarvester_Harvest extends Omeka_Record
     public $initiated;
     public $completed;
     public $start_from;
-    public $pid;
 
     public function isResumable()
     {

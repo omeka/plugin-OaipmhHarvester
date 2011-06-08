@@ -49,7 +49,6 @@ head($head);
                 <th>Set Spec</th>
                 <th>Set Name</th>
                 <th>Status</th>
-                <th>PID</th>
                 <th></th>
             </tr>
         </thead>

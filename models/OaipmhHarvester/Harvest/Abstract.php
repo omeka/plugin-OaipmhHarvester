@@ -497,7 +497,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 $this->_harvest->status = 
                     OaipmhHarvester_Harvest::STATUS_COMPLETED;
                 $this->_harvest->completed = $this->_getCurrentDateTime();
-                $this->_harvest->pid = null;
                 $this->_harvest->resumption_token = null;
             } else {
                 $this->_harvest->resumption_token = $resumptionToken;
@@ -511,7 +510,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
             // Record the error.
             $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
             $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_ERROR;
-            $this->_harvest->pid = null;
             // Reset the harvest start_from time if an error occurs during 
             // processing. Since there's no way to know exactly when the 
             // error occured, re-harvests need to start from the beginning.

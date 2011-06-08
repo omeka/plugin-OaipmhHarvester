@@ -68,7 +68,6 @@ function oaipmh_harvester_install()
         `initiated` datetime default NULL,
         `completed` datetime default NULL,
         `start_from` datetime default NULL,
-        `pid` int unsigned default NULL,
         PRIMARY KEY  (`id`)
     ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
     $db->query($sql);
@@ -101,8 +100,6 @@ function oaipmh_harvester_install()
  */
 function oaipmh_harvester_uninstall()
 {
-    delete_option('oaipmh_harvester_memory_limit');
-    
     $db = get_db();
     $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_harvests`;";
     $db->query($sql);
@@ -115,34 +112,6 @@ function oaipmh_harvester_admin_append_to_plugin_uninstall_message()
     echo '<p>While you will not lose the items and collections created by your 
     harvests, you will lose all harvest-specific metadata and the ability to 
     re-harvest.</p>';
-}
-
-/**
- * config_form callback.
- * 
- * Prepares and renders the plugin's configuration form.
- * 
- * @return void
- */
-function oaipmh_harvester_config_form()
-{
-    if (!$memoryLimit = get_option('oaipmh_harvester_memory_limit')) {
-        $memoryLimit = ini_get('memory_limit');
-    }
-    
-    include 'config_form.php';
-}
-
-/**
- * config callback.
- * 
- * Handles a submitted configuration form by setting options.
- * 
- * @return void
- */
-function oaipmh_harvester_config()
-{
-    set_option('oaipmh_harvester_memory_limit', $_POST['oaipmh_harvester_memory_limit']);
 }
 
 /**

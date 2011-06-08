@@ -82,7 +82,7 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
      *
      * @return string Schema URI
      */
-    public function getMetadataSchema()
+    public static function getMetadataSchema()
     {
         return self::METADATA_SCHEMA;
     }
@@ -92,7 +92,7 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
 	 *
 	 * @return string Metadata prefix
 	 */
-    public function getMetadataPrefix()
+    public static function getMetadataPrefix()
     {
         return self::METADATA_PREFIX;
     }

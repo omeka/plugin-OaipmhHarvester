@@ -20,12 +20,12 @@ class OaipmhHarvester_HarvestTable extends Omeka_Db_Table
      * @return array An array of all OaipmhHarvester_Harvest objects, ordered by 
      * ID.
      */
-    public function findAllHarvests()
+    public function findAll()
     {
         $select = $this->getSelect()->order('id DESC');
         return $this->fetchObjects($select);
     }
-    
+
     /**
      * Find a harvest by base URL and set spec.  These are the components
      * required to make a harvest unique.

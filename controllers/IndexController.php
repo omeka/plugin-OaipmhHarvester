@@ -36,7 +36,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // OAI-PMH metadata formats.
         $maps = $this->_getMaps();
         
-        $request = new OaipmhHarvester_Request($_POST['base_url']);
+        $request = new OaipmhHarvester_Request($this->_getParam('base_url'));
         
         // Catch errors such as "String could not be parsed as XML"
         try {
@@ -61,7 +61,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         // For a data provider that uses a resumption token for sets, see: 
         // http://www.ajol.info/oai/
-        $response = $request->listSets(@$_POST['resumption_token']);
+        $response = $request->listSets($this->_getParam('resumption_token'));
         
         // Set the variables to the view object.
         $this->view->availableMaps   = array_combine(
@@ -72,7 +72,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $this->view->resumptionToken = 
             array_key_exists('resumptionToken', $response)
             ? $response['resumptionToken'] : false;
-        $this->view->baseUrl         = $_POST['base_url']; // Watch out for injection!
+        $this->view->baseUrl         = $this->_getParam('base_url'); // Watch out for injection!
         $this->view->maps            = $maps;
     }
     
@@ -84,15 +84,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     public function harvestAction()
     {
         // Only set on re-harvest
-        $harvest_id     = $_POST['harvest_id'];
+        $harvest_id = $this->_getParam('harvest_id');
         
-        $baseUrl        = $_POST['base_url'];
-        $metadataSpec   = $_POST['metadata_spec'];
-        $setSpec        = isset($_POST['set_spec']) ? $_POST['set_spec'] : null;
-        $setName        = isset($_POST['set_name']) ? $_POST['set_name'] : null;
-        $setDescription = isset($_POST['set_description']) ? $_POST['set_description'] : null;
-        
-        $metadataPrefix = $metadataSpec;
         
         // If true, this is a re-harvest, all parameters will be the same
         if($harvest_id) {
@@ -111,7 +104,13 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $harvest->start_from = null;
         }
         else {
-            // If $harvest is not null, use the existing harvest record.
+            $baseUrl        = $this->_getParam('base_url');
+            $metadataSpec   = $this->_getParam('metadata_spec');
+            $setSpec        = $this->_getParam('set_spec');
+            $setName        = $this->_getParam('set_name');
+            $setDescription = $this->_getParam('set_description');
+        
+            $metadataPrefix = $metadataSpec;
             $harvest = $this->getTable('OaipmhHarvester_Harvest')
                 ->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
         
@@ -157,7 +156,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function statusAction()
     {
-        $harvestId = $_GET['harvest_id'];
+        $harvestId = $this->_getParam('harvest_id');
         
         $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvestId);
         

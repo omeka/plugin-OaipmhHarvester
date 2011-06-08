@@ -21,7 +21,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function indexAction()
     {
-        $harvests = $this->getTable('OaipmhHarvester_Harvest')->findAllHarvests();
+        $harvests = $this->getTable('OaipmhHarvester_Harvest')->findAll();
         $this->view->harvests = $harvests;
     }
     

@@ -62,17 +62,6 @@ head($head);
                 <td><?php echo $harvest->set_spec; ?></td>
                 <td><?php echo $harvest->set_name; ?></td>
                 <td><a href="<?php echo uri("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo ucwords($harvest->status); ?></a></td>
-                <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_QUEUED ||
-                   $harvest->status == OaipmhHarvester_Harvest::STATUS_IN_PROGRESS): ?>
-                <td><?php echo $harvest->pid; ?></td>
-                <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/kill');?>">
-                    <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
-                    <?php echo $this->formSubmit('submit_kill', 'Kill Process'); ?>
-                    </form>
-                </td>
-                <?php else: ?>
-                <td></td>
-                <?php endif; ?>
                 <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED): ?>
                 <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest');?>">
                     <?php echo $this->formHidden('harvest_id', $harvest->id); ?>

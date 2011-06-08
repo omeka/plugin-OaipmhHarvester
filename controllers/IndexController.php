@@ -36,14 +36,11 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // OAI-PMH metadata formats.
         $maps = $this->_getMaps();
         
-        // Get the available metadata formats from the data provider.
-        $baseUrl = trim($_POST['base_url']);
-        $requestArguments = array('verb' => 'ListMetadataFormats');
+        $request = new OaipmhHarvester_Request($_POST['base_url']);
         
         // Catch errors such as "String could not be parsed as XML"
         try {
-            $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
-            $oaipmh->getOaipmh();
+            $metadataFormats = $request->listMetadataFormats();
         } catch (Zend_Http_Client_Exception $e) {
             $this->flashError($e->getMessage());
             $this->redirect->goto('index');
@@ -68,26 +65,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         The comparison is made between the metadata schemata, not the prefixes.
         */
-        $availableMaps = array();
-        if (isset($oaipmh->getOaipmh()->ListMetadataFormats)) {
-            $metadataFormats = $oaipmh->getOaipmh()->ListMetadataFormats->metadataFormat;
-            foreach ($metadataFormats as $metadataFormat) {
-                $metadataPrefix = trim((string) $metadataFormat->metadataPrefix);
-                $schema = trim((string) $metadataFormat->schema);
-                foreach($maps as $mapClass => $mapSchema) {
-                    if($mapSchema == $schema) {
-                        // Encode the class and prefix together with a pipe.
-                        $availableMaps["$mapClass|$metadataPrefix"] = $metadataPrefix;
-                        break;
-                    }
-                }
-            }
-        }
-        else {
-            if (in_array('http://www.openarchives.org/OAI/2.0/oai_dc.xsd', $maps)) {
-                $availableMaps["OaipmhHarvester_Harvest_OaiDc|oai_dc"] = 'oai_dc';
-            }
-        }
+        $availableMaps = array_intersect_assoc($maps, $metadataFormats);
         
         // Get the sets from the data provider.
         $requestArguments = array('verb' => 'ListSets');
@@ -273,10 +251,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                     // Get and set only the name of the file minus the extension.
                     require_once($pathname);
                     $class = "OaipmhHarvester_Harvest_${match[1]}";
-                    $object = new $class(null, null);
-                    $metadataSchema = $object->getMetadataSchema();
-                    $metadataPrefix = $object->getMetadataPrefix();
-                    $maps[$class] = $metadataSchema;
+                    $metadataSchema = call_user_func(array($class, 'getMetadataSchema'));
+                    $metadataPrefix = call_user_func(array($class, 'getMetadataPrefix'));
+                    $maps[$metadataPrefix] = $metadataSchema;
                 }
             }
         }

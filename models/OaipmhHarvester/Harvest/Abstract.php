@@ -476,4 +476,15 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $peakUsage = memory_get_peak_usage();
         $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
     }
+
+    public static function factory($harvest, $options)
+    {
+        $classSuffix = Inflector::camelize($harvest->metadata_prefix);
+        $class = 'OaipmhHarvester_Harvest_' . $classSuffix;
+        require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$classSuffix.php";
+
+        // Set the harvest object.
+        $harvester = new $class($harvest, $options);
+        return $harvester;
+    }
 }

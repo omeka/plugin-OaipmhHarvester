@@ -123,7 +123,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $harvest->set_name        = $setName;
                 $harvest->set_description = $setDescription;
                 $harvest->metadata_prefix = $metadataPrefix;
-                $harvest->metadata_class  = $metadataClass;
+                // FIXME REMOVE this column.
+                $harvest->metadata_class  = '';
             }
         }
             

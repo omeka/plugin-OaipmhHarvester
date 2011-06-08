@@ -25,6 +25,7 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
         $options = array();
 
         // Set the ignore deleted records option.
+        // FIXME Does this do anything?
         $options['ignore_deleted_records'] = get_option('oaipmh_harvester_ignore_deleted_records') == 'yes' ? true : false;
 
         // Set the metadata prefix.
@@ -32,15 +33,9 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
 
         // Set the metadata prefix class.
         require_once 'OaipmhHarvester/Harvest/Abstract.php';
+        // FIXME Remove this dependency.
         require_once 'OaipmhHarvester/Xml.php';
-        $metadataClass = $harvest->metadata_class;
-        
-        $metadataClassFile = str_replace('OaipmhHarvester_Harvest_', '', $metadataClass);
-
-        require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$metadataClassFile.php";
-
-        // Set the harvest object.
-        $harvester = new $metadataClass($harvest, $options);
+        $harvester = OaipmhHarvester_Harvest_Abstract::factory($harvest, $options);
         $harvester->harvest();
         if ($harvest->isResumable()) {
             $this->resend();

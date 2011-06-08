@@ -87,15 +87,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         $harvest_id     = $_POST['harvest_id'];
         
         $baseUrl        = $_POST['base_url'];
-        // metadataSpec is of the form "class|prefix", explode on pipe to get
-        // the individual items, 0 => class, 1 => prefix
-        $metadataSpec   = explode('|', $_POST['metadata_spec']);
+        $metadataSpec   = $_POST['metadata_spec'];
         $setSpec        = isset($_POST['set_spec']) ? $_POST['set_spec'] : null;
         $setName        = isset($_POST['set_name']) ? $_POST['set_name'] : null;
         $setDescription = isset($_POST['set_description']) ? $_POST['set_description'] : null;
         
-        $metadataClass = $metadataSpec[0];
-        $metadataPrefix = $metadataSpec[1];
+        $metadataPrefix = $metadataSpec;
         
         // If true, this is a re-harvest, all parameters will be the same
         if($harvest_id) {
@@ -115,7 +112,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         else {
             // If $harvest is not null, use the existing harvest record.
-            $harvest = $this->getTable('OaipmhHarvester_Harvest')->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
+            $harvest = $this->getTable('OaipmhHarvester_Harvest')
+                ->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
         
             if(!$harvest) {
                 // There is no existing identical harvest, create a new entry.

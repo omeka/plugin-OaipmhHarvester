@@ -40,9 +40,19 @@ class OaipmhHarvester_Request
         return $formats;
     }
 
-    public function listRecords()
+    public function listRecords(array $query)
     {
-
+        $xml = $this->_makeRequest($query);
+        $response = array(
+            'records' => $xml->ListRecords->record,
+        );
+        if ($error = $this->_getError($xml)) {
+            $response['error'] = $error;
+        }
+        if ($token = $xml->ListRecords->resumptionToken) {
+            $response['resumptionToken'] = (string)$token;
+        }
+        return $response;
     }
 
     public function listSets($resumptionToken = null)

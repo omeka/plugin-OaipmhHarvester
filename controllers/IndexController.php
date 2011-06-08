@@ -54,68 +54,25 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         
         /* Compare the available OAI-PMH metadataFormats with the available 
-        Omeka maps and extract only those that are common to both. It's 
-        important to consider that some repositories don't provide repository
-        -wide metadata formats. Instead they only provide record level 
-        metadata formats. Oai_dc is mandatory for all records, so if a
-        repository doesn't provide metadata formats using 
-        ListMetadataFormats, only expose the oai_dc prefix. For a data 
-        provider that doesn't offer repository-wide metadata formats, see: 
-        http://www.informatik.uni-stuttgart.de/cgi-bin/OAI/OAI.pl
-        
+        Omeka maps and extract only those that are common to both.         
         The comparison is made between the metadata schemata, not the prefixes.
         */
-        $availableMaps = array_intersect_assoc($maps, $metadataFormats);
+        $availableMaps = array_intersect($maps, $metadataFormats);
         
-        // Get the sets from the data provider.
-        $requestArguments = array('verb' => 'ListSets');
-        
-        // If a resumption token exists, process it. For a data provider that 
-        // uses a resumption token for sets, see: http://www.ajol.info/oai/
-        if (isset($_POST['resumption_token'])) {
-            $requestArguments['resumptionToken'] = $_POST['resumption_token'];
-        }
-        
-        try {
-            $oaipmh = new OaipmhHarvester_Xml($baseUrl, $requestArguments);
-        
-            // Handle returned errors, such as "noSetHierarchy". For a data provider 
-            // that has no set hierarchy, see: http://solarphysics.livingreviews.org/register/oai
-            if ($oaipmh->isError()) {
-                $error     = (string) $oaipmh->getError();
-                $errorCode = (string) $oaipmh->getErrorCode();
-            
-                // If the error code is "noSetHierarchy" set the sets to an empty array to 
-                // indicate that the repository does not have a set hierarchy.
-                if ($errorCode == OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY) {
-                    $sets = array();
-                } else {
-                    $this->flashError("$errorCode: $error");
-                    $this->redirect->goto('index');
-                }
-            
-            // If no error was returned, it is a valid ListSets response.
-            } else {
-                $sets = $oaipmh->getOaipmh()->ListSets->set;
-            }
-            
-            // Set the resumption token, if any.
-            if (isset($oaipmh->getOaipmh()->ListSets->resumptionToken)) {
-                $resumptionToken = $oaipmh->getOaipmh()->ListSets->resumptionToken;
-            } else {
-                $resumptionToken = false;
-            }
-        } catch(Exception $e) {
-            // If we're here, the provider didn't even respond with valid XML.
-            // Try to continue with no sets.
-            $sets = array();
-        }
+        // For a data provider that uses a resumption token for sets, see: 
+        // http://www.ajol.info/oai/
+        $response = $request->listSets(@$_POST['resumption_token']);
         
         // Set the variables to the view object.
-        $this->view->availableMaps   = $availableMaps;
-        $this->view->sets            = $sets;
-        $this->view->resumptionToken = isset($resumptionToken) ? $resumptionToken : false;
-        $this->view->baseUrl         = $baseUrl;
+        $this->view->availableMaps   = array_combine(
+            array_keys($availableMaps),
+            array_keys($availableMaps)
+        );
+        $this->view->sets            = $response['sets'];
+        $this->view->resumptionToken = 
+            array_key_exists('resumptionToken', $response)
+            ? $response['resumptionToken'] : false;
+        $this->view->baseUrl         = $_POST['base_url']; // Watch out for injection!
         $this->view->maps            = $maps;
     }
     

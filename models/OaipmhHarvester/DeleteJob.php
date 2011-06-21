@@ -65,7 +65,7 @@ class OaipmhHarvester_DeleteJob extends Omeka_JobAbstract
         // processing. Since there's no way to know exactly when the 
         // error occured, re-harvests need to start from the beginning.
         $harvest->start_from = null;
-        $harvest->save();
+        $harvest->forceSave();
         
         
     }

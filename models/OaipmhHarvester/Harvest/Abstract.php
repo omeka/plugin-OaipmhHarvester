@@ -192,8 +192,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $record->item_id    = $item->id;
         $record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
-        // FIXME: Use forceSave() instead of save(), everywhere.
-        $record->save();
+        $record->forceSave();
         
         release_object($record);
     }
@@ -206,7 +205,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     private function _updateRecord(OaipmhHarvester_Record $record)
     {   
         $record->datestamp  = (string) $this->_record->header->datestamp;
-        $record->save();
+        $record->forceSave();
     }
     
     /**
@@ -274,7 +273,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
             // Remember to set the harvest's collection ID once it has been saved.
             $this->_harvest->collection_id = $collection->id;
-            $this->_harvest->save();
+            $this->_harvest->forceSave();
         }
         return $collection;
     }
@@ -429,7 +428,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         try {
             $this->_harvest->status = 
                 OaipmhHarvester_Harvest::STATUS_IN_PROGRESS;
-            $this->_harvest->save();
+            $this->_harvest->forceSave();
         
             $this->beforeHarvest();
             // This method does most of the actual work.

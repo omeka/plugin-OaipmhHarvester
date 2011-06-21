@@ -26,7 +26,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
      * Collection to insert items into.
      * @var Collection
      */
-    protected $collection;
+    protected $_collection;
     
     protected $_elementTexts = array();
     protected $_fileMetadata = array();
@@ -37,22 +37,22 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
     /**
      * Actions to be carried out before the harvest of any items begins.
      */
-    protected function beforeHarvest()
+    protected function _beforeHarvest()
     {
         // Detect if the Dublin Core Extended plugin is installed. If not, add a 
         // status message stating that more elements could have been mapped.
         if (!defined('DUBLIN_CORE_EXTENDED_PLUGIN_VERSION')) {
             $this->_qualified = false;
             $message = 'The Dublin Core Extended plugin is not currently installed. No data will be lost, but some CDWA Lite elements that would have otherwise been mapped to Dublin Core refinements will be mapped to their unqualified parent elements.';
-            $this->addStatusMessage($message, self::MESSAGE_CODE_NOTICE);
+            $this->_addStatusMessage($message, self::MESSAGE_CODE_NOTICE);
         }
         
-        $harvest = $this->getHarvest();
+        $harvest = $this->_getHarvest();
         $collectionMetadata = array('name'        => $harvest->set_name, 
                                     'description' => $harvest->set_description, 
                                     'public'      => true, 
                                     'featured'    => false);
-        $this->collection = $this->insertCollection($collectionMetadata);
+        $this->_collection = $this->_insertCollection($collectionMetadata);
     }
     
     /**
@@ -61,9 +61,9 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
      * @param SimpleXMLIterator $record XML metadata record
      * @return array Array of item-level, element texts and file metadata.
      */
-    protected function harvestRecord($record)
+    protected function _harvestRecord($record)
     {
-        $itemMetadata = array('collection_id' => $this->collection->id, 
+        $itemMetadata = array('collection_id' => $this->_collection->id, 
                               'public'        => true, 
                               'featured'      => false);
                               
@@ -85,7 +85,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // Map to Type
         $objectWorkTypes = $cdwalite->descriptiveMetadata->objectWorkTypeWrap->objectWorkType;
         foreach ($objectWorkTypes as $objectWorkType) {
-            $this->_buildElementTexts('Type', $objectWorkType);
+            $this->_addElementText('Type', $objectWorkType);
         }
         
         // classificationWrap (non-repeatable, not required) 
@@ -93,7 +93,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // Map to Subject
         if ($classifications = $cdwalite->descriptiveMetadata->classificationWrap->classification) {
             foreach ($classifications as $classification) {
-                $this->_buildElementTexts('Subject', $classification);
+                $this->_addElementText('Subject', $classification);
             }
         }
         
@@ -103,19 +103,19 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // Map to Title
         $titleSets = $cdwalite->descriptiveMetadata->titleWrap->titleSet;
         foreach ($titleSets as $titleSet) {
-            $this->_buildElementTexts('Title', $titleSet->title);
+            $this->_addElementText('Title', $titleSet->title);
         }
         
         // displayCreator (non-repeatable, required)
         // Map to Creator
         $displayCreator = $cdwalite->descriptiveMetadata->displayCreator;
-        $this->_buildElementTexts('Creator', $displayCreator);
+        $this->_addElementText('Creator', $displayCreator);
         
         // displayCreationDate (non-repeatable, required)
         // Map to Date Created (Date.Created)
         $displayCreationDate = $cdwalite->descriptiveMetadata->displayCreationDate;
         $elementName = $this->_qualified ? 'Date Created' : 'Date';
-        $this->_buildElementTexts($elementName, $displayCreationDate);
+        $this->_addElementText($elementName, $displayCreationDate);
         
         // locationWrap (non-repeatable, required)
         // ->locationSet (repeatable, required)
@@ -128,21 +128,21 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
             // Map to Subject -or- Spatial Coverage (Coverage.Spatial)
             $type = $locationSet->locationName->attributes('cdwalite', true)->type;
             if ('creationLocation' == $type) {
-                $this->_buildElementTexts('Subject', $locationSet->locationName);
+                $this->_addElementText('Subject', $locationSet->locationName);
             }
             
             // ->locationName (non-repeatable, required)
             // locationName[type] = formerRepository
             // Map to Source
             if ('formerRepository' == $type) {
-                $this->_buildElementTexts('Source', $locationSet->locationName);
+                $this->_addElementText('Source', $locationSet->locationName);
             }
             
             // ->workID (repeatable, not required)
             // Map to Identifier
             if ($workIds = $locationSet->workID) {
                 foreach ($workIds as $workId) {
-                    $this->_buildElementTexts('Identifier', $workId);
+                    $this->_addElementText('Identifier', $workId);
                 }
             }
             
@@ -153,7 +153,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // Map to Subject -or- Temporal Coverage (Coverage.Temporal)
         if ($styles = $cdwalite->descriptiveMetadata->styleWrap->style) {
             foreach ($styles as $style) {
-                $this->_buildElementTexts('Subject', $style);
+                $this->_addElementText('Subject', $style);
             }
         }
         
@@ -161,7 +161,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // Map to Extent (Format.Extent)
         if ($displayMeasurements = $cdwalite->descriptiveMetadata->displayMeasurements) {
             $elementName = $this->_qualified ? 'Extent' : 'Format';
-            $this->_buildElementTexts($elementName, $displayMeasurements);
+            $this->_addElementText($elementName, $displayMeasurements);
         }
         
         // indexingMeasurementsWrap (non-repeatable, not required)
@@ -178,7 +178,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                         if ($scaleMeasurements = $measurementsSet->scaleMeasurements) {
                             foreach ($scaleMeasurements as $scaleMeasurement) {
                                 $elementName = $this->_qualified ? 'Extent' : 'Format';
-                                $this->_buildElementTexts($elementName, $scaleMeasurement);
+                                $this->_addElementText($elementName, $scaleMeasurement);
                             }
                         }
                     }
@@ -197,7 +197,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                 && 'material' == $type ) {
                 foreach ($termMaterialsTechs as $termMaterialsTech) {
                     $elementName = $this->_qualified ? 'Medium' : 'Format';
-                    $this->_buildElementTexts($elementName, $termMaterialsTech);
+                    $this->_addElementText($elementName, $termMaterialsTech);
                 }
             }
         }
@@ -207,7 +207,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // Map to Description
         if ($inscriptions = $cdwalite->descriptiveMetadata->inscriptionsWrap->inscriptions) {
             foreach ($inscriptions as $inscription) {
-                $this->_buildElementTexts('Description', $inscription);
+                $this->_addElementText('Description', $inscription);
             }
         }
         
@@ -220,7 +220,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                 // Map to Subject -or- Spatial Coverage (Coverage.Spatial) -or- Temporal Coverage (Coverage.Temporal)
                 if ($subjectTerms = $indexingSubjectSet->subjectTerm) {
                     foreach ($subjectTerms as $subjectTerm) {
-                        $this->_buildElementTexts('Subject', $subjectTerm);
+                        $this->_addElementText('Subject', $subjectTerm);
                     }
                 }
             }
@@ -234,7 +234,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                 // ->descriptiveNote (non-repeatable, not required)
                 // Map to Description
                 if ($descriptiveNote = $descriptiveNoteSet->descriptiveNote) {
-                    $this->_buildElementTexts('Description', $descriptiveNote);
+                    $this->_addElementText('Description', $descriptiveNote);
                 }
             }
         }
@@ -248,7 +248,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                 // Map to Relation
                 if ($labelRelatedWorks = $relatedWorkSet->labelRelatedWork) {
                     foreach ($labelRelatedWorks as $labelRelatedWork) {
-                        $this->_buildElementTexts('Relation', $labelRelatedWork);
+                        $this->_addElementText('Relation', $labelRelatedWork);
                     }
                 }
                 
@@ -256,14 +256,14 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                 // Map to Relation
                 if ($locRelatedWorks = $relatedWorkSet->locRelatedWork) {
                     foreach ($locRelatedWorks as $locRelatedWork) {
-                        $this->_buildElementTexts('Relation', $locRelatedWork);
+                        $this->_addElementText('Relation', $locRelatedWork);
                     }
                 }
                 
                 // ->relatedWorkRelType (non-repeatable, not required)
                 // Map to Relation
                 if ($relatedWorkRelType = $relatedWorkSet->relatedWorkRelType) {
-                    $this->_buildElementTexts('Relation', $relatedWorkRelType);
+                    $this->_addElementText('Relation', $relatedWorkRelType);
                 }
             }
         }
@@ -272,7 +272,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // Map to Rights
         if ($rightsWorks = $cdwalite->administrativeMetadata->rightsWork) {
             foreach ($rightsWorks as $rightsWork) {
-                $this->_buildElementTexts('Rights', $rightsWork);
+                $this->_addElementText('Rights', $rightsWork);
             }
         }
         
@@ -286,7 +286,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                  if ($resourceRelTypes = $resourceSet->resourceRelType) {
                     foreach ($resourceRelTypes as $resourceRelType) {
                         $elementName = $this->_qualified ? 'Is Format Of' : 'Relation';
-                        $this->_buildElementTexts($elementName, $resourceRelType);
+                        $this->_addElementText($elementName, $resourceRelType);
                     }
                 }
                 
@@ -295,7 +295,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                 if ($resourceViewTypes = $resourceSet->resourceViewType) {
                     foreach ($resourceViewTypes as $resourceViewType) {
                         $elementName = $this->_qualified ? 'Alternative Title' : 'Title';
-                        $this->_buildElementTexts($elementName, $resourceRelType);
+                        $this->_addElementText($elementName, $resourceRelType);
                     }
                 }
                 
@@ -303,7 +303,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                 // Map to Subject
                 if ($resourceViewSubjectTerms = $resourceSet->resourceViewSubjectTerm) {
                     foreach ($resourceViewSubjectTerms as $resourceViewSubjectTerm) {
-                        $this->_buildElementTexts('Subject', $resourceViewSubjectTerm);
+                        $this->_addElementText('Subject', $resourceViewSubjectTerm);
                     }
                 }
                 
@@ -326,7 +326,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         if ($recordSources = $cdwalite->administrativeMetadata->recordWrap->recordSource) {
             foreach ($recordSources as $recordSource) {
                 $elementName = $this->_qualified ? 'Is Referenced By' : 'Relation';
-                $this->_buildElementTexts($elementName, $resourceRelType);
+                $this->_addElementText($elementName, $resourceRelType);
             }
         }
         
@@ -343,14 +343,18 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
     }
     
     /** 
-     * Wrapper method for buildElementTexts() that sets properties common to
-     * all CDWA Lite elements.
+     * Add a Dublin Core element text.
      *
      * @param string $element Element name
      * @param string $text Element text
      */
-    protected function _buildElementTexts($element, $text)
+    private function _addElementText($element, $text)
     {
-        $this->_elementTexts = $this->buildElementTexts($this->_elementTexts, 'Dublin Core', $element, $text);
+        $this->_elementTexts = $this->_buildElementTexts(
+            $this->_elementTexts, 
+            'Dublin Core', 
+            $element, 
+            $text
+        );
     }
 }

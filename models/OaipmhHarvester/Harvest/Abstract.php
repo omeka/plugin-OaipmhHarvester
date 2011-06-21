@@ -401,7 +401,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param bool $html Flag whether this element text is HTML
      * @return array
      */
-    final protected function _buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
+    protected function _buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
     {
         $elementTexts[$elementSet][$element][] = array('text' => (string) $text, 'html' => (bool) $html);
         return $elementTexts;

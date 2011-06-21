@@ -37,22 +37,22 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
     /**
      * Actions to be carried out before the harvest of any items begins.
      */
-    protected function beforeHarvest()
+    protected function _beforeHarvest()
     {
         // Detect if the Dublin Core Extended plugin is installed. If not, add a 
         // status message stating that more elements could have been mapped.
         if (!defined('DUBLIN_CORE_EXTENDED_PLUGIN_VERSION')) {
             $this->_qualified = false;
             $message = 'The Dublin Core Extended plugin is not currently installed. No data will be lost, but some CDWA Lite elements that would have otherwise been mapped to Dublin Core refinements will be mapped to their unqualified parent elements.';
-            $this->addStatusMessage($message, self::MESSAGE_CODE_NOTICE);
+            $this->_addStatusMessage($message, self::MESSAGE_CODE_NOTICE);
         }
         
-        $harvest = $this->getHarvest();
+        $harvest = $this->_getHarvest();
         $collectionMetadata = array('name'        => $harvest->set_name, 
                                     'description' => $harvest->set_description, 
                                     'public'      => true, 
                                     'featured'    => false);
-        $this->collection = $this->insertCollection($collectionMetadata);
+        $this->collection = $this->_insertCollection($collectionMetadata);
     }
     
     /**
@@ -61,7 +61,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
      * @param SimpleXMLIterator $record XML metadata record
      * @return array Array of item-level, element texts and file metadata.
      */
-    protected function harvestRecord($record)
+    protected function _harvestRecord($record)
     {
         $itemMetadata = array('collection_id' => $this->collection->id, 
                               'public'        => true, 

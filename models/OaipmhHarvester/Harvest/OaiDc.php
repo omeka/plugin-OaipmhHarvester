@@ -31,14 +31,14 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
     /**
      * Actions to be carried out before the harvest of any items begins.
      */
-    protected function beforeHarvest()
+    protected function _beforeHarvest()
     {
-        $harvest = $this->getHarvest();
+        $harvest = $this->_getHarvest();
         $collectionMetadata = array('name'        => $harvest->set_name, 
                                     'description' => $harvest->set_description, 
                                     'public'      => true, 
                                     'featured'    => false);
-        $this->collection = $this->insertCollection($collectionMetadata);
+        $this->collection = $this->_insertCollection($collectionMetadata);
     }
     
     /**
@@ -47,7 +47,7 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
      * @param SimpleXMLIterator $record XML metadata record
      * @return array Array of item-level, element texts and file metadata.
      */
-    protected function harvestRecord($record)
+    protected function _harvestRecord($record)
     {
         $itemMetadata = array('collection_id' => $this->collection->id, 
                               'public'        => true, 

@@ -70,7 +70,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @param SimpleXMLIterator The current record object
      */
-    abstract protected function harvestRecord($record);
+    abstract protected function _harvestRecord($record);
     
     /**
      * Checks whether the current record has already been harvested, and
@@ -136,7 +136,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 continue;
             }
             $existingRecord = $this->_recordExists($record);
-            $harvestedRecord = $this->harvestRecord($record);
+            $harvestedRecord = $this->_harvestRecord($record);
             
             // Cache the record for later use.
             $this->_record = $record;
@@ -145,19 +145,23 @@ abstract class OaipmhHarvester_Harvest_Abstract
             if($existingRecord) {
                 // If datestamp has changed, update the record, otherwise ignore.
                 if($existingRecord->datestamp != $record->header->datestamp) {
-                    $this->updateItem($existingRecord,
+                    $this->_updateItem($existingRecord,
                                       $harvestedRecord['elementTexts'],
                                       $harvestedRecord['fileMetadata']);
                 }
                 release_object($existingRecord);
             }
-            else $this->insertItem($harvestedRecord['itemMetadata'],
-                                   $harvestedRecord['elementTexts'],
-                                   $harvestedRecord['fileMetadata']);
+            else {
+                $this->_insertItem(
+                    $harvestedRecord['itemMetadata'],
+                    $harvestedRecord['elementTexts'],
+                    $harvestedRecord['fileMetadata']
+                );
+            }
         }
         
         $resumptionToken = $response['resumptionToken'];
-        $this->addStatusMessage("Received resumption token: $resumptionToken");
+        $this->_addStatusMessage("Received resumption token: $resumptionToken");
 
         return ($resumptionToken ? $resumptionToken : true);
     }
@@ -225,7 +229,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @see self::__construct()
      */
-    protected function beforeHarvest()
+    protected function _beforeHarvest()
     {
     }
     
@@ -237,7 +241,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @see self::__construct()
      */
-    protected function afterHarvest()
+    protected function _afterHarvest()
     {
     }
     
@@ -248,7 +252,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param array $metadata
      * @return Collection
      */
-    final protected function insertCollection($metadata = array())
+    final protected function _insertCollection($metadata = array())
     {
         // If collection_id is not null, use the existing collection, do not
         // create a new one.
@@ -293,7 +297,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param mixed $fileMetadata The item's file metadata
      * @return true
      */
-    final protected function insertItem($metadata = array(), $elementTexts = array(), $fileMetadata = array())
+    final protected function _insertItem($metadata = array(), $elementTexts = array(), $fileMetadata = array())
     {
         // Insert the item.
         $item = insert_item($metadata, $elementTexts);
@@ -349,7 +353,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param mixed $fileMetadata The item's file metadata
      * @return true
      */
-    final protected function updateItem($record, $elementTexts = array(), $fileMetadata = array())
+    final protected function _updateItem($record, $elementTexts = array(), $fileMetadata = array())
     {
         // Update the item
         $item = update_item($record->item_id, array('overwriteElementTexts' => true), $elementTexts, $fileMetadata);
@@ -370,7 +374,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param int|null $messageCode The message code
      * @param string $delimiter The string dilimiting each status message
      */
-    final protected function addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
+    final protected function _addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
     {
         $this->_harvest->addStatusMessage($message, $messageCode, $delimiter);
     }
@@ -380,7 +384,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @return OaipmhHarvester_Harvest
      */
-    final protected function getHarvest()
+    final protected function _getHarvest()
     {
         return $this->_harvest;
     }
@@ -397,7 +401,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param bool $html Flag whether this element text is HTML
      * @return array
      */
-    final protected function buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
+    final protected function _buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
     {
         $elementTexts[$elementSet][$element][] = array('text' => (string) $text, 'html' => (bool) $html);
         return $elementTexts;
@@ -415,7 +419,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
         
         $statusMessage = "$errstr in $errfile on line $errline";
-        $this->addStatusMessage($statusMessage, self::MESSAGE_CODE_ERROR);
+        $this->_addStatusMessage($statusMessage, self::MESSAGE_CODE_ERROR);
         return true;
     }
 
@@ -429,14 +433,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 OaipmhHarvester_Harvest::STATUS_IN_PROGRESS;
             $this->_harvest->forceSave();
         
-            $this->beforeHarvest();
+            $this->_beforeHarvest();
             // This method does most of the actual work.
             $resumptionToken = $this->_harvestRecords();
 
             // A return value of true just indicates success, all other values
             // must be valid resumption tokens.
             if ($resumptionToken === true) {
-                $this->afterHarvest();
+                $this->_afterHarvest();
                 $this->_harvest->status = 
                     OaipmhHarvester_Harvest::STATUS_COMPLETED;
                 $this->_harvest->completed = $this->_getCurrentDateTime();
@@ -451,7 +455,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         } catch (Exception $e) {
             // Record the error.
-            $this->addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
+            $this->_addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
             $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_ERROR;
             // Reset the harvest start_from time if an error occurs during 
             // processing. Since there's no way to know exactly when the 
@@ -461,7 +465,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
     
         $peakUsage = memory_get_peak_usage();
-        $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
+        $this->_addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
     }
 
     public static function factory($harvest)

@@ -26,7 +26,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
      * Collection to insert items into.
      * @var Collection
      */
-    protected $collection;
+    protected $_collection;
     
     protected $_elementTexts = array();
     protected $_fileMetadata = array();
@@ -52,7 +52,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
                                     'description' => $harvest->set_description, 
                                     'public'      => true, 
                                     'featured'    => false);
-        $this->collection = $this->_insertCollection($collectionMetadata);
+        $this->_collection = $this->_insertCollection($collectionMetadata);
     }
     
     /**
@@ -63,7 +63,7 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
      */
     protected function _harvestRecord($record)
     {
-        $itemMetadata = array('collection_id' => $this->collection->id, 
+        $itemMetadata = array('collection_id' => $this->_collection->id, 
                               'public'        => true, 
                               'featured'      => false);
                               

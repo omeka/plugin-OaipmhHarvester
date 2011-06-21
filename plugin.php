@@ -152,6 +152,7 @@ function oaipmh_harvester_expose_duplicates()
     $recordTable = get_db()->getTable('OaipmhHarvester_Record');
     $record = $recordTable->findByItemId($id);
     $duplicates = $recordTable->findByOaiIdentifier($record->identifier);
+    $items = array();
     
     foreach($duplicates as $duplicate) {
         if($duplicate->item_id == $id) continue;

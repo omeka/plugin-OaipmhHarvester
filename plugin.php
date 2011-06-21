@@ -56,7 +56,6 @@ function oaipmh_harvester_install()
         `collection_id` int unsigned default NULL,
         `base_url` text collate utf8_unicode_ci NOT NULL,
         `metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
-        `metadata_class` text collate utf8_unicode_ci NOT NULL,
         `set_spec` text collate utf8_unicode_ci NULL,
         `set_name` text collate utf8_unicode_ci NULL,
         `set_description` text collate utf8_unicode_ci NULL,

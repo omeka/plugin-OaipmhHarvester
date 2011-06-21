@@ -38,7 +38,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         
         $request = new OaipmhHarvester_Request_Throttler(
             new OaipmhHarvester_Request($this->_getParam('base_url')),
-            array('wait' => 5)
+            array('wait' => oaipmh_harvester_config('requestThrottleSecs', 5))
         );
         
         // Catch errors such as "String could not be parsed as XML"

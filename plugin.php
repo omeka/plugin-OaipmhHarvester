@@ -189,3 +189,14 @@ function oaipmh_harvester_admin_navigation_main($nav)
     }
     return $nav;
 }
+
+function oaipmh_harvester_config($key, $default = null)
+{
+    $config = Omeka_Context::getInstance()->config;
+    $harvesterConfig = $config->plugins->OaipmhHarvester;
+    if ($harvesterConfig && isset($harvesterConfig->$key)) {
+        return $harvesterConfig->$key;
+    } else if ($default) {
+        return $default;
+    }
+}

@@ -353,24 +353,4 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
     {
         $this->_elementTexts = $this->buildElementTexts($this->_elementTexts, 'Dublin Core', $element, $text);
     }
-
-    /**
-     * Return the metadata schema URI.
-     *
-     * @return string Schema URI
-     */
-	public static function getMetadataSchema()
-	{
-		return self::METADATA_SCHEMA;
-	}
-	
-	/**
-	 * Return the metadata prefix.
-	 *
-	 * @return string Metadata prefix
-	 */
-	public static function getMetadataPrefix()
-	{
-		return self::METADATA_PREFIX;
-	}
 }

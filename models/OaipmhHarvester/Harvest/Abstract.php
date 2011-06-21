@@ -416,20 +416,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
         return true;
     }
 
-	/**
-	 * Returns the metadataPrefix for the format the mapper supports.
-	 *
-	 * @return string metadataPrefix
-	 */
-	public static abstract function getMetadataPrefix();
-	
-	/**
-	 * Returns the XML schema for the format the mapper supports.
-	 *
-	 * @return string XML schema
-	 */
-	public static abstract function getMetadataSchema();
-
     /**
      * Harvest records from the OAI-PMH repository.
      */

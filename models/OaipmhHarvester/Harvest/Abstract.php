@@ -1,5 +1,6 @@
 <?php
 /**
+ * FIXME: Update copyrights.
  * @package OaipmhHarvester
  * @subpackage Libraries
  * @copyright Copyright (c) 2009 Center for History and New Media
@@ -9,6 +10,7 @@
 /**
  * Abstract class on which all other metadata format maps are based.
  *
+ * FIXME: Remove subpackage doctags.
  * @package OaipmhHarvester
  * @subpackage Libraries
  */

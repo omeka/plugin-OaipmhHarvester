@@ -2,7 +2,7 @@
 /**
  * FIXME: Update copyrights.
  * @package OaipmhHarvester
- * @subpackage Libraries
+ * @subpackage Models
  * @copyright Copyright (c) 2009 Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
@@ -10,9 +10,8 @@
 /**
  * Abstract class on which all other metadata format maps are based.
  *
- * FIXME: Remove subpackage doctags.
  * @package OaipmhHarvester
- * @subpackage Libraries
+ * @subpackage Models
  */
 abstract class OaipmhHarvester_Harvest_Abstract
 {

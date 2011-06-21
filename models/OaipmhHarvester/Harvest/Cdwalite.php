@@ -1,7 +1,7 @@
 <?php
 /**
  * @package OaipmhHarvester
- * @subpackage Libraries
+ * @subpackage Models
  * @copyright Copyright (c) 2009 Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
@@ -10,7 +10,7 @@
  * Metadata format map for CDWA Lite.
  *
  * @package OaipmhHarvester
- * @subpackage Libraries
+ * @subpackage Models
  * @link http://www.getty.edu/research/conducting_research/standards/cdwa/cdwalite.html
  */
 class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract

@@ -53,11 +53,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @param OaipmhHarvester_Harvest $harvest The OaipmhHarvester_Harvest object 
      * model
-     * @param array $options Options used to configure behavior. These include: 
-     *  - ignore_deleted_records: ignores records with a status of deleted
      * @return void
      */
-    public function __construct($harvest, $options = array())
+    public function __construct($harvest)
     {   
         // Set an error handler method to record run-time warnings (non-fatal 
         // errors). Fatal and parse errors cannot be called in this way.
@@ -477,14 +475,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $this->addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
     }
 
-    public static function factory($harvest, $options)
+    public static function factory($harvest)
     {
         $classSuffix = Inflector::camelize($harvest->metadata_prefix);
         $class = 'OaipmhHarvester_Harvest_' . $classSuffix;
         require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$classSuffix.php";
 
         // Set the harvest object.
-        $harvester = new $class($harvest, $options);
+        $harvester = new $class($harvest);
         return $harvester;
     }
 }

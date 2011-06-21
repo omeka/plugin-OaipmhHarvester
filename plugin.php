@@ -17,8 +17,6 @@ define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY
 /** Plugin hooks */
 add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
-add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
-add_plugin_hook('config', 'oaipmh_harvester_config');
 add_plugin_hook('define_acl', 'oaipmh_harvester_define_acl');
 add_plugin_hook('admin_append_to_plugin_uninstall_message', 'oaipmh_harvester_admin_append_to_plugin_uninstall_message');
 

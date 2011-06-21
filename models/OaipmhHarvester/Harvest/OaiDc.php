@@ -76,24 +76,4 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
                      'elementTexts' => $elementTexts,
                      'fileMetadata' => array());
     }
-    
-    /**
-     * Return the metadata schema URI.
-     *
-     * @return string Schema URI
-     */
-    public static function getMetadataSchema()
-    {
-        return self::METADATA_SCHEMA;
-    }
-    
-    /**
-	 * Return the metadata prefix.
-	 *
-	 * @return string Metadata prefix
-	 */
-    public static function getMetadataPrefix()
-    {
-        return self::METADATA_PREFIX;
-    }
 }

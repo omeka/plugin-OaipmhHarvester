@@ -25,7 +25,6 @@ class OaipmhHarvester_Harvest extends Omeka_Record
     public $collection_id;
     public $base_url;
     public $metadata_prefix;
-    public $metadata_class;
     public $set_spec;
     public $set_name;
     public $set_description;

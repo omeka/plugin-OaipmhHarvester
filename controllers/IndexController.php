@@ -122,8 +122,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                 $harvest->set_name        = $setName;
                 $harvest->set_description = $setDescription;
                 $harvest->metadata_prefix = $metadataPrefix;
-                // FIXME REMOVE this column.
-                $harvest->metadata_class  = '';
             }
         }
             
@@ -206,8 +204,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
                     // Get and set only the name of the file minus the extension.
                     require_once($pathname);
                     $class = "OaipmhHarvester_Harvest_${match[1]}";
-                    $metadataSchema = call_user_func(array($class, 'getMetadataSchema'));
-                    $metadataPrefix = call_user_func(array($class, 'getMetadataPrefix'));
+                    $metadataSchema = constant("$class::METADATA_SCHEMA");
+                    $metadataPrefix = constant("$class::METADATA_PREFIX");
                     $maps[$metadataPrefix] = $metadataSchema;
                 }
             }

@@ -17,8 +17,6 @@ define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY
 /** Plugin hooks */
 add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
-add_plugin_hook('config_form', 'oaipmh_harvester_config_form');
-add_plugin_hook('config', 'oaipmh_harvester_config');
 add_plugin_hook('define_acl', 'oaipmh_harvester_define_acl');
 add_plugin_hook('admin_append_to_plugin_uninstall_message', 'oaipmh_harvester_admin_append_to_plugin_uninstall_message');
 
@@ -58,7 +56,6 @@ function oaipmh_harvester_install()
         `collection_id` int unsigned default NULL,
         `base_url` text collate utf8_unicode_ci NOT NULL,
         `metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
-        `metadata_class` text collate utf8_unicode_ci NOT NULL,
         `set_spec` text collate utf8_unicode_ci NULL,
         `set_name` text collate utf8_unicode_ci NULL,
         `set_description` text collate utf8_unicode_ci NULL,
@@ -155,6 +152,7 @@ function oaipmh_harvester_expose_duplicates()
     $recordTable = get_db()->getTable('OaipmhHarvester_Record');
     $record = $recordTable->findByItemId($id);
     $duplicates = $recordTable->findByOaiIdentifier($record->identifier);
+    $items = array();
     
     foreach($duplicates as $duplicate) {
         if($duplicate->item_id == $id) continue;

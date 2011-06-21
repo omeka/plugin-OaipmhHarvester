@@ -36,14 +36,27 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // OAI-PMH metadata formats.
         $maps = $this->_getMaps();
         
-        $request = new OaipmhHarvester_Request($this->_getParam('base_url'));
+        $waitTime = oaipmh_harvester_config('requestThrottleSecs', 5);
+        if ($waitTime) {
+            $request = new OaipmhHarvester_Request_Throttler(
+                new OaipmhHarvester_Request($this->_getParam('base_url')),
+                array('wait' => $waitTime)
+            );
+        } else {
+            $request = new OaipmhHarvester_Request(
+                $this->_getParam('base_url')
+            );
+        }
         
         // Catch errors such as "String could not be parsed as XML"
         try {
             $metadataFormats = $request->listMetadataFormats();
         } catch (Zend_Http_Client_Exception $e) {
             $this->flashError($e->getMessage());
-            $this->redirect->goto('index');
+            $this->_helper->redirector->goto('index');
+        } catch (OaipmhHarvester_Request_ThrottlerException $e) {
+            $this->flashError($e->getMessage());
+            $this->_helper->redirector->goto('index');
         } catch (Exception $e) {
             if (OaipmhHarvester_Xml::ERROR_XML_PARSE == $e->getMessage()) {
                 $this->flashError("Response error: " . $e->getMessage());

@@ -1,5 +1,6 @@
 <?php
 /**
+ * FIXME: Update copyrights.
  * @package OaipmhHarvester
  * @subpackage Libraries
  * @copyright Copyright (c) 2009 Center for History and New Media
@@ -9,6 +10,7 @@
 /**
  * Abstract class on which all other metadata format maps are based.
  *
+ * FIXME: Remove subpackage doctags.
  * @package OaipmhHarvester
  * @subpackage Libraries
  */
@@ -78,13 +80,13 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param SimpleXMLIterator record to be harvested
      * @return OaipmhHarvester_Record|false The model object of the record,
      *      if it exists, or false otherwise.
+     * FIXME: This makes n+1 queries whereas it should make only one.
      */
     private function _recordExists($record)
     {   
         $existing = false;
         
         $identifier = $record->header->identifier;
-        $datestamp = $record->header->datestamp;
         
         $records = get_db()->getTable('OaipmhHarvester_Record')->findByOaiIdentifier($identifier);
         
@@ -190,6 +192,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $record->item_id    = $item->id;
         $record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
+        // FIXME: Use forceSave() instead of save(), everywhere.
         $record->save();
         
         release_object($record);
@@ -284,6 +287,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * done so Item and File objects can be released from memory, avoiding 
      * memory allocation issues.
      * 
+     * FIXME: All protected methods should follow Zend naming conventions.
      * @see insert_item()
      * @see insert_files_for_item()
      * @param mixed $metadata Item metadata
@@ -339,6 +343,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * done so Item and File objects can be released from memory, avoiding 
      * memory allocation issues.
      * 
+     * FIXME: Line length over 80 chars in many places.
      * @see insert_item()
      * @see insert_files_for_item()
      * @param OaipmhHarvester_Record $itemId ID of item to update

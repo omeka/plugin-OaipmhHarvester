@@ -24,10 +24,6 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
         // Begin building the global options array.
         $options = array();
 
-        // Set the ignore deleted records option.
-        // FIXME Does this do anything?
-        $options['ignore_deleted_records'] = get_option('oaipmh_harvester_ignore_deleted_records') == 'yes' ? true : false;
-
         // Set the metadata prefix.
         $metadataPrefix = $harvest->metadata_prefix;
 

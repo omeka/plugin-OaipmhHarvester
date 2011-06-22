@@ -57,15 +57,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         } catch (OaipmhHarvester_Request_ThrottlerException $e) {
             $this->flashError($e->getMessage());
             $this->_helper->redirector->goto('index');
-        } catch (Exception $e) {
-            if (OaipmhHarvester_Xml::ERROR_XML_PARSE == $e->getMessage()) {
-                $this->flashError("Response error: " . $e->getMessage());
-                $this->redirect->goto('index');
-            } else {
-                throw $e;
-            }
         }
-        
+
         /* Compare the available OAI-PMH metadataFormats with the available 
         Omeka maps and extract only those that are common to both.         
         The comparison is made between the metadata schemata, not the prefixes.

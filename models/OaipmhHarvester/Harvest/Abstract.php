@@ -38,11 +38,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
     private $_harvest;
     
     /**
-     * @var OaipmhHarvester_Xml The current, cached OaipmhHarvester_Xml object.
-     */
-    private $_oaipmhHarvesterXml;
-    
-    /**
      * @var SimpleXMLIterator The current, cached SimpleXMLIterator record object.
      */
     private $_record;

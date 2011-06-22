@@ -3,6 +3,11 @@
 class OaipmhHarvester_Request
 {
     /**
+     * OAI-PMH error code for a repository with no set hierarchy
+     */
+    const ERROR_CODE_NO_SET_HIERARCHY = 'noSetHierarchy';
+
+    /**
      * @var string
      */
     private $_baseUrl;
@@ -99,7 +104,7 @@ class OaipmhHarvester_Request
             if ($error = $this->_getError($xml)) {
                 $retVal['error'] = $error;
                 if ($error['code'] == 
-                        OaipmhHarvester_Xml::ERROR_CODE_NO_SET_HIERARCHY
+                        OaipmhHarvester_Request::ERROR_CODE_NO_SET_HIERARCHY
                 ) {
                     $sets = array();
                 }
@@ -140,7 +145,14 @@ class OaipmhHarvester_Request
         $client->setParameterGet($query);
         $response = $client->request('GET');
         if ($response->isSuccessful() && !$response->isRedirect()) {
-            return new SimpleXMLIterator($response->getBody());
+            try {
+                return new SimpleXMLIterator($response->getBody());
+            } catch (Exception $e) {
+                throw new Zend_Http_Client_Exception(
+                    "Error occurred in parsing the XML response: " 
+                    . $e->getMessage()
+                ); 
+            }
         } else {
             throw new Zend_Http_Client_Exception("Invalid URL (" 
                 . $response->getStatus() . " " . $response->getMessage() 

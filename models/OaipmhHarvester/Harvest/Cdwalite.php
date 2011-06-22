@@ -2,7 +2,7 @@
 /**
  * @package OaipmhHarvester
  * @subpackage Models
- * @copyright Copyright (c) 2009 Center for History and New Media
+ * @copyright Copyright (c) 2009-2011 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 
@@ -43,7 +43,11 @@ class OaipmhHarvester_Harvest_Cdwalite extends OaipmhHarvester_Harvest_Abstract
         // status message stating that more elements could have been mapped.
         if (!defined('DUBLIN_CORE_EXTENDED_PLUGIN_VERSION')) {
             $this->_qualified = false;
-            $message = 'The Dublin Core Extended plugin is not currently installed. No data will be lost, but some CDWA Lite elements that would have otherwise been mapped to Dublin Core refinements will be mapped to their unqualified parent elements.';
+            $message = 'The Dublin Core Extended plugin is not currently '
+                     . 'installed. No data will be lost, but some CDWA Lite '
+                     . 'elements that would have otherwise been mapped to '
+                     . 'Dublin Core refinements will be mapped to their '
+                     . 'unqualified parent elements.';
             $this->_addStatusMessage($message, self::MESSAGE_CODE_NOTICE);
         }
         

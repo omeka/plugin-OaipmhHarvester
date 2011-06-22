@@ -2,7 +2,7 @@
 /**
  * @package OaipmhHarvester
  * @subpackage Models
- * @copyright Copyright (c) 2009 Center for History and New Media
+ * @copyright Copyright (c) 2009-2011 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 
@@ -67,7 +67,8 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
         foreach ($elements as $element) {
             if (isset($dcMetadata->$element)) {
                 foreach ($dcMetadata->$element as $text) {
-                    $elementTexts['Dublin Core'][ucwords($element)][] = array('text' => (string) $text, 'html' => false);
+                    $elementTexts['Dublin Core'][ucwords($element)][] 
+                        = array('text' => (string) $text, 'html' => false);
                 }
             }
         }

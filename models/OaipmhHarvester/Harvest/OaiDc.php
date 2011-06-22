@@ -67,7 +67,8 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
         foreach ($elements as $element) {
             if (isset($dcMetadata->$element)) {
                 foreach ($dcMetadata->$element as $text) {
-                    $elementTexts['Dublin Core'][ucwords($element)][] = array('text' => (string) $text, 'html' => false);
+                    $elementTexts['Dublin Core'][ucwords($element)][] 
+                        = array('text' => (string) $text, 'html' => false);
                 }
             }
         }

@@ -206,7 +206,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             if ($dirEntry->isFile() && !$dirEntry->isDot()) {
                 $filename = $dirEntry->getFilename();
                 $pathname = $dirEntry->getPathname();
-                if(preg_match('/^(.+)\.php$/', $filename, $match) && $match[1] != 'Abstract') {
+                if (preg_match('/^(.+)\.php$/', $filename, $match) 
+                    && $match[1] != 'Abstract'
+                ) {
                     // Get and set only the name of the file minus the extension.
                     require_once($pathname);
                     $class = "OaipmhHarvester_Harvest_${match[1]}";

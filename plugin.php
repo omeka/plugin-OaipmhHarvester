@@ -18,10 +18,12 @@ define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY
 add_plugin_hook('install', 'oaipmh_harvester_install');
 add_plugin_hook('uninstall', 'oaipmh_harvester_uninstall');
 add_plugin_hook('define_acl', 'oaipmh_harvester_define_acl');
-add_plugin_hook('admin_append_to_plugin_uninstall_message', 'oaipmh_harvester_admin_append_to_plugin_uninstall_message');
+add_plugin_hook('admin_append_to_plugin_uninstall_message', 
+    'oaipmh_harvester_admin_append_to_plugin_uninstall_message');
 
 add_plugin_hook('before_delete_item', 'oaipmh_harvester_before_delete_item');
-add_plugin_hook('admin_append_to_items_show_secondary', 'oaipmh_harvester_expose_duplicates');
+add_plugin_hook('admin_append_to_items_show_secondary', 
+    'oaipmh_harvester_expose_duplicates');
 
 /** Plugin filters */
 add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
@@ -45,8 +47,10 @@ function oaipmh_harvester_install()
         set_spec: the OAI-PMH set spec (unique identifier)
         set_name: the OAI-PMH set name
         set_description: the Dublin Core description of the set, if any
-        status: the current harvest status for this set: starting, in progress, completed, error, deleted
-        status_messages: any messages sent from the harvester, usually during an error status
+        status: the current harvest status for this set: starting, in progress, 
+        completed, error, deleted
+        status_messages: any messages sent from the harvester, usually during 
+        an error status
         initiated: the datetime the harvest initiated
         completed: the datetime the harvest completed
     */

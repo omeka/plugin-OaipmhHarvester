@@ -82,7 +82,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         $identifier = $record->header->identifier;
         
-        $records = get_db()->getTable('OaipmhHarvester_Record')->findByOaiIdentifier($identifier);
+        $records = get_db()->getTable('OaipmhHarvester_Record')
+                           ->findByOaiIdentifier($identifier);
         
         /* Ideally, the OAI identifier would be globally-unique, but for
            poorly configured servers that might not be the case.  However,
@@ -92,7 +93,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
         foreach($records as $existingRecord)
         {
             $harvest_id = $existingRecord->harvest_id;
-            $recordHarvest = get_db()->getTable('OaipmhHarvester_Harvest')->find($harvest_id);
+            $recordHarvest = get_db()->getTable('OaipmhHarvester_Harvest')
+                                     ->find($harvest_id);
             $baseUrl = $recordHarvest->base_url;
             $setSpec = $recordHarvest->set_spec;
             $metadataPrefix = $recordHarvest->metadata_prefix;
@@ -291,8 +293,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param mixed $fileMetadata The item's file metadata
      * @return true
      */
-    final protected function _insertItem($metadata = array(), $elementTexts = array(), $fileMetadata = array())
-    {
+    final protected function _insertItem(
+        $metadata = array(), 
+        $elementTexts = array(), 
+        $fileMetadata = array()
+    ) {
         // Insert the item.
         $item = insert_item($metadata, $elementTexts);
         
@@ -319,7 +324,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $files = array($fileMetadata['files']);
             
             foreach ($files as $file) {
-                $file = insert_files_for_item($item, $fileTransferType, $file, $fileOptions);
+                $file = insert_files_for_item(
+                    $item, 
+                    $fileTransferType, 
+                    $file, 
+                    $fileOptions
+                );
                 // Release the File object from memory. 
                 release_object($file);
             }
@@ -339,7 +349,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * done so Item and File objects can be released from memory, avoiding 
      * memory allocation issues.
      * 
-     * FIXME: Line length over 80 chars in many places.
      * @see insert_item()
      * @see insert_files_for_item()
      * @param OaipmhHarvester_Record $itemId ID of item to update
@@ -347,10 +356,18 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param mixed $fileMetadata The item's file metadata
      * @return true
      */
-    final protected function _updateItem($record, $elementTexts = array(), $fileMetadata = array())
-    {
+    final protected function _updateItem(
+        $record, 
+        $elementTexts = array(), 
+        $fileMetadata = array()
+    ) {
         // Update the item
-        $item = update_item($record->item_id, array('overwriteElementTexts' => true), $elementTexts, $fileMetadata);
+        $item = update_item(
+            $record->item_id, 
+            array('overwriteElementTexts' => true), 
+            $elementTexts, 
+            $fileMetadata
+        );
         
         // Update the datestamp stored in the database for this record.
         $this->_updateRecord($record);
@@ -368,8 +385,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param int|null $messageCode The message code
      * @param string $delimiter The string dilimiting each status message
      */
-    final protected function _addStatusMessage($message, $messageCode = null, $delimiter = "\n\n")
-    {
+    final protected function _addStatusMessage(
+        $message, 
+        $messageCode = null, 
+        $delimiter = "\n\n"
+    ) {
         $this->_harvest->addStatusMessage($message, $messageCode, $delimiter);
     }
     
@@ -395,9 +415,15 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param bool $html Flag whether this element text is HTML
      * @return array
      */
-    protected function _buildElementTexts(array $elementTexts = array(), $elementSet, $element, $text, $html = false)
-    {
-        $elementTexts[$elementSet][$element][] = array('text' => (string) $text, 'html' => (bool) $html);
+    protected function _buildElementTexts(
+        array $elementTexts = array(), 
+        $elementSet, 
+        $element, 
+        $text, 
+        $html = false
+    ) {
+        $elementTexts[$elementSet][$element][] 
+            = array('text' => (string) $text, 'html' => (bool) $html);
         return $elementTexts;
     }
     
@@ -459,7 +485,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
     
         $peakUsage = memory_get_peak_usage();
-        $this->_addStatusMessage("Peak memory usage: $peakUsage", self::MESSAGE_CODE_NOTICE);
+        $this->_addStatusMessage("Peak memory usage: $peakUsage", 
+            self::MESSAGE_CODE_NOTICE);
     }
 
     public static function factory($harvest)

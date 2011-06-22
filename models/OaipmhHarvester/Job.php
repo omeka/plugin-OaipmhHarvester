@@ -13,9 +13,11 @@ class OaipmhHarvester_Job extends Omeka_JobAbstract
             ini_set('memory_limit', $memoryLimit); 
         }
         // Set the set.
-        $harvest = $this->_db->getTable('OaipmhHarvester_Harvest')->find($this->_harvestId);
+        $harvest = $this->_db->getTable('OaipmhHarvester_Harvest')
+                             ->find($this->_harvestId);
         if (!$harvest) {
-            throw new UnexpectedValueException("Harvest with id = '$this->_harvestId' does not exist.");
+            throw new UnexpectedValueException(
+                "Harvest with id = '$this->_harvestId' does not exist.");
         }
 
         require_once 'OaipmhHarvester/Harvest/Abstract.php';

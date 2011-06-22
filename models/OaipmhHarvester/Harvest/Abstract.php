@@ -284,7 +284,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * done so Item and File objects can be released from memory, avoiding 
      * memory allocation issues.
      * 
-     * FIXME: All protected methods should follow Zend naming conventions.
      * @see insert_item()
      * @see insert_files_for_item()
      * @param mixed $metadata Item metadata

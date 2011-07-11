@@ -155,7 +155,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     {
         // Ignore (skip over) deleted records.
         if ($this->isDeletedRecord($record)) {
-            continue;
+            return;
         }
         $existingRecord = $this->_recordExists($record);
         $harvestedRecord = $this->_harvestRecord($record);

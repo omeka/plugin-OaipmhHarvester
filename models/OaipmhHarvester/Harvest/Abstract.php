@@ -502,8 +502,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
     
         $peakUsage = memory_get_peak_usage();
-        $this->_addStatusMessage("Peak memory usage: $peakUsage", 
-            self::MESSAGE_CODE_NOTICE);
+        _log("[OaipmhHarvester] Peak memory usage: $peakUsage", Zend_Log::INFO);
     }
 
     public static function factory($harvest)

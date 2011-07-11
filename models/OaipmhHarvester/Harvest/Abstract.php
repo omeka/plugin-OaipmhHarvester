@@ -108,7 +108,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
         return $existing;
     }
-    
+
+    private function _isIterable($var)
+    {
+        return (is_array($var) || $var instanceof Traversable);
+    }
+
     /**
      * Recursive method that loops through all requested records
      * 
@@ -125,35 +130,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // Iterate through the records and hand off the mapping to the classes 
         // inheriting from this class.
         $response = $this->_harvest->listRecords();
-        foreach ($response['records'] as $record) {
-            
-            // Ignore (skip over) deleted records.
-            if ($this->isDeletedRecord($record)) {
-                continue;
+        if ($this->_isIterable($response['records'])) {
+            foreach ($response['records'] as $record) {
+                $this->_harvestLoop($record);
             }
-            $existingRecord = $this->_recordExists($record);
-            $harvestedRecord = $this->_harvestRecord($record);
-            
-            // Cache the record for later use.
-            $this->_record = $record;
-            
-            // Record has already been harvested
-            if($existingRecord) {
-                // If datestamp has changed, update the record, otherwise ignore.
-                if($existingRecord->datestamp != $record->header->datestamp) {
-                    $this->_updateItem($existingRecord,
-                                      $harvestedRecord['elementTexts'],
-                                      $harvestedRecord['fileMetadata']);
-                }
-                release_object($existingRecord);
-            }
-            else {
-                $this->_insertItem(
-                    $harvestedRecord['itemMetadata'],
-                    $harvestedRecord['elementTexts'],
-                    $harvestedRecord['fileMetadata']
-                );
-            }
+        } else {
+            $this->_addStatusMessage("No records were found.");
         }
         
         $resumptionToken = @$response['resumptionToken'];
@@ -164,6 +146,40 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
 
         return ($resumptionToken ? $resumptionToken : true);
+    }
+
+    /**
+     * @internal Bad names for all of these methods, fixme.
+     */
+    private function _harvestLoop($record)
+    {
+        // Ignore (skip over) deleted records.
+        if ($this->isDeletedRecord($record)) {
+            continue;
+        }
+        $existingRecord = $this->_recordExists($record);
+        $harvestedRecord = $this->_harvestRecord($record);
+        
+        // Cache the record for later use.
+        $this->_record = $record;
+        
+        // Record has already been harvested
+        if($existingRecord) {
+            // If datestamp has changed, update the record, otherwise ignore.
+            if($existingRecord->datestamp != $record->header->datestamp) {
+                $this->_updateItem($existingRecord,
+                                  $harvestedRecord['elementTexts'],
+                                  $harvestedRecord['fileMetadata']);
+            }
+            release_object($existingRecord);
+        }
+        else {
+            $this->_insertItem(
+                $harvestedRecord['itemMetadata'],
+                $harvestedRecord['elementTexts'],
+                $harvestedRecord['fileMetadata']
+            );
+        }
     }
     
     /**

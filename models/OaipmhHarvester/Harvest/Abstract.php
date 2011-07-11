@@ -475,6 +475,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         } catch (Exception $e) {
             // Record the error.
+            _log($e, Zend_Log::ERR);
             $this->_addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
             $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_ERROR;
             // Reset the harvest start_from time if an error occurs during 

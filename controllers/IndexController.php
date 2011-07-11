@@ -181,13 +181,14 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // Throw if harvest does not exist or access is disallowed.
         $harvest = $this->findById();
         $jobDispatcher = Zend_Registry::get('job_dispatcher');
+        $jobDispatcher->setQueueName('imports');
         $jobDispatcher->send('OaipmhHarvester_DeleteJob',
             array(
                 'harvestId' => $harvest->id,
             )
         );
         $this->flashSuccess(
-            'Harvest has been successfully marked for deletion.'
+            'Harvest has been marked for deletion.'
         );
         return $this->_helper->redirector->goto('index');
     }

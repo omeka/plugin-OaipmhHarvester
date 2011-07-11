@@ -73,40 +73,33 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param SimpleXMLIterator record to be harvested
      * @return OaipmhHarvester_Record|false The model object of the record,
      *      if it exists, or false otherwise.
-     * FIXME: This makes n+1 queries whereas it should make only one.
      */
-    private function _recordExists($record)
+    private function _recordExists($xml)
     {   
-        $existing = false;
-        
-        $identifier = $record->header->identifier;
-        
-        $records = get_db()->getTable('OaipmhHarvester_Record')
-                           ->findByOaiIdentifier($identifier);
+        $identifier = $xml->header->identifier;
         
         /* Ideally, the OAI identifier would be globally-unique, but for
            poorly configured servers that might not be the case.  However,
            the identifier is always unique for that repository, so given
            already-existing identifiers, check against the base URL.
         */
-        foreach($records as $existingRecord)
-        {
-            $harvest_id = $existingRecord->harvest_id;
-            $recordHarvest = get_db()->getTable('OaipmhHarvester_Harvest')
-                                     ->find($harvest_id);
-            $baseUrl = $recordHarvest->base_url;
-            $setSpec = $recordHarvest->set_spec;
-            $metadataPrefix = $recordHarvest->metadata_prefix;
-            // Check against the URL of the cached harvest object.
-            if($baseUrl == $this->_harvest->base_url &&
-                $setSpec == $this->_harvest->set_spec &&
-                $metadataPrefix == $this->_harvest->metadata_prefix)
-            {
-                $existing = $existingRecord;
-                break;
-            }
+        $table = get_db()->getTable('OaipmhHarvester_Record');
+        $record = $table->findBy(
+            array(
+                'base_url' => $this->_harvest->base_url,
+                'set_spec' => $this->_harvest->set_spec,
+                'metadata_prefix' => $this->_harvest->metadata_prefix,
+                'identifier' => $identifier,
+            ),
+            1,
+            1
+        );
+        // Ugh, gotta be a better way to do this.
+        if ($record) {
+            $record = $record[0];
         }
-        return $existing;
+        _log(print_r($record, true));
+        return $record;
     }
 
     private function _isIterable($var)

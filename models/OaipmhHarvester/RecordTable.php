@@ -52,4 +52,45 @@ class OaipmhHarvester_RecordTable extends Omeka_Db_Table
         $select->where('item_id = ?');
         return $this->fetchObject($select, array($itemId));
     }
+
+    public function applySearchFilters($select, $params)
+    {
+        $harvestKeys = array(
+            'base_url',
+            'set_spec',
+            'metadata_prefix',
+        );
+        if (array_intersect($harvestKeys, array_keys($params))) {
+            $this->_join($select, 'Harvest');
+            foreach ($harvestKeys as $key) {
+                if (array_key_exists($key, $params)) {
+                    if ($params[$key] === null) {
+                        $select->where("h.$key IS NULL");
+                    } else {
+                        $select->where("h.$key =?", $params[$key]);
+                    }
+                }
+            }
+        }
+        if (array_key_exists('identifier', $params))
+        {
+            $select->where("identifier = ?", $params['identifier']);
+        }
+    }
+
+    private function _join($select, $tableName)
+    {
+        $tableAlias = $this->getTableAlias();
+        switch ($tableName) {
+            case 'Harvest':
+                $select->joinInner(
+                    array('h' => $this->_db->OaipmhHarvester_Harvest),
+                    "h.id = $tableAlias.harvest_id",
+                    array()
+                );
+                break;
+            default:
+                break;
+        }
+    }
 }

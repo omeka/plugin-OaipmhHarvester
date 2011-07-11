@@ -119,7 +119,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record
      */
     private function _datetimeToOai($datestamp)
     {
-        return gmdate(self::OAI_DATE_FORMAT, strtotime($datestamp));
+        return gmdate(OaipmhHarvester_Harvest_Abstract::OAI_DATE_FORMAT, strtotime($datestamp));
     }
     
     /**

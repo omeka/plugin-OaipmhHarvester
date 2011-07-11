@@ -148,6 +148,10 @@ class OaipmhHarvester_Request
             try {
                 return new SimpleXMLIterator($response->getBody());
             } catch (Exception $e) {
+                _log(
+                    "[OaipmhHarvester] Could not parse XML: " 
+                    . $response->getBody()
+                );
                 throw new Zend_Http_Client_Exception(
                     "Error occurred in parsing the XML response: " 
                     . $e->getMessage()

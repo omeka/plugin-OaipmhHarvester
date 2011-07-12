@@ -56,9 +56,9 @@ head($head);
         <?php foreach ($this->harvests as $harvest): ?>
             <tr>
                 <td><?php echo $harvest->id; ?></td>
-                <td><?php echo $harvest->base_url; ?></td>
+                <td><?php echo oh_snippet($harvest->base_url, 30); ?></td>
                 <td><?php echo $harvest->metadata_prefix; ?></td>
-                <td><?php echo $harvest->set_spec; ?></td>
+                <td><?php echo mb_chunk_split($harvest->set_spec, 20, "<br />"); ?></td>
                 <td><?php echo $harvest->set_name; ?></td>
                 <td><a href="<?php echo uri("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo ucwords($harvest->status); ?></a></td>
                 <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED): ?>

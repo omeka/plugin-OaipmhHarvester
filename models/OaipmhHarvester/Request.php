@@ -17,7 +17,14 @@ class OaipmhHarvester_Request
      *
      * @param string $baseUrl
      */
-    public function __construct($baseUrl) 
+    public function __construct($baseUrl = null) 
+    {
+        if ($baseUrl) {
+            $this->setBaseUrl($baseUrl);
+        }
+    }
+
+    public function setBaseUrl($baseUrl)
     {
         $this->_baseUrl = $baseUrl;
     }

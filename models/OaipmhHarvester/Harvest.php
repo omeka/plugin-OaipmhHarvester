@@ -35,6 +35,24 @@ class OaipmhHarvester_Harvest extends Omeka_Record
     public $completed;
     public $start_from;
 
+    private $_request;
+
+    public function setRequest(OaipmhHarvester_Request $request = null)
+    {
+        if ($request === null) {
+            $request = new OaipmhHarvester_Request();
+        }
+        $this->_request = $request;
+    }
+
+    public function getRequest()
+    {
+        if (!$this->_request) {
+            $this->setRequest();
+        }
+        return $this->_request;
+    }
+
     public function isResumable()
     {
         return ($this->resumption_token !== null);
@@ -64,7 +82,8 @@ class OaipmhHarvester_Harvest extends Omeka_Record
             }
         }
         
-        $client = new OaipmhHarvester_Request($this->base_url);
+        $client = $this->getRequest();
+        $client->setBaseUrl($this->base_url);
         $response = $client->listRecords($query);
 
         if (isset($response['error'])) {

@@ -90,6 +90,14 @@ class OaipmhHarvester_Harvest extends Omeka_Record
         $this->forceSave();
     }
 
+    protected function _validate()
+    {
+        $uriValidator = new Omeka_Validate_Uri();
+        if (!$uriValidator->isValid($this->base_url)) {
+            $this->addError('base_url', join(', ', $uriValidator->getMessages()));
+        }
+    }
+
     /**
      * Return a message code text corresponding to its constant.
      * 

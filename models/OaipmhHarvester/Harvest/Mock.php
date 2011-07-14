@@ -8,7 +8,9 @@ class OaipmhHarvester_Harvest_Mock extends OaipmhHarvester_Harvest_Abstract
     protected function _harvestRecord($record)
     {
         return array(
-            'itemMetadata' => array(),
+            'itemMetadata' => array(
+                'public' => true,
+            ),
             'elementTexts' => array(),
             'fileMetadata' => array(),
         );        

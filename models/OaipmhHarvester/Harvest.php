@@ -111,9 +111,19 @@ class OaipmhHarvester_Harvest extends Omeka_Record
 
     protected function _validate()
     {
-        $uriValidator = new Omeka_Validate_Uri();
-        if (!$uriValidator->isValid($this->base_url)) {
-            $this->addError('base_url', join(', ', $uriValidator->getMessages()));
+        $validators = array(
+            'base_url' => new Omeka_Validate_Uri(),
+            'metadata_prefix' => new Zend_Validate_InArray(
+                array(
+                    'oai_dc',
+                    'cdwalite',
+                )
+            ),
+        );
+        foreach ($validators as $column => $validator) {
+            if (!$validator->isValid($this->$column)) {
+                $this->addError($column, join(', ', $validator->getMessages()));
+            }
         }
     }
 

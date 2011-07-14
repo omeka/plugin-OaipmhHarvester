@@ -21,6 +21,7 @@ class OaipmhHarvester_AllTests extends PHPUnit_Framework_TestSuite
         $suite->addTestFiles(
             array(
                 //$root . '/models/OaipmhHarvester/Harvest/OaiDcTest.php',
+                $root . '/models/OaipmhHarvester/Harvest/AbstractTest.php',
                 $root . '/HooksTest.php',
             )
         );

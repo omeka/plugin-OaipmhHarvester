@@ -27,3 +27,14 @@ class OaipmhHarvester_AllTests extends PHPUnit_Framework_TestSuite
         return $suite;
     }
 }
+
+function check_shutdown() {
+    $lasterror = error_get_last();
+    if (in_array($lasterror['type'], array(E_NOTICE, E_WARNING))) {
+        return;
+    }
+    echo "Error \"{$lasterror['message']}\" on line {$lasterror['line']} in file "
+       . "{$lasterror['file']}\n";exit;
+}
+ 
+register_shutdown_function('check_shutdown');

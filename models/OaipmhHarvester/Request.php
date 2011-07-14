@@ -13,6 +13,11 @@ class OaipmhHarvester_Request
     private $_baseUrl;
 
     /**
+     * @var Zend_Http_Client
+     */
+    private $_client;
+
+    /**
      * Constructor.
      *
      * @param string $baseUrl
@@ -131,6 +136,22 @@ class OaipmhHarvester_Request
         return $retVal;
     }
 
+    public function getClient()
+    {
+        if ($this->_client === null) {
+            $this->setClient();
+        }
+        return $this->_client;
+    }
+
+    public function setClient(Zend_Http_Client $client = null)
+    {
+        if ($client === null) {
+            $client = new Zend_Http_Client();
+        }        
+        $this->_client = $client;
+    }
+
     private function _getError($xml)
     {
         $error = array();
@@ -143,8 +164,9 @@ class OaipmhHarvester_Request
 
     private function _makeRequest(array $query)
     {
-        $client = new Zend_Http_Client(
-            $this->_baseUrl,
+        $client = $this->getClient();
+        $client->setUri($this->_baseUrl);
+        $client->setConfig(
             array(
                 'useragent' => $this->_getUserAgent(),
             )

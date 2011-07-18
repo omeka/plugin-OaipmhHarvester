@@ -30,9 +30,9 @@ class OaipmhHarvester_AllTests extends PHPUnit_Framework_TestSuite
         $pluginRoot = dirname($testRoot);
 
         set_include_path(
-            $pluginRoot . PATH_SEPARATOR 
-            . "$pluginRoot/models" .  PATH_SEPARATOR 
-            . get_include_path()
+            get_include_path() . PATH_SEPARATOR
+            . $pluginRoot . PATH_SEPARATOR 
+            . "$pluginRoot/models"
         );
         return $suite;
     }

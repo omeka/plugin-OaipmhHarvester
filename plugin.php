@@ -29,6 +29,8 @@ add_plugin_hook('before_delete_item', 'oaipmh_harvester_before_delete_item');
 add_plugin_hook('admin_append_to_items_show_secondary', 
     'oaipmh_harvester_expose_duplicates');
 
+add_plugin_hook('item_browse_sql', 'oaipmh_harvester_item_search_filters');
+
 /** Plugin filters */
 add_filter('admin_navigation_main', 'oaipmh_harvester_admin_navigation_main');
 

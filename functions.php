@@ -59,7 +59,9 @@ function oaipmh_harvester_install()
         `item_id` int unsigned default NULL,
         `identifier` text collate utf8_unicode_ci NOT NULL,
         `datestamp` tinytext collate utf8_unicode_ci NOT NULL,
-        PRIMARY KEY  (`id`)
+        PRIMARY KEY  (`id`),
+        KEY `identifier_idx` (identifier(255)),
+        UNIQUE KEY `item_id_idx` (item_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
     $db->query($sql);
 }
@@ -118,6 +120,26 @@ function oaipmh_harvester_before_delete_item(Item $item)
     }
 }
 
+function oaipmh_harvester_item_search_filters($select, $params)
+{
+    // Filter based on duplicates of a given oaipmh record.
+    $db = get_db();
+    $dupKey = 'oaipmh_harvester_duplicate_items';
+    if (array_key_exists($dupKey, $params)) {
+        $itemId = $params[$dupKey];
+        $select->where(
+            "i.id IN (
+                select records.item_id from $db->OaipmhHarvester_Record records
+                where records.identifier IN (
+                    select r2.identifier from $db->OaipmhHarvester_Record r2
+                    where r2.item_id = ?
+                ) and records.item_id != ?
+            )",
+            $itemId
+        );
+    }
+}
+
 /**
  * Outputs any duplicate harvested records.
  * Appended to admin item show pages.
@@ -125,28 +147,27 @@ function oaipmh_harvester_before_delete_item(Item $item)
 function oaipmh_harvester_expose_duplicates()
 {
     $id = item('id');
-    $recordTable = get_db()->getTable('OaipmhHarvester_Record');
-    $record = $recordTable->findByItemId($id);
-    $duplicates = $recordTable->findByOaiIdentifier($record->identifier);
-    $items = array();
-    
-    foreach($duplicates as $duplicate) {
-        if($duplicate->item_id == $id) continue;
-        $items[] = $duplicate->item_id;
-    }
+    $items = get_db()->getTable('Item')->findBy(
+        array(
+            'oaipmh_harvester_duplicate_items' => $id,
+        )
+    );
     
     if(count($items) > 0) { ?>
         <div id="harvester-duplicates" class="info-panel">
         <h2>Duplicate Harvested Items</h2>
         <ul>
-        <?php foreach($items as $itemId) {
-            $item = get_db()->getTable('Item')->find($itemId);
-            $uri = item_uri('show', $item); ?>
+        <?php foreach($items as $item): ?>
             <li>
-            <?php echo "<a href=\"$uri\">Item $itemId</a>"; ?>
+            <?php echo link_to_item(
+                    'Item #' . item('id', null, $item),
+                    array(),
+                    'show',
+                    $item
+                ); ?>
             </li>
-            <?php release_object($item);
-        } ?>
+            <?php release_object($item); ?>
+        <?php endforeach; ?>
         </ul>
         </div> <?php
     }

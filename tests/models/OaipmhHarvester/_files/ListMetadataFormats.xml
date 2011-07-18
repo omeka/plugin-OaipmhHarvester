@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type='text/xsl' href='/oai2.xsl' ?>
+
+<OAI-PMH xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd" xmlns="http://www.openarchives.org/OAI/2.0/">
+<responseDate>2011-07-14T14:44:51Z</responseDate>
+<request verb="ListMetadataFormats">http://caltechbook.library.caltech.edu/cgi/oai2</request>
+<ListMetadataFormats>
+<metadataFormat>
+<metadataPrefix>oai_dc</metadataPrefix>
+<schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</schema>
+<metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace></metadataFormat>
+<metadataFormat>
+<metadataPrefix>uketd_dc</metadataPrefix>
+<schema>http://naca.central.cranfield.ac.uk/ethos-oai/2.0/uketd_dc.xsd</schema>
+<metadataNamespace>http://naca.central.cranfield.ac.uk/ethos-oai/2.0/</metadataNamespace></metadataFormat>
+<metadataFormat>
+<metadataPrefix>didl</metadataPrefix>
+<schema>http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/did/didmodel.xsd</schema>
+<metadataNamespace>urn:mpeg:mpeg21:2002:02-DIDL-NS</metadataNamespace></metadataFormat>
+</ListMetadataFormats></OAI-PMH>
+

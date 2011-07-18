@@ -17,13 +17,22 @@ class OaipmhHarvester_AllTests extends PHPUnit_Framework_TestSuite
     public static function suite()
     {
         $suite = new OaipmhHarvester_AllTests('OAI-PMH Harvester Tests');
-        $root = dirname(__FILE__);
+        $testRoot = dirname(__FILE__);
         $suite->addTestFiles(
             array(
-                //$root . '/models/OaipmhHarvester/Harvest/OaiDcTest.php',
-                $root . '/models/OaipmhHarvester/Harvest/AbstractTest.php',
-                $root . '/HooksTest.php',
+                //$testRoot . '/models/OaipmhHarvester/Harvest/OaiDcTest.php',
+                $testRoot . '/models/OaipmhHarvester/Harvest/AbstractTest.php',
+                $testRoot . '/models/OaipmhHarvester/RequestTest.php',
+                $testRoot . '/HooksTest.php',
             )
+        );
+
+        $pluginRoot = dirname($testRoot);
+
+        set_include_path(
+            $pluginRoot . PATH_SEPARATOR 
+            . "$pluginRoot/models" .  PATH_SEPARATOR 
+            . get_include_path()
         );
         return $suite;
     }

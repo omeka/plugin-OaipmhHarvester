@@ -74,7 +74,7 @@ class OaipmhHarvester_Request
      * @param array $query Args may include: metadataPrefix, set, 
      * resumptionToken, from.
      */
-    public function listRecords(array $query)
+    public function listRecords(array $query = array())
     {
         $query['verb'] = 'ListRecords';
         $xml = $this->_makeRequest($query);
@@ -174,18 +174,28 @@ class OaipmhHarvester_Request
         $client->setParameterGet($query);
         $response = $client->request('GET');
         if ($response->isSuccessful() && !$response->isRedirect()) {
-            try {
-                return new SimpleXMLIterator($response->getBody());
-            } catch (Exception $e) {
+            libxml_use_internal_errors(true);
+            $iter = simplexml_load_string($response->getBody());
+            if ($iter === false) {
+                $errors = array();
+                foreach(libxml_get_errors() as $error) {
+                    $errors[] = trim($error->message) . ' on line ' 
+                              . $error->line . ', column ' 
+                              . $error->column;
+                }
                 _log(
                     "[OaipmhHarvester] Could not parse XML: " 
                     . $response->getBody()
                 );
+                $errStr = join("\n", $errors);
+                _log("[OaipmhHarvester] XML errors in document: " . $errStr);
                 throw new Zend_Http_Client_Exception(
-                    "Error occurred in parsing the XML response: " 
-                    . $e->getMessage()
-                ); 
+                    "Error in parsing response XML. XML document had the "
+                    . "following errors: \n"
+                    . $errStr
+                );
             }
+            return $iter;
         } else {
             throw new Zend_Http_Client_Exception("Invalid URL (" 
                 . $response->getStatus() . " " . $response->getMessage() 
@@ -195,8 +205,11 @@ class OaipmhHarvester_Request
 
     private function _getUserAgent()
     {
-        $userAgent = 'Omeka OAI-PMH Harvester/' . 
-            get_plugin_ini('OaipmhHarvester', 'version');
-        return $userAgent;
+        try {
+            $version = get_plugin_ini('OaipmhHarvester', 'version');
+        } catch (Zend_Exception $e) {
+            $version = '';
+        }
+        return 'Omeka OAI-PMH Harvester/' . $version;
     }
 }

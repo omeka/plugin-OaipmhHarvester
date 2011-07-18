@@ -53,7 +53,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     public function __construct($harvest)
     {   
         // Set an error handler method to record run-time warnings (non-fatal 
-        // errors). Fatal and parse errors cannot be called in this way.
+        // errors).
         set_error_handler(array($this, 'errorHandler'), E_WARNING);
         
         $this->_harvest = $harvest;

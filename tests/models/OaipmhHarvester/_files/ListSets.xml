@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type='text/xsl' href='/oai2.xsl' ?>
+
+<OAI-PMH xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd" xmlns="http://www.openarchives.org/OAI/2.0/">
+<responseDate>2011-07-14T14:48:54Z</responseDate>
+<request verb="ListSets">http://caltechbook.library.caltech.edu/cgi/oai2</request>
+<ListSets>
+<set>
+<setSpec>7374617475733D696E7072657373</setSpec>
+<setName>Status = In Press</setName></set>
+<set>
+<setSpec>7374617475733D7375626D6974746564</setSpec>
+<setName>Status = Submitted</setName></set>
+<set>
+<setSpec>7374617475733D707562</setSpec>
+<setName>Status = Published</setName></set>
+<set>
+<setSpec>7374617475733D756E707562</setSpec>
+<setName>Status = Unpublished</setName></set>
+</ListSets></OAI-PMH>
+

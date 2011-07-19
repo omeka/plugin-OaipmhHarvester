@@ -34,10 +34,12 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
     protected function _beforeHarvest()
     {
         $harvest = $this->_getHarvest();
-        $collectionMetadata = array('name'        => $harvest->set_name, 
-                                    'description' => $harvest->set_description, 
-                                    'public'      => true, 
-                                    'featured'    => false);
+        $collectionMetadata = array(
+            'name'        => $harvest->set_name, 
+            'description' => $harvest->set_description, 
+            'public'      => $this->getOption('public'), 
+            'featured'    => $this->getOption('featured'),
+        );
         $this->_collection = $this->_insertCollection($collectionMetadata);
     }
     
@@ -49,9 +51,11 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
      */
     protected function _harvestRecord($record)
     {
-        $itemMetadata = array('collection_id' => $this->_collection->id, 
-                              'public'        => true, 
-                              'featured'      => false);
+        $itemMetadata = array(
+            'collection_id' => $this->_collection->id, 
+            'public'        => $this->getOption('public'), 
+            'featured'      => $this->getOption('featured'),
+        );
         
         $dcMetadata = $record
                     ->metadata

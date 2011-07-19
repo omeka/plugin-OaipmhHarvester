@@ -40,7 +40,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @var SimpleXMLIterator The current, cached SimpleXMLIterator record object.
      */
     private $_record;
-    
+
+    private $_options = array(
+        'public' => false,
+        'featured' => false,
+    );
+
     /**
      * Class constructor.
      * 
@@ -57,6 +62,16 @@ abstract class OaipmhHarvester_Harvest_Abstract
         set_error_handler(array($this, 'errorHandler'), E_WARNING);
         
         $this->_harvest = $harvest;
+    }
+
+    public function setOption($key, $value)
+    {
+        $this->_options[$key] = $value;
+    }
+
+    public function getOption($key)
+    {
+        return $this->_options[$key];
     }
     
     /**

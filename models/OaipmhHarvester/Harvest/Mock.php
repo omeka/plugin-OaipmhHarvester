@@ -9,7 +9,7 @@ class OaipmhHarvester_Harvest_Mock extends OaipmhHarvester_Harvest_Abstract
     {
         return array(
             'itemMetadata' => array(
-                'public' => true,
+                'public' => $this->getOption('public'),
             ),
             'elementTexts' => array(
                 'Dublin Core' => array(

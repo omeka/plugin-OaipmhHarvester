@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type='text/xsl' href='/oai2.xsl' ?>
+
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+<responseDate>
+2011-07-14T16:14:58Z
+</responseDate>
+<request verb="ListRecords" set="Sound" metadataPrefix="oai_dc">
+http://copac.ac.uk/oai-pmh
+</request>
+<ListRecords>
+  <record>
+  <header>
+  <identifier>
+    foo-bar
+  </identifier>
+  <datestamp>
+    2010-04-29
+  </datestamp>
+  <setSpec>
+  Sound
+  </setSpec>
+  </header>
+  <metadata>
+  <oai_dc:dc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:srw_dc="info:srw/schema/1/dc-schema" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/">
+  <dc:publisher>
+    Record Publisher
+  </dc:publisher>
+  <dc:title>
+    Record Title
+  </dc:title>
+  <dc:contributor>
+    Record Contributor
+  </dc:contributor>
+  <dc:contributor>
+    Record Contributor (2nd)
+  </dc:contributor>
+  <dc:subject>
+    Record Subject
+  </dc:subject>
+  <dc:subject>
+    Record Subject (2nd)
+  </dc:subject>
+  <dc:subject>
+    Record Subject (3rd)
+  </dc:subject>
+  <dc:language>
+  English
+  </dc:language>
+  <dc:format>
+  6 audio cassettes.
+  </dc:format>
+  </oai_dc:dc>
+  </metadata>
+  </record>
+<resumptionToken expirationDate="2011-07-14T17:15:00Z" completeListSize="122197" cursor="0">
+&amp;set=Sound&amp;metadataPrefix=oai%5Fdc&amp;startRecord=200
+</resumptionToken>
+</ListRecords>
+</OAI-PMH>

@@ -76,7 +76,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     private function _recordExists($xml)
     {   
-        $identifier = $xml->header->identifier;
+        $identifier = trim((string)$xml->header->identifier);
         
         /* Ideally, the OAI identifier would be globally-unique, but for
            poorly configured servers that might not be the case.  However,
@@ -89,11 +89,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 'base_url' => $this->_harvest->base_url,
                 'set_spec' => $this->_harvest->set_spec,
                 'metadata_prefix' => $this->_harvest->metadata_prefix,
-                'identifier' => $identifier,
+                'identifier' => (string)$identifier,
             ),
             1,
             1
         );
+        
         // Ugh, gotta be a better way to do this.
         if ($record) {
             $record = $record[0];

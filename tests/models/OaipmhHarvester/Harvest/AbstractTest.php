@@ -41,5 +41,29 @@ class OaipmhHarvester_Harvest_AbstractTest extends Omeka_Test_AppTestCase
             $this->db->getTable('Item')->count()
         );
     }
+
+    public function testRecordExists()
+    {
+        $record = new OaipmhHarvester_Record();
+        $item = insert_item(array('public' => true));
+        $harvest = new OaipmhHarvester_Harvest();
+        $record->item_id = $item->id;
+        $record->identifier = 'foo-bar';
+        $record->datestamp = '2010-04-28';
+        $harvest->base_url = 'http://example.com';
+        $harvest->metadata_prefix = 'oai_dc';
+        $harvest->status = OaipmhHarvester_Harvest::STATUS_COMPLETED;
+        $request = new OaipmhHarvester_Request_Mock();
+        $xmlFile = dirname(__FILE__) . '/_files/ListRecords.xml';
+        $request->setResponseXml(file_get_contents($xmlFile));
+        $harvest->setRequest($request);
+        $harvest->forceSave();
+        $record->harvest_id = $harvest->id;
+        $record->forceSave();
+        $harvester = new OaipmhHarvester_Harvest_OaiDc($harvest);
+        $harvester->harvest();
+        $item = $this->db->getTable('Item')->find($record->item_id);
+        $this->assertEquals("Record Title", item('Dublin Core', 'Title', array(), $item));
+    }
 }
 

@@ -6,6 +6,8 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 
+require_once dirname(__FILE__) . '/../forms/Harvest.php';
+
 /**
  * Index controller
  *
@@ -23,6 +25,10 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     {
         $harvests = $this->getTable('OaipmhHarvester_Harvest')->findAll();
         $this->view->harvests = $harvests;
+        $this->view->harvestForm = new OaipmhHarvester_Form_Harvest();
+        $this->view->harvestForm->setAction(
+            $this->_helper->url('sets')
+        );
     }
     
     /**

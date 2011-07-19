@@ -19,19 +19,7 @@ head($head);
 
 <?php echo flash(); ?>
     
-    <form method="post" action="<?php echo uri('oaipmh-harvester/index/sets'); ?>">
-        
-        <div class="field">
-            <?php echo $this->formLabel('base_url', 'Base Url'); ?>
-            <div class="inputs">
-            <?php echo $this->formText('base_url', null, array('size' => 60)); ?>
-            <p class="explanation">The base URL of the OAI-PMH data provider.</p>
-            </div>
-        </div>
-        
-        <?php echo $this->formSubmit('submit_view_sets', 'View Sets', array('class' => 'submit submit-medium')); ?>
-    </form>
-    
+    <?php echo $this->harvestForm; ?> 
     <h2>Harvests</h2>
     
     <?php if (empty($this->harvests)): ?>

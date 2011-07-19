@@ -16,7 +16,7 @@ class OaipmhHarvester_Harvest_AbstractTest extends Omeka_Test_AppTestCase
         $this->dbHelper = Omeka_Test_Helper_Db::factory($this->core);
     }
 
-    public function testEmptyHarvest()
+    public function testHarvestCreatesItems()
     {
         $defaultItemCount = 1;
         $harvest = new OaipmhHarvester_Harvest();
@@ -24,10 +24,9 @@ class OaipmhHarvester_Harvest_AbstractTest extends Omeka_Test_AppTestCase
         $harvest->metadata_prefix = 'oai_dc';
         $request = new OaipmhHarvester_Request_Mock();
         $listRecords = file_get_contents(
-            OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
-            . '/tests/_files/ListRecords.response.notoken.txt'
+            dirname(__FILE__) . '/_files/ListRecords.notoken.xml'
         );
-        $request->setResponse($listRecords);
+        $request->setResponseXml($listRecords);
         $harvest->setRequest($request);
         $harvester = new OaipmhHarvester_Harvest_Mock($harvest);
         $harvester->harvest();
@@ -38,8 +37,22 @@ class OaipmhHarvester_Harvest_AbstractTest extends Omeka_Test_AppTestCase
         );
         $this->assertGreaterThan(
             $defaultItemCount, 
-            $this->db->getTable('Item')->count()
+            $this->db->fetchOne("select count(*) from {$this->db->Item}")
         );
+
+        return $this->db->fetchAll(
+            "select * from {$this->db->Item} where id != 1"
+        );
+    }
+
+    /**
+     * @depends testHarvestCreatesItems
+     */
+    public function testItemsDefaultToNotPublic($rows)
+    {
+        foreach ($rows as $row) {
+            $this->assertEquals(0, $row['public']);
+        }
     }
 
     public function testRecordExists()

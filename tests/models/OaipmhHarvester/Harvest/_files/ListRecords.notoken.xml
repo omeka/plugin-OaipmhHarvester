@@ -1,0 +1,56 @@
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+<responseDate>
+2011-07-14T16:14:58Z
+</responseDate>
+<request verb="ListRecords" set="Sound" metadataPrefix="oai_dc">
+http://copac.ac.uk/oai-pmh
+</request>
+<ListRecords>
+  <record>
+  <header>
+  <identifier>
+  oai:copac.ac.uk:72006564625
+  </identifier>
+  <datestamp>
+  2006-05-25
+  </datestamp>
+  <setSpec>
+  Sound
+  </setSpec>
+  </header>
+  <metadata>
+  <oai_dc:dc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:srw_dc="info:srw/schema/1/dc-schema" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/">
+  <dc:publisher>
+  NOTA,
+  </dc:publisher>
+  <dc:title>
+  National Organisation for the Treatment of Abusers conference.
+  </dc:title>
+  <dc:contributor>
+National Organisation for the Treatment of Abusers (Conference) (1997 Sep : Brighton)
+  </dc:contributor>
+  <dc:contributor>
+  National Organisation for the Treatment of Abusers.
+  </dc:contributor>
+  <dc:subject>
+  NOTA
+  </dc:subject>
+  <dc:subject>
+  abusers
+  </dc:subject>
+  <dc:subject>
+  treatment
+  </dc:subject>
+  <dc:language>
+  English
+  </dc:language>
+  <dc:format>
+  6 audio cassettes.
+  </dc:format>
+  </oai_dc:dc>
+  </metadata>
+  </record>
+</ListRecords>
+</OAI-PMH>

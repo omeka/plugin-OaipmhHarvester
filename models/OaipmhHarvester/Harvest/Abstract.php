@@ -99,7 +99,6 @@ abstract class OaipmhHarvester_Harvest_Abstract
         if ($record) {
             $record = $record[0];
         }
-        _log(print_r($record, true));
         return $record;
     }
 

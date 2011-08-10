@@ -61,14 +61,15 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         try {
             $metadataFormats = $request->listMetadataFormats();
         } catch (Zend_Uri_Exception $e) {
-            $this->flashError("Invalid URL given. $extraMsg");
-            $this->_helper->redirector->goto('index');
+            $errorMsg = "Invalid URL given. $extraMsg";
         } catch (Zend_Http_Client_Exception $e) {
-            $this->flashError($e->getMessage() . " $extraMsg");
-            $this->_helper->redirector->goto('index');
+            $errorMsg = $e->getMessage() . " $extraMsg";
         } catch (OaipmhHarvester_Request_ThrottlerException $e) {
-            $this->flashError($e->getMessage());
-            $this->_helper->redirector->goto('index');
+            $errorMsg = $e->getMessage();
+        }
+        if (isset($errorMsg)) {
+            $this->flashError($errorMsg);
+            return $this->_helper->redirector->goto('index');
         }
 
         /* Compare the available OAI-PMH metadataFormats with the available 

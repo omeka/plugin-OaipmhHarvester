@@ -55,9 +55,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         }
         
         // Catch errors such as "String could not be parsed as XML"
-        $extraMsg = 
-              'Please check to be certain you have '
-            . 'a correctly-formatted URL for OAI-PMH harvesting.';
+        $extraMsg = 'Please check to be certain the URL is correctly formatted '
+                  . 'for OAI-PMH harvesting.';
         try {
             $metadataFormats = $request->listMetadataFormats();
         } catch (Zend_Uri_Exception $e) {

@@ -58,6 +58,11 @@ class OaipmhHarvester_Harvest extends Omeka_Record
         return ($this->resumption_token !== null);
     }
 
+    public function isError()
+    {
+        return ($this->status == self::STATUS_ERROR);
+    }
+
     public function listRecords()
     {
         $query = array();

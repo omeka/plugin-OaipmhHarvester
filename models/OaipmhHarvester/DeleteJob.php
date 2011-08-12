@@ -29,6 +29,9 @@ class OaipmhHarvester_DeleteJob extends Omeka_JobAbstract
         // Race conditions are nasty. The easiest thing to do is to just wait
         // until the queued job is finished processing.
         if ($harvest->status == OaipmhHarvester_Harvest::STATUS_IN_PROGRESS) {
+            // Then again, it might not be waiting for anything else.
+            $harvest->status = OaipmhHarvester_Harvest::STATUS_DELETED;
+            $harvest->forceSave();
             return $this->resend();
         }
 

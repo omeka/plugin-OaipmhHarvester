@@ -147,7 +147,7 @@ class OaipmhHarvester_Request
     public function setClient(Zend_Http_Client $client = null)
     {
         if ($client === null) {
-            $client = new Zend_Http_Client();
+            $client = new Omeka_Http_Client();
         }        
         $this->_client = $client;
     }

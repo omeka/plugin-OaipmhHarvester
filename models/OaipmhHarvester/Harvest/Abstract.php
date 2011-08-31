@@ -497,20 +497,27 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
             $this->_harvest->forceSave();
         
+        } catch (Zend_Http_Client_Exception $e) {
+            $this->_stopWithError($e);
         } catch (Exception $e) {
-            // Record the error.
+            $this->_stopWithError($e);
+            // For real errors need to be logged and debugged.
             _log($e, Zend_Log::ERR);
-            $this->_addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
-            $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_ERROR;
-            // Reset the harvest start_from time if an error occurs during 
-            // processing. Since there's no way to know exactly when the 
-            // error occured, re-harvests need to start from the beginning.
-            $this->_harvest->start_from = null;
-            $this->_harvest->forceSave();
         }
     
         $peakUsage = memory_get_peak_usage();
         _log("[OaipmhHarvester] Peak memory usage: $peakUsage", Zend_Log::INFO);
+    }
+
+    private function _stopWithError($e)
+    {
+        $this->_addStatusMessage($e->getMessage(), self::MESSAGE_CODE_ERROR);
+        $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_ERROR;
+        // Reset the harvest start_from time if an error occurs during 
+        // processing. Since there's no way to know exactly when the 
+        // error occured, re-harvests need to start from the beginning.
+        $this->_harvest->start_from = null;
+        $this->_harvest->forceSave();
     }
 
     public static function factory($harvest)

@@ -2,15 +2,15 @@
 
 /**
  * install callback
- * 
+ *
  * Sets options and creates tables.
- * 
+ *
  * @return void
  */
 function oaipmh_harvester_install()
-{    
+{
     $db = get_db();
-    
+
     /* Harvests/collections:
         id: primary key
         collection_id: the corresponding collection id in `collections`
@@ -19,9 +19,9 @@ function oaipmh_harvester_install()
         set_spec: the OAI-PMH set spec (unique identifier)
         set_name: the OAI-PMH set name
         set_description: the Dublin Core description of the set, if any
-        status: the current harvest status for this set: starting, in progress, 
+        status: the current harvest status for this set: starting, in progress,
         completed, error, deleted
-        status_messages: any messages sent from the harvester, usually during 
+        status_messages: any messages sent from the harvester, usually during
         an error status
         initiated: the datetime the harvest initiated
         completed: the datetime the harvest completed
@@ -44,7 +44,7 @@ function oaipmh_harvester_install()
         PRIMARY KEY  (`id`)
     ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
     $db->query($sql);
-    
+
     /* Harvested records/items.
         id: primary key
         harvest_id: the corresponding set id in `oaipmh_harvester_harvests`
@@ -68,9 +68,9 @@ function oaipmh_harvester_install()
 
 /**
  * uninstall callback.
- * 
+ *
  * Deletes options and drops tables.
- * 
+ *
  * @return void
  */
 function oaipmh_harvester_uninstall()
@@ -84,25 +84,31 @@ function oaipmh_harvester_uninstall()
 
 function oaipmh_harvester_admin_append_to_plugin_uninstall_message()
 {
-    echo '<p>While you will not lose the items and collections created by your 
-    harvests, you will lose all harvest-specific metadata and the ability to 
+    echo '<p>While you will not lose the items and collections created by your
+    harvests, you will lose all harvest-specific metadata and the ability to
     re-harvest.</p>';
 }
 
 /**
  * define_acl callback.
- * 
+ *
  * Defines the plugin's access control list.
- * 
+ *
  * @param object $acl
  */
 function oaipmh_harvester_define_acl($acl)
 {
-    // Allow only super and admin roles to this plugin's controller's actions.
-    $acl->loadResourceList(array('OaipmhHarvester_Index' => array('index', 
-                                                                  'sets', 
-                                                                  'status', 
-                                                                  'delete')));
+
+    if (version_compare(OMEKA_VERSION, '2.0-dev', '>=')) {
+        $acl->addResource('OaipmhHarvester_Index');
+    } else {
+        // Allow only super and admin roles to this plugin's controller's actions.
+        $acl->loadResourceList(array('OaipmhHarvester_Index' => array('index',
+                                                                      'sets',
+                                                                      'status',
+                                                                      'delete')));
+        }
+
 }
 
 /**
@@ -161,7 +167,7 @@ function oaipmh_harvester_expose_duplicates()
 
 /**
  * admin_navigation_main filter.
- * 
+ *
  * @param array $nav Array of main navigation tabs.
  * @return array Filtered array of main navigation tabs.
  */
@@ -189,7 +195,7 @@ function oh_snippet($str, $len, $app = '…')
     $use = $str;
     if (strlen($str) > $len) {
         $use = substr($str, 0, $len - strlen($app)) . $app;
-    } 
+    }
     return $use;
 }
 

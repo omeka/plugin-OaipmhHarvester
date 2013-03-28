@@ -12,7 +12,7 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvester_HarvestTable extends Omeka_Db_Table
+class Table_OaipmhHarvester_Harvest extends Omeka_Db_Table
 {
     /**
      * Return all harvests.
@@ -22,7 +22,8 @@ class OaipmhHarvester_HarvestTable extends Omeka_Db_Table
      */
     public function findAll()
     {
-        $select = $this->getSelect()->order('id DESC');
+        $tableAlias = $this->getTableAlias();
+        $select = $this->getSelect()->order("$tableAlias.id DESC");
         return $this->fetchObjects($select);
     }
 
@@ -37,12 +38,13 @@ class OaipmhHarvester_HarvestTable extends Omeka_Db_Table
      */
     public function findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix)
     {
-        $select = $this->getSelect()->where('base_url = ?', $baseUrl)
-                                    ->where('metadata_prefix = ?', $metadataPrefix);
-        if($setSpec) 
-            $select->where('set_spec = ?', $setSpec);
+        $tableAlias = $this->getTableAlias();
+        $select = $this->getSelect()->where("$tableAlias.base_url = ?", $baseUrl)
+                                    ->where("$tableAlias.metadata_prefix = ?", $metadataPrefix);
+        if ($setSpec) 
+            $select->where("$tableAlias.set_spec = ?", $setSpec);
         else
-            $select->where('set_spec IS NULL');
+            $select->where("$tableAlias.set_spec IS NULL");
                 
         return $this->fetchObject($select);
     }

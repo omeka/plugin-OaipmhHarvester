@@ -1,21 +1,12 @@
 <?php
-
-class OaipmhHarvester_HooksTest extends Omeka_Test_AppTestCase
+class OaipmhHarvester_HooksTest extends OaipmhHarvester_Test_AppTestCase
 {
     protected $_isAdminTest = true;
 
-    protected $_coreOptions = array(
-        'resources' => array(
-            'pluginbroker' => array(
-                'plugins' => array('OaipmhHarvester'),
-            )
-        )
-    );
-
     public function setUp()
     {
-        parent::setUp();
-        $this->dbHelper = Omeka_Test_Helper_Db::factory($this->core);
+        parent::setUp();        
+        $this->dbHelper = new Omeka_Test_Helper_Db($this->db->getAdapter(), $this->db->prefix);
     }
 
     public static function aclProvider()
@@ -80,7 +71,7 @@ class OaipmhHarvester_HooksTest extends Omeka_Test_AppTestCase
         $record->identifier = 'foo-bar';
         $record->harvest_id = 10000;
         $record->datestamp = '2011-07-11';
-        $record->forceSave();
+        $record->save();
         $item->delete();
         $table = $this->db->getTable('OaipmhHarvester_Record');
         release_object($item);
@@ -108,7 +99,7 @@ class OaipmhHarvester_HooksTest extends Omeka_Test_AppTestCase
                 'datestamp' => $datestamp,
                 'harvest_id' => $harvestId,
             ));
-            $record->forceSave();
+            $record->save();
         }
         $this->dispatch('/items/show/' . $orig->id);
         $this->assertQuery('div#harvester-duplicates');
@@ -123,6 +114,6 @@ class OaipmhHarvester_HooksTest extends Omeka_Test_AppTestCase
     {
         $this->_authenticateUser($this->_getDefaultUser());
         $this->dispatch('/');
-        $this->assertQuery('ul.navigation li.nav-oai-pmh-harvester');
+        $this->assertQuery('ul.navigation li a.nav-oai-pmh-harvester');
     }
 }

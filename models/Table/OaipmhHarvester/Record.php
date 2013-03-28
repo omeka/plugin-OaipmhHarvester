@@ -12,7 +12,7 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvester_RecordTable extends Omeka_Db_Table
+class Table_OaipmhHarvester_Record extends Omeka_Db_Table
 {
     /**
      * Return records by harvest ID.
@@ -22,8 +22,9 @@ class OaipmhHarvester_RecordTable extends Omeka_Db_Table
      */
     public function findByHarvestId($harvestId)
     {
+        $tableAlias = $this->getTableAlias();
         $select = $this->getSelect();
-        $select->where('harvest_id = ?');
+        $select->where("$tableAlias.harvest_id = ?");
         return $this->fetchObjects($select, array($harvestId));
     }
     
@@ -35,8 +36,9 @@ class OaipmhHarvester_RecordTable extends Omeka_Db_Table
      */
     public function findByOaiIdentifier($identifier)
     {
+        $tableAlias = $this->getTableAlias();
         $select = $this->getSelect();
-        $select->where('identifier = ?');
+        $select->where("$tableAlias.identifier = ?");
         return $this->fetchObjects($select, array($identifier));
     }
     
@@ -48,13 +50,16 @@ class OaipmhHarvester_RecordTable extends Omeka_Db_Table
      */
     public function findByItemId($itemId)
     {
+        $tableAlias = $this->getTableAlias();
         $select = $this->getSelect();
-        $select->where('item_id = ?');
+        $select->where("$tableAlias.item_id = ?");
         return $this->fetchObject($select, array($itemId));
     }
 
     public function applySearchFilters($select, $params)
     {
+        $tableAlias = $this->getTableAlias();
+        $harvestTableAlias = $this->_db->getTable('OaipmhHarvester_Harvest')->getTableAlias();
         $harvestKeys = array(
             'base_url',
             'set_spec',
@@ -65,27 +70,29 @@ class OaipmhHarvester_RecordTable extends Omeka_Db_Table
             foreach ($harvestKeys as $key) {
                 if (array_key_exists($key, $params)) {
                     if ($params[$key] === null) {
-                        $select->where("h.$key IS NULL");
+                        $select->where("$harvestTableAlias.$key IS NULL");
                     } else {
-                        $select->where("h.$key =?", $params[$key]);
+                        $select->where("$harvestTableAlias.$key = ?", $params[$key]);
                     }
                 }
             }
         }
         if (array_key_exists('identifier', $params))
         {
-            $select->where("identifier = ?", $params['identifier']);
+            $select->where("$tableAlias.identifier = ?", $params['identifier']);
         }
     }
 
     private function _join($select, $tableName)
     {
         $tableAlias = $this->getTableAlias();
+        $harvestTable = $this->_db->getTable('OaipmhHarvester_Harvest');
+        $harvestTableAlias = $harvestTable->getTableAlias();
         switch ($tableName) {
             case 'Harvest':
                 $select->joinInner(
-                    array('h' => $this->_db->OaipmhHarvester_Harvest),
-                    "h.id = $tableAlias.harvest_id",
+                    array($harvestTableAlias => $harvestTable->getTableName()),
+                    "$harvestTableAlias.id = $tableAlias.harvest_id",
                     array()
                 );
                 break;

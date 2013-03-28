@@ -1,10 +1,10 @@
-<div id="harvester-duplicates" class="info-panel">
-<h2>Duplicate Harvested Items</h2>
+<div id="harvester-duplicates" class="panel">
+<h4>Duplicate Harvested Items</h4>
 <ul>
 <?php foreach($items as $item): ?>
     <li>
     <?php echo link_to_item(
-            'Item #' . item('id', null, $item),
+            'Item #' . $item->id,
             array(),
             'show',
             $item
@@ -13,4 +13,4 @@
     <?php release_object($item); ?>
 <?php endforeach; ?>
 </ul>
-</div> <?php
+</div>

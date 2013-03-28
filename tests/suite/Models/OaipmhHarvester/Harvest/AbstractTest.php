@@ -1,19 +1,10 @@
 <?php
-
-class OaipmhHarvester_Harvest_AbstractTest extends Omeka_Test_AppTestCase
+class OaipmhHarvester_Harvest_AbstractTest extends OaipmhHarvester_Test_AppTestCase
 {
-    protected $_coreOptions = array(
-        'resources' => array(
-            'pluginbroker' => array(
-                'plugins' => array('OaipmhHarvester'),
-            )
-        )
-    );
-
     public function setUp()
     {
         parent::setUp();
-        $this->dbHelper = Omeka_Test_Helper_Db::factory($this->core);
+        $this->dbHelper = new Omeka_Test_Helper_Db($this->db->getAdapter(), $this->db->prefix);
     }
 
     public function testHarvestCreatesItems()
@@ -70,13 +61,12 @@ class OaipmhHarvester_Harvest_AbstractTest extends Omeka_Test_AppTestCase
         $xmlFile = dirname(__FILE__) . '/_files/ListRecords.xml';
         $request->setResponseXml(file_get_contents($xmlFile));
         $harvest->setRequest($request);
-        $harvest->forceSave();
+        $harvest->save();
         $record->harvest_id = $harvest->id;
-        $record->forceSave();
+        $record->save();
         $harvester = new OaipmhHarvester_Harvest_OaiDc($harvest);
         $harvester->harvest();
         $item = $this->db->getTable('Item')->find($record->item_id);
-        $this->assertEquals("Record Title", item('Dublin Core', 'Title', array(), $item));
+        $this->assertEquals("Record Title", metadata($item, array('Dublin Core', 'Title')));
     }
 }
-

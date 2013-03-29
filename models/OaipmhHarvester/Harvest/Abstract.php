@@ -172,7 +172,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $this->_record = $record;
         
         // Record has already been harvested
-        if($existingRecord) {
+        if ($existingRecord) {
             // If datestamp has changed, update the record, otherwise ignore.
             if($existingRecord->datestamp != $record->header->datestamp) {
                 $this->_updateItem($existingRecord,
@@ -180,8 +180,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
                                   $harvestedRecord['fileMetadata']);
             }
             release_object($existingRecord);
-        }
-        else {
+        } else {
             $this->_insertItem(
                 $harvestedRecord['itemMetadata'],
                 $harvestedRecord['elementTexts'],
@@ -219,7 +218,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $record->item_id    = $item->id;
         $record->identifier = (string) $this->_record->header->identifier;
         $record->datestamp  = (string) $this->_record->header->datestamp;
-        $record->forceSave();
+        $record->save();
         
         release_object($record);
     }
@@ -232,7 +231,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     private function _updateRecord(OaipmhHarvester_Record $record)
     {   
         $record->datestamp  = (string) $this->_record->header->datestamp;
-        $record->forceSave();
+        $record->save();
     }
     
     /**
@@ -280,7 +279,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
     {
         // If collection_id is not null, use the existing collection, do not
         // create a new one.
-        if(($collection_id = $this->_harvest->collection_id)) {
+        if (($collection_id = $this->_harvest->collection_id)) {
             $collection = get_db()->getTable('Collection')->find($collection_id);
         }
         else {
@@ -300,7 +299,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
             // Remember to set the harvest's collection ID once it has been saved.
             $this->_harvest->collection_id = $collection->id;
-            $this->_harvest->forceSave();
+            $this->_harvest->save();
         }
         return $collection;
     }
@@ -475,7 +474,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         try {
             $this->_harvest->status = 
                 OaipmhHarvester_Harvest::STATUS_IN_PROGRESS;
-            $this->_harvest->forceSave();
+            $this->_harvest->save();
         
             $this->_beforeHarvest();
             // This method does most of the actual work.
@@ -495,7 +494,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
                     OaipmhHarvester_Harvest::STATUS_QUEUED;
             }
         
-            $this->_harvest->forceSave();
+            $this->_harvest->save();
         
         } catch (Zend_Http_Client_Exception $e) {
             $this->_stopWithError($e);
@@ -517,7 +516,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // processing. Since there's no way to know exactly when the 
         // error occured, re-harvests need to start from the beginning.
         $this->_harvest->start_from = null;
-        $this->_harvest->forceSave();
+        $this->_harvest->save();
     }
 
     public static function factory($harvest)

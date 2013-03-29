@@ -14,8 +14,13 @@ require_once dirname(__FILE__) . '/../forms/Harvest.php';
  * @package OaipmhHarvester
  * @subpackage Controllers
  */
-class OaipmhHarvester_IndexController extends Omeka_Controller_Action
+class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionController
 {
+    public function init() 
+    {
+        $this->_helper->db->setDefaultModelName('OaipmhHarvester_Harvest');
+    }
+    
     /**
      * Prepare the index view.
      * 
@@ -23,12 +28,10 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function indexAction()
     {
-        $harvests = $this->getTable('OaipmhHarvester_Harvest')->findAll();
+        $harvests = $this->_helper->db->getTable('OaipmhHarvester_Harvest')->findAll();
         $this->view->harvests = $harvests;
         $this->view->harvestForm = new OaipmhHarvester_Form_Harvest();
-        $this->view->harvestForm->setAction(
-            $this->_helper->url('sets')
-        );
+        $this->view->harvestForm->setAction($this->_helper->url('sets'));
     }
     
     /**
@@ -67,7 +70,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $errorMsg = $e->getMessage();
         }
         if (isset($errorMsg)) {
-            $this->flashError($errorMsg);
+            $this->_helper->flashMessenger($errorMsg, 'error');
             return $this->_helper->redirector->goto('index');
         }
 
@@ -104,10 +107,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // Only set on re-harvest
         $harvest_id = $this->_getParam('harvest_id');
         
-        
         // If true, this is a re-harvest, all parameters will be the same
-        if($harvest_id) {
-            $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvest_id);
+        if ($harvest_id) {
+            $harvest = $this->_helper->db->getTable('OaipmhHarvester_Harvest')->find($harvest_id);
             
             // Set vars for flash message
             $setSpec = $harvest->set_spec;
@@ -116,12 +118,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             
             // Only on successfully-completed harvests: use date-selective
             // harvesting to limit results.
-            if($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED)
+            if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED) {
                 $harvest->start_from = $harvest->initiated;
-            else 
+            } else {
                 $harvest->start_from = null;
-        }
-        else {
+            } 
+        } else {
             $baseUrl        = $this->_getParam('base_url');
             $metadataSpec   = $this->_getParam('metadata_spec');
             $setSpec        = $this->_getParam('set_spec');
@@ -129,10 +131,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
             $setDescription = $this->_getParam('set_description');
         
             $metadataPrefix = $metadataSpec;
-            $harvest = $this->getTable('OaipmhHarvester_Harvest')
-                ->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
-        
-            if(!$harvest) {
+            $harvest = $this->_helper->db->getTable('OaipmhHarvester_Harvest')->findUniqueHarvest($baseUrl, $setSpec, $metadataPrefix);
+         
+            if (!$harvest) {
                 // There is no existing identical harvest, create a new entry.
                 $harvest = new OaipmhHarvester_Harvest;
                 $harvest->base_url        = $baseUrl;
@@ -146,22 +147,21 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
         // Insert the harvest.
         $harvest->status          = OaipmhHarvester_Harvest::STATUS_QUEUED;
         $harvest->initiated       = date('Y:m:d H:i:s');
-        $harvest->forceSave();
+        $harvest->save();
         
-        $jobDispatcher = Zend_Registry::get('job_dispatcher');
+        $jobDispatcher = Zend_Registry::get('bootstrap')->getResource('jobs');        
         $jobDispatcher->setQueueName('imports');
-        $jobDispatcher->send('OaipmhHarvester_Job', array('harvestId' => $harvest->id));
+        $jobDispatcher->sendLongRunning('OaipmhHarvester_Job', array('harvestId' => $harvest->id));
         
         if ($setSpec) {
             $message = "Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
         } else {
             $message = "Repository \"$baseUrl\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
         }
-        if($harvest->start_from)
+        if ($harvest->start_from) {
             $message = $message." Harvesting is continued from $harvest->start_from .";
-        
-        $this->flashSuccess($message);
-        
+        }
+        $this->_helper->flashMessenger($message, 'success');
         return $this->_helper->redirector->goto('index');
     }
     
@@ -173,9 +173,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
     public function statusAction()
     {
         $harvestId = $this->_getParam('harvest_id');
-        
-        $harvest = $this->getTable('OaipmhHarvester_Harvest')->find($harvestId);
-        
+        $harvest = $this->_helper->db->getTable('OaipmhHarvester_Harvest')->find($harvestId);
         $this->view->harvest = $harvest;
     }
     
@@ -186,22 +184,18 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_Action
      */
     public function deleteAction()
     {
-        if (!$this->getRequest()->isPost()) {
-            return $this->_helper->redirector->goto('index'); 
-        }
-        $this->_helper->db->setDefaultModelName('OaipmhHarvester_Harvest');
         // Throw if harvest does not exist or access is disallowed.
-        $harvest = $this->findById();
-        $jobDispatcher = Zend_Registry::get('job_dispatcher');
+        $harvestId = $this->_getParam('id');
+        $harvest = $this->_helper->db->getTable('OaipmhHarvester_Harvest')->find($harvestId);
+        $jobDispatcher = Zend_Registry::get('bootstrap')->getResource('jobs');        
         $jobDispatcher->setQueueName('imports');
-        $jobDispatcher->send('OaipmhHarvester_DeleteJob',
+        $jobDispatcher->sendLongRunning('OaipmhHarvester_DeleteJob',
             array(
                 'harvestId' => $harvest->id,
             )
         );
-        $this->flashSuccess(
-            'Harvest has been marked for deletion.'
-        );
+        $msg = 'Harvest has been marked for deletion.';
+        $this->_helper->flashMessenger($msg, 'success');
         return $this->_helper->redirector->goto('index');
     }
     

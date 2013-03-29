@@ -7,33 +7,26 @@
  * @copyright Copyright (c) 2009-2011 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
-$head = array('body_class' => 'oaipmh-harvester primary', 
+$head = array('body_class' => 'oaipmh-harvester content', 
               'title'      => 'OAI-PMH Harvester | Harvest');
-head($head);
+echo head($head);
 ?>
-
-<h1><?php echo $head['title']; ?></h1>
-
 <div id="primary">
-
     <?php echo flash(); ?>
-
     <?php if (empty($this->availableMaps)): ?>
     <div class="error">There are no available data maps that are compatable with 
     this repository. You will not be able to harvest from this repository.</div>
     <?php endif; ?>
-    
     <h2>Data provider: <?php echo html_escape($this->baseUrl); ?></h2>
     <h3>Harvest the entire repository:</h3>
     <p>
-    <form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
+    <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest'); ?>">
         <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
         <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
         <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
     </form>
     <br />
     </p>
-    
     <h3>Harvest a set:</h3>
     <?php if ($this->sets): ?>
     <table>
@@ -58,9 +51,9 @@ head($head);
     endif; ?>
             <tr>
                 <td><strong><?php echo wordwrap($set->setSpec, 20, '<br />', true); ?></strong></td>
-                <td><?php echo html_escape($set->setName); ?></td>
+                <td><?php echo @ html_escape($set->setName); ?></td>
                 <td><?php echo @ html_escape($setDescription); ?></td>
-                <td><form method="post" action="<?php echo uri('oaipmh-harvester/index/harvest'); ?>">
+                <td><form method="post" action="<?php echo url('oaipmh-harvester/index/harvest'); ?>">
                 <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
                 <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
                 <?php echo $this->formHidden('set_spec', $set->setSpec); ?>
@@ -84,7 +77,5 @@ head($head);
         </form>
     </div>
     <?php endif; ?>
-    <?php /*endif;*/?>
 </div>
-
-<?php foot(); ?>
+<?php echo foot(); ?>

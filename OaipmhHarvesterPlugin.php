@@ -20,7 +20,7 @@ defined('OAIPMH_HARVESTER_MAPS_DIRECTORY')
 require_once dirname(__FILE__) . '/functions.php';
 
 /**
- * Csv Import plugin.
+ * OAI-PMH Harvester plugin.
  */
 class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
 {
@@ -33,7 +33,6 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
                               'define_acl', 
                               'admin_append_to_plugin_uninstall_message', 
                               'before_delete_item',
-                              //'admin_append_to_items_show_secondary',
                               'admin_items_show_sidebar',
                               'items_browse_sql');
 

@@ -184,9 +184,6 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
      */
     public function deleteAction()
     {
-        // if (!$this->getRequest()->isPost()) {
-        //     return $this->_helper->redirector->goto('index'); 
-        // }
         // Throw if harvest does not exist or access is disallowed.
         $harvestId = $this->_getParam('id');
         $harvest = $this->_helper->db->getTable('OaipmhHarvester_Harvest')->find($harvestId);

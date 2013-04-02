@@ -1,5 +1,7 @@
 <?php
 
+require_once 'models/OaipmhHarvester/Request.php';
+
 class OaipmhHarvester_RequestTest extends PHPUnit_Framework_TestCase
 {
     public function setUp()

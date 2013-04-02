@@ -2,7 +2,7 @@
 /**
  *
  */
-class OaipmhHarvester_Job extends Omeka_JobAbstract
+class OaipmhHarvester_Job extends Omeka_Job_AbstractJob
 {
     private $_memoryLimit;
     private $_harvestId;

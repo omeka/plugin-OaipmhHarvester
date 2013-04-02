@@ -28,9 +28,7 @@ class OaipmhHarvester_Request_Throttler
     {
         $this->_request = $request;
         $this->_options = $options;
-        $this->_session = new Zend_Session_Namespace(
-            'OaipmhHarvester_Request_Throttler'
-        );
+        $this->_session = new Zend_Session_Namespace('OaipmhHarvester_Request_Throttler');
         if (!isset($this->_session->requests)) {
             $this->_session->requests = array();
         }

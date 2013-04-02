@@ -1,18 +1,17 @@
 <?php
 /**
- *
+ * DeleteJob model
  */
-class OaipmhHarvester_DeleteJob extends Omeka_JobAbstract
+class OaipmhHarvester_DeleteJob extends Omeka_Job_AbstractJob
 {
     private $_memoryLimit;
     private $_harvestId;
 
     public function perform()
     {
-        $config = Omeka_Context::getInstance()->config;
-        $harvesterConfig = $config->plugins->OaipmhHarvester;
-        if ($harvesterConfig && $harvesterConfig->memoryLimit) {
-            ini_set('memory_limit', $harvesterConfig->memoryLimit);
+        $config = Zend_Registry::get('bootstrap')->getResource('Config');
+        if (isset($config->plugins->OaipmhHarvester->memoryLimit)) {
+            ini_set('memory_limit', $config->plugins->OaipmhHarvester->memoryLimit);
         }
         
         // Set the set.
@@ -31,7 +30,7 @@ class OaipmhHarvester_DeleteJob extends Omeka_JobAbstract
         if ($harvest->status == OaipmhHarvester_Harvest::STATUS_IN_PROGRESS) {
             // Then again, it might not be waiting for anything else.
             $harvest->status = OaipmhHarvester_Harvest::STATUS_DELETED;
-            $harvest->forceSave();
+            $harvest->save();
             return $this->resend();
         }
 
@@ -74,9 +73,7 @@ class OaipmhHarvester_DeleteJob extends Omeka_JobAbstract
         // processing. Since there's no way to know exactly when the 
         // error occured, re-harvests need to start from the beginning.
         $harvest->start_from = null;
-        $harvest->forceSave();
-        
-        
+        $harvest->save();
     }
 
     public function setHarvestId($id)

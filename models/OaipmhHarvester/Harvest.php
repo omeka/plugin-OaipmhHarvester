@@ -12,7 +12,7 @@
  * @package OaipmhHarvester
  * @subpackage Models
  */
-class OaipmhHarvester_Harvest extends Omeka_Record
+class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
 {
     const STATUS_QUEUED      = 'queued';
     const STATUS_IN_PROGRESS = 'in progress';
@@ -111,7 +111,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record
         $messageCodeText = $this->_getMessageCodeText($messageCode);
         
         $this->status_messages .= "$delimiter$messageCodeText: $message ($date)";
-        $this->forceSave();
+        $this->save();
     }
 
     protected function _validate()

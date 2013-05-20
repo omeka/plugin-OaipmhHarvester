@@ -62,6 +62,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         set_error_handler(array($this, 'errorHandler'), E_WARNING);
         
         $this->_harvest = $harvest;
+   
     }
 
     public function setOption($key, $value)

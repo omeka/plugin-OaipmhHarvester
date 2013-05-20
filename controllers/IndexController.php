@@ -115,7 +115,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
             $setSpec = $harvest->set_spec;
             $baseUrl = $harvest->base_url;
             $metadataPrefix = $harvest->metadata_prefix;
-            
+          
             // Only on successfully-completed harvests: use date-selective
             // harvesting to limit results.
             if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED) {

@@ -122,6 +122,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
                 array(
                     'oai_dc',
                     'cdwalite',
+                    'mets',
                 )
             ),
         );

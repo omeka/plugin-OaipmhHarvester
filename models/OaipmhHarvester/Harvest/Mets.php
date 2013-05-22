@@ -60,8 +60,12 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
         
         $dcMetadata = $record
                     ->metadata
+                    ->mets
                     ->children(self::METS_NAMESPACE)
-                    ->children(self::DUBLIN_CORE_NAMESPACE);
+                    ->dmdSec
+                    ->mdWrap
+                    ->xmlData
+                   ->children(self::DUBLIN_CORE_NAMESPACE);
         
         $elementTexts = array();
         $elements = array('contributor', 'coverage', 'creator', 

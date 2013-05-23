@@ -83,8 +83,31 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
             }
         }
         
+        $fileMeta = $record
+                    ->mets
+                    ->children(self::METS_NAMESPACE)
+                    ->fileSec
+                    ->fileGrp;
+                   // ->file
+                   //->FLocat
+                   //->children(self::XLINK_NAMESPACE);
+                   $fileMetadata = array();
+        
+         // number of files associated with the item
+        $fileCount = count($fileMeta->file)-1;
+        while($fileCount >= 0){
+                  $f = $fileMeta->file[$fileCount]->FLocat->attributes(XLINK_NAMESPACE);
+       $fileMetadata['files'][] = array(
+           'type' => (string)$f['type'],
+           'title' =>  (string) $f['title'],
+           'href' => (string) $f['href'],
+       );
+       $fileCount--;
+        }
+             
+                      
         return array('itemMetadata' => $itemMetadata,
                      'elementTexts' => $elementTexts,
-                     'fileMetadata' => array());
+                     'fileMetadata' => $fileMetadata);
     }
 }

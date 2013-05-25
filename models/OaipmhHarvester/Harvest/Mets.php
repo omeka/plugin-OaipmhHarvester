@@ -30,6 +30,8 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
     /** XML namespace for unqualified Dublin Core */
     const DUBLIN_CORE_NAMESPACE = 'http://purl.org/dc/elements/1.1/';
     
+    const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+    
     protected $_collection;
     
      protected function _beforeHarvest()
@@ -84,24 +86,26 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
         }
         
         $fileMeta = $record
+                    ->metadata
                     ->mets
                     ->children(self::METS_NAMESPACE)
                     ->fileSec
                     ->fileGrp;
-                   // ->file
-                   //->FLocat
-                   //->children(self::XLINK_NAMESPACE);
+
                    $fileMetadata = array();
         
          // number of files associated with the item
         $fileCount = count($fileMeta->file)-1;
+        $fileMetadata['file_transfer_type'] ='Url';
+     
         while($fileCount >= 0){
-                  $f = $fileMeta->file[$fileCount]->FLocat->attributes(XLINK_NAMESPACE);
-       $fileMetadata['files'][] = array(
-           'type' => (string)$f['type'],
-           'title' =>  (string) $f['title'],
-           'href' => (string) $f['href'],
-       );
+            $f = $fileMeta->file[$fileCount]->FLocat->attributes(self::XLINK_NAMESPACE);
+            $fileMetadata['files'][] = array(
+                'Upload' => null,
+                'Url' => (string)$f['href'],
+                'source' => (string)$f['href'],
+                'name' => (string)$f['title'],
+                );       
        $fileCount--;
         }
              

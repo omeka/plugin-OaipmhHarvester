@@ -351,14 +351,21 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $files = array($fileMetadata['files']);
             
             foreach ($files as $file) {
-                $file = insert_files_for_item(
+                $fileOb = insert_files_for_item(
                     $item, 
                     $fileTransferType, 
                     $file, 
                     $fileOptions
-                );
+                       );   
+                   _log($fileOb);
+                   $fileObject= $fileOb[0];
+                   if(!empty($file['metadata'])){
+                       $fileObject->addElementTextsByArray($file['metadata']);
+                   $fileObject->save();
+                   }
+                  
                 // Release the File object from memory. 
-                release_object($file);
+                release_object($fileObject);
             }
         }
         

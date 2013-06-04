@@ -100,13 +100,32 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
      
         while($fileCount >= 0){
             $f = $fileMeta->file[$fileCount]->FLocat->attributes(self::XLINK_NAMESPACE);
+        
+          $filedcMetadata = $fileMeta
+                        ->file[$fileCount]
+                    ->FContent
+                    ->xmlData
+                    ->children(self::DUBLIN_CORE_NAMESPACE);
+           // print_r($filedcMetadata);
+          foreach ($elements as $element) {
+            if (isset($filedcMetadata->$element)) {
+                foreach ($filedcMetadata->$element as $rawText) {
+                    $text = trim($rawText);
+                    $s['Dublin Core'][ucwords($element)][] 
+                        = array('text' => (string) $text, 'html' => false);
+                }
+            }
+        }
+        
             $fileMetadata['files'][] = array(
                 'Upload' => null,
                 'Url' => (string)$f['href'],
                 'source' => (string)$f['href'],
                 'name' => (string)$f['title'],
+                'metadata'=>isset($s)? $s: null,
                 );       
-       $fileCount--;
+         
+            $fileCount--;
         }
              
                       

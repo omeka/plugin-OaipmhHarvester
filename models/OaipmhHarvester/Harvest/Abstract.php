@@ -286,17 +286,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
         else {
             // There must be a collection name, so if there is none, like when the 
             // harvest is repository-wide, set it to the base URL.
-            if (!isset($metadata['name']) || !$metadata['name']) {
-                $metadata['name'] = $this->_harvest->base_url;
+            if (!isset($metadata['elementTexts']['Dublin Core']['Title']['text']) || 
+                    !$metadata['elementTexts']['Dublin Core']['Title']['text']) {
+                $$metadata['elementTexts']['Dublin Core']['Title']['text'] = $this->_harvest->base_url;
             }
         
-            // The `collections` table does not allow NULL descriptions, so set to 
-            // an empty string. This is most likely a bug in Omeka's core.
-            if (!isset($metadata['description']) || !$metadata['description']) {
-                $metadata['description'] = '';
-            }
+
         
-            $collection = insert_collection($metadata);
+            $collection = insert_collection($metadata['metadata'],$metadata['elementTexts']);
         
             // Remember to set the harvest's collection ID once it has been saved.
             $this->_harvest->collection_id = $collection->id;

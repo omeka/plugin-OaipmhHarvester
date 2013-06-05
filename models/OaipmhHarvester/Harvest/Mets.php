@@ -37,12 +37,19 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
      protected function _beforeHarvest()
     {
         $harvest = $this->_getHarvest();
+   
         $collectionMetadata = array(
-            'name'        => $harvest->set_name, 
-            'description' => $harvest->set_description, 
-            'public'      => $this->getOption('public'), 
-            'featured'    => $this->getOption('featured'),
-        );
+            'metadata' => array(
+                'public' => $this->getOption('public'),
+                'featured' => $this->getOption('featured'),
+            ),);
+        $collectionMetadata['elementTexts']['Dublin Core']['Title'][]= array(
+            'text' => (string)$harvest->set_name, 
+            'html' => false); 
+        $collectionMetadata['elementTexts']['Dublin Core']['Description'][]= array(
+            'text' => (string)$harvest->set_Description, 
+            'html' => false); 
+        
         $this->_collection = $this->_insertCollection($collectionMetadata);
     }
     
@@ -75,6 +82,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                           'identifier', 'language', 'publisher', 
                           'relation', 'rights', 'source', 
                           'subject', 'title', 'type');
+        
         foreach ($elements as $element) {
             if (isset($dcMetadata->$element)) {
                 foreach ($dcMetadata->$element as $rawText) {
@@ -106,7 +114,8 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                     ->FContent
                     ->xmlData
                     ->children(self::DUBLIN_CORE_NAMESPACE);
-           // print_r($filedcMetadata);
+          
+           //create an array with the files Dublin Core metadata if available
           foreach ($elements as $element) {
             if (isset($filedcMetadata->$element)) {
                 foreach ($filedcMetadata->$element as $rawText) {
@@ -116,6 +125,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                 }
             }
         }
+        
         
             $fileMetadata['files'][] = array(
                 'Upload' => null,

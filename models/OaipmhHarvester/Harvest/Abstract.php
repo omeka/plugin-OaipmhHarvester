@@ -352,8 +352,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
                     $item, 
                     $fileTransferType, 
                     $file, 
-                    $fileOptions
-                       );   
+                    $fileOptions);   
                    _log($fileOb);
                    $fileObject= $fileOb[0];
                    if(!empty($file['metadata'])){

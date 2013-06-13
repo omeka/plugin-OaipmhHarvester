@@ -67,80 +67,118 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
             'featured'      => $this->getOption('featured'),
         );
         
-        $dcMetadata = $record
-                    ->metadata
-                    ->mets
-                    ->children(self::METS_NAMESPACE)
-                    ->dmdSec
+      
+        $map = $this->getMap($record);
+        $dmdSecArr = $this->dmdSecToArray($record);
+        
+        $fileMeta = $record
+                ->metadata
+                ->mets
+                ->children(self::METS_NAMESPACE)
+                ->fileSec
+                ->fileGrp;
+        
+        //number of files associated with the item
+         $fileCount = count($fileMeta->file)-1;
+         $fileMetadata['file_transfer_type'] = 'Url';
+         
+         while($fileCount >= 0){
+             $file = $fileMeta->file[$fileCount]->FLocat->attributes(self::XLINK_NAMESPACE);
+             
+             $fileDmdId = $fileMeta->file[$fileCount]->attributes();
+             $fm = $dmdSecArr[(string)$fileDmdId['DMDID']];
+             
+             $fileMetadata['files'][] = array(
+                 'upload' => null,
+                 'Url'  => (string)$file['href'],
+                 'source' => (string)$file['href'],
+                 'name'   => (string)$file['title'],
+                 'metadata' =>(array_key_exists('Dublin Core', $file))? $file: null,
+             );
+            
+             $fileCount--;
+         }
+        return array('itemMetadata' => $itemMetadata,
+                     'elementTexts' => ($map['itemId'] == null)? $dmdSecArr: $dmdSecArr[$map['itemId']],
+                     'fileMetadata' => $fileMetadata);
+    }
+    
+    /**
+     * 
+     * Convenience function that returns the xml structMap
+     * as an array of items and the files associated with it.
+     * 
+     * if the structmap doesn't exist in the xml schema null
+     * will be returned.
+     * 
+     * @param type $record
+     * @return type array/null 
+     *        
+     */
+    private function getMap($record)
+    {
+        $structMap = $record
+                ->metadata
+                ->mets
+                ->structMap
+                ->div;
+        
+        $map = null;
+        if(isset($structMap['DMDID'])){
+            $map['itemId'] = (string)$structMap['DMDID'];
+            
+            $fileCount = count($structMap->fptr);
+            
+            $map['files'] = null;
+            if($fileCount != 0){
+                foreach($structMap->fptr as $fileId){
+                    $map['files'][] = (string)$fileId['FILEID'];
+                }
+            }
+        }
+        
+        
+        return $map;
+    }
+    /**
+     * 
+     * Convenience funciton that returns the 
+     * xmls dmdSec as an Omeka ElementTexts array
+     * 
+     * @param type $record
+     * @return boolean/array
+     */
+    private function dmdSecToArray($record)
+    {   $mets= $record->metadata->mets->childrend(self::METADATA_PREFIX);
+        $meta = null;
+        foreach($mets->dmdSec as $k){
+            $dcMetadata = $k
                     ->mdWrap
                     ->xmlData
-                   ->children(self::DUBLIN_CORE_NAMESPACE);
-        
-        $elementTexts = array();
-        $elements = array('contributor', 'coverage', 'creator', 
+                    ->children(self::DUBLIN_CORE_NAMESPACE);
+            $elementTexts = array();
+            $elements = array('contributor', 'coverage', 'creator', 
                           'date', 'description', 'format', 
                           'identifier', 'language', 'publisher', 
                           'relation', 'rights', 'source', 
                           'subject', 'title', 'type');
-        
-        foreach ($elements as $element) {
-            if (isset($dcMetadata->$element)) {
-                foreach ($dcMetadata->$element as $rawText) {
-                    $text = trim($rawText);
-                    $elementTexts['Dublin Core'][ucwords($element)][] 
-                        = array('text' => (string) $text, 'html' => false);
-                }
-            }
-        }
-        
-        $fileMeta = $record
-                    ->metadata
-                    ->mets
-                    ->children(self::METS_NAMESPACE)
-                    ->fileSec
-                    ->fileGrp;
-
-                   $fileMetadata = array();
-        
-         // number of files associated with the item
-        $fileCount = count($fileMeta->file)-1;
-        $fileMetadata['file_transfer_type'] ='Url';
-     
-        while($fileCount >= 0){
-            $f = $fileMeta->file[$fileCount]->FLocat->attributes(self::XLINK_NAMESPACE);
-        
-          $filedcMetadata = $fileMeta
-                        ->file[$fileCount]
-                    ->FContent
-                    ->xmlData
-                    ->children(self::DUBLIN_CORE_NAMESPACE);
-          
-           //create an array with the files Dublin Core metadata if available
-          foreach ($elements as $element) {
-            if (isset($filedcMetadata->$element)) {
-                foreach ($filedcMetadata->$element as $rawText) {
-                    $text = trim($rawText);
-                    $s['Dublin Core'][ucwords($element)][] 
-                        = array('text' => (string) $text, 'html' => false);
-                }
-            }
-        }
-        
-        
-            $fileMetadata['files'][] = array(
-                'Upload' => null,
-                'Url' => (string)$f['href'],
-                'source' => (string)$f['href'],
-                'name' => (string)$f['title'],
-                'metadata'=>isset($s)? $s: null,
-                );       
-         
-            $fileCount--;
-        }
              
-                      
-        return array('itemMetadata' => $itemMetadata,
-                     'elementTexts' => $elementTexts,
-                     'fileMetadata' => $fileMetadata);
+            foreach($elements as $element){
+                if(isset($dcMetadata->$element)){
+                    foreach($dcMetadata->$element as $rawText){
+                         $text = trim($rawText);
+                         $elementTexts['Dublin Core'][ucwords($element)][]
+                                 = array('text'=> (string) $text, 'html' => false);
+                    }
+                }
+            }
+            if($this->getMap($record) == null){
+                $meta = $elementTexts;
+            }else {
+                $meta[(string)$k->attributes()] = $elementTexts;
+            }
+        }
+        
+        return $meta;
     }
 }

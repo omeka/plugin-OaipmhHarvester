@@ -149,7 +149,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
      * @return boolean/array
      */
     private function dmdSecToArray($record)
-    {   $mets= $record->metadata->mets->childrend(self::METADATA_PREFIX);
+    {   $mets= $record->metadata->mets->childrend(self::METS_NAMESPACE);
         $meta = null;
         foreach($mets->dmdSec as $k){
             $dcMetadata = $k

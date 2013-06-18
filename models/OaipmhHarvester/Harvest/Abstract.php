@@ -354,7 +354,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
                     $file, 
                     $fileOptions);   
                    _log($fileOb);
-                   $fileObject= $fileOb[0];
+                   $fileObject= $fileOb;//$fileOb[0];
                    if(!empty($file['metadata'])){
                        $fileObject->addElementTextsByArray($file['metadata']);
                    $fileObject->save();

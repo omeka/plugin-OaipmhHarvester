@@ -67,39 +67,36 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
             'featured'      => $this->getOption('featured'),
         );
         
-      
+        //$elementTexts = array();
         $map = $this->getMap($record);
-        $dmdSecArr = $this->dmdSecToArray($record);
+        $dmdSection = $this->dmdSecToArray($record);
+        if(empty($map)){
+            $elementTexts = $dmdSection;
+        } else {
+            $elementTexts = $dmdSection[$map['itemId']];
+        }       
         
-        $fileMeta = $record
+        $fileMetadata = array();
+        $files = $record
                 ->metadata
                 ->mets
                 ->children(self::METS_NAMESPACE)
                 ->fileSec
                 ->fileGrp;
-        
-        //number of files associated with the item
-         $fileCount = count($fileMeta->file)-1;
-         $fileMetadata['file_transfer_type'] = 'Url';
-         
-         while($fileCount >= 0){
-             $file = $fileMeta->file[$fileCount]->FLocat->attributes(self::XLINK_NAMESPACE);
-             
-             $fileDmdId = $fileMeta->file[$fileCount]->attributes();
-             $fm = $dmdSecArr[(string)$fileDmdId['DMDID']];
-             
-             $fileMetadata['files'][] = array(
-                 'upload' => null,
-                 'Url'  => (string)$file['href'],
-                 'source' => (string)$file['href'],
-                 'name'   => (string)$file['title'],
-                 'metadata' =>(array_key_exists('Dublin Core', $file))? $file: null,
-             );
+        foreach($files->file as $fl){
+            $dmdId = $fl->attributes();
+            $file = $fl->FLocat->attributes(self::XLINK_NAMESPACE);
             
-             $fileCount--;
-         }
+            $fileMetadata['files'][] = array(
+                'Upload' => null,
+                'Url' => (string) $file['href'],
+                'source' => (string) $file['href'],
+                'name'   => (string) $file['title'],
+                'metadata' => (isset($dmdId['DMDID']) ? $dmdSection[(string) $dmdId['DMDID']] : array()),
+            );
+        }
         return array('itemMetadata' => $itemMetadata,
-                     'elementTexts' => ($map['itemId'] == null)? $dmdSecArr: $dmdSecArr[$map['itemId']],
+                     'elementTexts' => $elementTexts,
                      'fileMetadata' => $fileMetadata);
     }
     
@@ -149,7 +146,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
      * @return boolean/array
      */
     private function dmdSecToArray($record)
-    {   $mets= $record->metadata->mets->childrend(self::METS_NAMESPACE);
+    {   $mets= $record->metadata->mets->children(self::METS_NAMESPACE);
         $meta = null;
         foreach($mets->dmdSec as $k){
             $dcMetadata = $k

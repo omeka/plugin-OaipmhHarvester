@@ -31,15 +31,20 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
     /**
      * Actions to be carried out before the harvest of any items begins.
      */
-    protected function _beforeHarvest()
+     protected function _beforeHarvest()
     {
         $harvest = $this->_getHarvest();
+   
         $collectionMetadata = array(
-            'name'        => $harvest->set_name, 
-            'description' => $harvest->set_description, 
-            'public'      => $this->getOption('public'), 
-            'featured'    => $this->getOption('featured'),
-        );
+            'metadata' => array(
+                'public' => $this->getOption('public'),
+                'featured' => $this->getOption('featured'),
+            ),);
+        $collectionMetadata['elementTexts']['Dublin Core']['Title'][]
+            = array('text' => (string) $harvest->set_name, 'html' => false); 
+        $collectionMetadata['elementTexts']['Dublin Core']['Description'][]
+            = array('text' => (string) $harvest->set_Description, 'html' => false); 
+        
         $this->_collection = $this->_insertCollection($collectionMetadata);
     }
     

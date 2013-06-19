@@ -43,12 +43,10 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                 'public' => $this->getOption('public'),
                 'featured' => $this->getOption('featured'),
             ),);
-        $collectionMetadata['elementTexts']['Dublin Core']['Title'][]= array(
-            'text' => (string)$harvest->set_name, 
-            'html' => false); 
-        $collectionMetadata['elementTexts']['Dublin Core']['Description'][]= array(
-            'text' => (string)$harvest->set_Description, 
-            'html' => false); 
+        $collectionMetadata['elementTexts']['Dublin Core']['Title'][]
+            = array('text' => (string) $harvest->set_name, 'html' => false); 
+        $collectionMetadata['elementTexts']['Dublin Core']['Description'][]
+            = array('text' => (string) $harvest->set_Description, 'html' => false); 
         
         $this->_collection = $this->_insertCollection($collectionMetadata);
     }
@@ -67,9 +65,9 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
             'featured'      => $this->getOption('featured'),
         );
         
-        //$elementTexts = array();
-        $map = $this->getMap($record);
-        $dmdSection = $this->dmdSecToArray($record);
+       
+        $map = $this->_getMap($record);
+        $dmdSection = $this->_dmdSecToArray($record);
         if(empty($map)){
             $elementTexts = $dmdSection;
         } else {
@@ -95,6 +93,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                 'metadata' => (isset($dmdId['DMDID']) ? $dmdSection[(string) $dmdId['DMDID']] : array()),
             );
         }
+        
         return array('itemMetadata' => $itemMetadata,
                      'elementTexts' => $elementTexts,
                      'fileMetadata' => $fileMetadata);
@@ -112,7 +111,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
      * @return type array/null 
      *        
      */
-    private function getMap($record)
+    private function _getMap($record)
     {
         $structMap = $record
                 ->metadata
@@ -145,7 +144,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
      * @param type $record
      * @return boolean/array
      */
-    private function dmdSecToArray($record)
+    private function _dmdSecToArray($record)
     {   $mets= $record->metadata->mets->children(self::METS_NAMESPACE);
         $meta = null;
         foreach($mets->dmdSec as $k){
@@ -169,7 +168,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                     }
                 }
             }
-            if($this->getMap($record) == null){
+            if($this->_getMap($record) == null){
                 $meta = $elementTexts;
             }else {
                 $meta[(string)$k->attributes()] = $elementTexts;

@@ -6,7 +6,7 @@ class OaipmhHarvester_Form_Harvest extends Omeka_Form
     {
         parent::init();
         $this->addElement('text', 'base_url', array(
-            'label' => 'Base Url',
+            'label' => 'Base URL',
             'description' => 'The base URL of the OAI-PMH data provider.',
             'size' => 60,
         ));

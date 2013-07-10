@@ -32,9 +32,8 @@ echo head($head);
     <table>
         <thead>
             <tr>
+                <th>Set</th>
                 <th>Set Spec</th>
-                <th>Set Name</th>
-                <th>Set Description</th>
                 <th>Harvest</th>
             </tr>
         </thead>
@@ -50,10 +49,16 @@ echo head($head);
         $setDescription = null;
     endif; ?>
             <tr>
-                <td><strong><?php echo wordwrap($set->setSpec, 20, '<br />', true); ?></strong></td>
-                <td><?php echo @ html_escape($set->setName); ?></td>
-                <td><?php echo @ html_escape($setDescription); ?></td>
-                <td><form method="post" action="<?php echo url('oaipmh-harvester/index/harvest'); ?>">
+                <td>
+                    <?php if (isset($set->setName)): ?>
+                    <strong><?php echo html_escape($set->setName); ?></strong>
+                    <?php endif; ?>
+                    <?php if ($setDescription): ?>
+                    <p><?php echo html_escape($setDescription); ?></p>
+                    <?php endif; ?>
+                </td>
+                <td><?php echo html_escape($set->setSpec); ?></td>
+                <td style="white-space: nowrap"><form method="post" action="<?php echo url('oaipmh-harvester/index/harvest'); ?>">
                 <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
                 <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
                 <?php echo $this->formHidden('set_spec', $set->setSpec); ?>

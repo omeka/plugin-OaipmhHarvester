@@ -12,7 +12,15 @@ $head = array('title'      => 'OAI-PMH Harvester',
               'body_class' => 'primary oaipmh-harvester');
 echo head($head);
 ?>
+<style type="text/css">
+.base-url, .harvest-status {
+    white-space: nowrap;
+}
 
+.harvest-status input[type="submit"] {
+    margin: .25em 0 0 0;
+}
+</style>
 <div id="primary">
 
 <?php echo flash(); ?>
@@ -31,13 +39,12 @@ echo head($head);
                 <th>Metadata Prefix</th>
                 <th>Set</th>
                 <th>Status</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
         <?php foreach ($this->harvests as $harvest): ?>
             <tr>
-                <td title="<?php echo html_escape($harvest->base_url); ?>" style="white-space: nowrap">
+                <td title="<?php echo html_escape($harvest->base_url); ?>" class="base-url">
                     <?php echo html_escape(snippet($harvest->base_url, 0, 40)); ?>
                 </td>
                 <td><?php echo html_escape($harvest->metadata_prefix); ?></td>
@@ -51,14 +58,15 @@ echo head($head);
                     endif;
                     ?>
                 </td>
-                <td><a href="<?php echo url("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo html_escape(ucwords($harvest->status)); ?></a></td>
-                <td style="white-space: nowrap">
-                <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED): ?>
-                    <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest');?>">
-                    <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
-                    <?php echo $this->formSubmit('submit_reharvest', 'Re-Harvest'); ?>
-                    </form>
-                <?php endif; ?>
+                <td class="harvest-status">
+                    <a href="<?php echo url("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo html_escape(ucwords($harvest->status)); ?></a>
+                    <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED): ?>
+                        <br>
+                        <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest');?>">
+                        <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
+                        <?php echo $this->formSubmit('submit_reharvest', 'Re-Harvest'); ?>
+                        </form>
+                    <?php endif; ?>
                 </td>
             </tr>
         <?php endforeach; ?>

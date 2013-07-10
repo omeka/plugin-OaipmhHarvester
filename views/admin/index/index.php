@@ -27,7 +27,6 @@ echo head($head);
     <table>
        <thead>
             <tr>
-                <th>ID</th>
                 <th>Base URL</th>
                 <th>Metadata Prefix</th>
                 <th>Set</th>
@@ -38,8 +37,9 @@ echo head($head);
         <tbody>
         <?php foreach ($this->harvests as $harvest): ?>
             <tr>
-                <td><?php echo html_escape($harvest->id); ?></td>
-                <td><?php echo snippet($harvest->base_url, 0, 40); ?></td>
+                <td title="<?php echo html_escape($harvest->base_url); ?>" style="white-space: nowrap">
+                    <?php echo html_escape(snippet($harvest->base_url, 0, 40)); ?>
+                </td>
                 <td><?php echo html_escape($harvest->metadata_prefix); ?></td>
                 <td>
                     <?php

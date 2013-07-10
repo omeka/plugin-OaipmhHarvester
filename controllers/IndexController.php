@@ -151,8 +151,18 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
         
         $jobDispatcher = Zend_Registry::get('bootstrap')->getResource('jobs');        
         $jobDispatcher->setQueueName('imports');
-        $jobDispatcher->sendLongRunning('OaipmhHarvester_Job', array('harvestId' => $harvest->id));
-        
+
+        try {
+            $jobDispatcher->sendLongRunning('OaipmhHarvester_Job', array('harvestId' => $harvest->id));
+        } catch (Exception $e) {
+            $harvest->status = OaipmhHarvester_Harvest::STATUS_ERROR;
+            $harvest->addStatusMessage(
+                get_class($e) . ': ' . $e->getMessage(),
+                OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_ERROR
+            );
+            throw $e;
+        }
+
         if ($setSpec) {
             $message = "Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
         } else {

@@ -17,6 +17,12 @@ echo head($head);
     white-space: nowrap;
 }
 
+.base-url div{
+    max-width: 18em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .harvest-status input[type="submit"] {
     margin: .25em 0 0 0;
 }
@@ -45,7 +51,7 @@ echo head($head);
         <?php foreach ($this->harvests as $harvest): ?>
             <tr>
                 <td title="<?php echo html_escape($harvest->base_url); ?>" class="base-url">
-                    <?php echo html_escape(substr($harvest->base_url, 0, 40)); ?>
+                    <div><?php echo html_escape($harvest->base_url); ?></div>
                 </td>
                 <td><?php echo html_escape($harvest->metadata_prefix); ?></td>
                 <td>

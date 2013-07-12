@@ -45,7 +45,7 @@ echo head($head);
         <?php foreach ($this->harvests as $harvest): ?>
             <tr>
                 <td title="<?php echo html_escape($harvest->base_url); ?>" class="base-url">
-                    <?php echo html_escape(snippet($harvest->base_url, 0, 40)); ?>
+                    <?php echo html_escape(substr($harvest->base_url, 0, 40)); ?>
                 </td>
                 <td><?php echo html_escape($harvest->metadata_prefix); ?></td>
                 <td>

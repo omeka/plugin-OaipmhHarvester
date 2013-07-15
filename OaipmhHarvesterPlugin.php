@@ -30,6 +30,7 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_hooks = array('install', 
                               'uninstall',
+                              'upgrade',
                               'define_acl', 
                               'admin_append_to_plugin_uninstall_message', 
                               'before_delete_item',
@@ -72,14 +73,14 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
         CREATE TABLE IF NOT EXISTS `{$db->prefix}oaipmh_harvester_harvests` (
           `id` int unsigned NOT NULL auto_increment,
           `collection_id` int unsigned default NULL,
-          `base_url` text collate utf8_unicode_ci NOT NULL,
-          `metadata_prefix` tinytext collate utf8_unicode_ci NOT NULL,
-          `set_spec` text collate utf8_unicode_ci NULL,
-          `set_name` text collate utf8_unicode_ci NULL,
-          `set_description` text collate utf8_unicode_ci NULL,
-          `status` enum('queued','in progress','completed','error','deleted','killed') collate utf8_unicode_ci NOT NULL default 'queued',
-          `status_messages` text collate utf8_unicode_ci NULL,
-          `resumption_token` text collate utf8_unicode_ci default NULL,
+          `base_url` text NOT NULL,
+          `metadata_prefix` tinytext NOT NULL,
+          `set_spec` text,
+          `set_name` text,
+          `set_description` text,
+          `status` enum('queued','in progress','completed','error','deleted','killed') NOT NULL default 'queued',
+          `status_messages` text,
+          `resumption_token` text,
           `initiated` datetime default NULL,
           `completed` datetime default NULL,
           `start_from` datetime default NULL,
@@ -99,8 +100,8 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           `id` int unsigned NOT NULL auto_increment,
           `harvest_id` int unsigned NOT NULL,
           `item_id` int unsigned default NULL,
-          `identifier` text collate utf8_unicode_ci NOT NULL,
-          `datestamp` tinytext collate utf8_unicode_ci NOT NULL,
+          `identifier` text NOT NULL,
+          `datestamp` tinytext NOT NULL,
           PRIMARY KEY  (`id`),
           KEY `identifier_idx` (identifier(255)),
           UNIQUE KEY `item_id_idx` (item_id)
@@ -123,7 +124,29 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
         
         $this->_uninstallOptions();
     }
-    
+
+    public function hookUpgrade($args)
+    {
+        $db = $this->_db;
+        $oldVersion = $args['old_version'];
+
+        if (version_compare($oldVersion, '2.0-dev', '<')) {
+            $sql = <<<SQL
+ALTER TABLE `{$db->prefix}oaipmh_harvester_harvests`
+    DROP COLUMN `metadata_class`,
+    DROP COLUMN `pid`,
+    ADD COLUMN `resumption_token` TEXT COLLATE utf8_unicode_ci AFTER `status_messages`
+SQL;
+            $db->query($sql);
+
+            $sql = <<<SQL
+ALTER TABLE `{$db->prefix}oaipmh_harvester_records`
+    ADD INDEX `identifier_idx` (identifier(255)),
+    ADD UNIQUE INDEX `item_id_idx` (item_id)
+SQL;
+            $db->query($sql);
+        }
+    }
     /**
      * Define the ACL.
      * 

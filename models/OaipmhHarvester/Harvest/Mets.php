@@ -168,7 +168,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                     }
                 }
             }
-            if($this->_getMap($record) == null){
+            if(count($this->_getMap($record)) == 0){
                 $meta = $elementTexts;
             }else {
                 $meta[(string)$k->attributes()] = $elementTexts;

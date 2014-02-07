@@ -89,7 +89,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                 'Upload' => null,
                 'Url' => (string) $file['href'],
                 'source' => (string) $file['href'],
-                'name'   => (string) $file['title'],
+                //'name'   => (string) $file['title'],
                 'metadata' => (isset($dmdId['DMDID']) ? $dmdSection[(string) $dmdId['DMDID']] : array()),
             );
         }

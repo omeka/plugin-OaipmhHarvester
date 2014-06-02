@@ -130,7 +130,7 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
         $db = $this->_db;
         $oldVersion = $args['old_version'];
 
-        if (version_compare($oldVersion, '2.0-dev', '<')) {
+        /*if (version_compare($oldVersion, '2.0-dev', '<')) {
             $sql = <<<SQL
 ALTER TABLE `{$db->prefix}oaipmh_harvester_harvests`
     DROP COLUMN `metadata_class`,
@@ -145,7 +145,7 @@ ALTER TABLE `{$db->prefix}oaipmh_harvester_records`
     ADD UNIQUE INDEX `item_id_idx` (item_id)
 SQL;
             $db->query($sql);
-        }
+        }*/
     }
     /**
      * Define the ACL.

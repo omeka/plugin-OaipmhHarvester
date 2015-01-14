@@ -75,13 +75,10 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
         }       
         
         $fileMetadata = array();
-        $files = $record
-                ->metadata
-                ->mets
-                ->children(self::METS_NAMESPACE)
-                ->fileSec
-                ->fileGrp;
-        foreach($files->file as $fl){
+        $recordMetadata = $record->metadata;
+        $recordMetadata->registerXpathNamespace('mets', self::METS_NAMESPACE);
+        $files = $recordMetadata->xpath('mets:mets/mets:fileSec/mets:fileGrp/mets:file');
+        foreach($files as $fl){
             $dmdId = $fl->attributes();
             $file = $fl->FLocat->attributes(self::XLINK_NAMESPACE);
             

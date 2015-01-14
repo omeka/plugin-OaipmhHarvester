@@ -352,13 +352,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
                     $item, 
                     $fileTransferType, 
                     $file, 
-                    $fileOptions);   
-                   _log($fileOb);
-                   $fileObject= $fileOb;//$fileOb[0];
-                   if(!empty($file['metadata'])){
-                       $fileObject->addElementTextsByArray($file['metadata']);
-                   $fileObject->save();
-                   }
+                    $fileOptions);
+                $fileObject= $fileOb;
+                if (!empty($file['metadata'])) {
+                    $fileObject->addElementTextsByArray($file['metadata']);
+                    $fileObject->save();
+                }
                   
                 // Release the File object from memory. 
                 release_object($fileObject);

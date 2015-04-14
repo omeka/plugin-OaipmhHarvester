@@ -176,6 +176,13 @@ class OaipmhHarvester_Request
         if ($response->isSuccessful() && !$response->isRedirect()) {
             libxml_use_internal_errors(true);
             $iter = simplexml_load_string($response->getBody());
+            if ($iter !== false) {
+                $ns = $iter->getNamespaces();
+                if (array_key_exists("oai", $ns)) {
+                    $iter = simplexml_load_string($response->getBody(),
+                            "SimpleXMLElement", 0, "oai", true);
+                }
+            }
             if ($iter === false) {
                 $errors = array();
                 foreach(libxml_get_errors() as $error) {

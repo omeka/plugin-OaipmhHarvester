@@ -286,13 +286,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
         else {
             // There must be a collection name, so if there is none, like when the 
             // harvest is repository-wide, set it to the base URL.
-            if (!isset($metadata['elementTexts']['Dublin Core']['Title']['text']) || 
-                    !$metadata['elementTexts']['Dublin Core']['Title']['text']) {
-                $$metadata['elementTexts']['Dublin Core']['Title']['text'] = $this->_harvest->base_url;
+            if (!isset($metadata['elementTexts']['Dublin Core']['Title']) ||
+                    trim($metadata['elementTexts']['Dublin Core']['Title'][0]['text']) == '') {
+                $metadata['elementTexts']['Dublin Core']['Title'][] =
+                    array('text' => $this->_harvest->base_url, 'html' => false);
             }
-        
 
-        
             $collection = insert_collection($metadata['metadata'],$metadata['elementTexts']);
         
             // Remember to set the harvest's collection ID once it has been saved.

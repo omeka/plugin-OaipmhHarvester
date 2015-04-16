@@ -190,6 +190,8 @@ class OaipmhHarvester_Request
                               . $error->line . ', column ' 
                               . $error->column;
                 }
+                libxml_clear_errors();
+                libxml_use_internal_errors(false);
                 _log(
                     "[OaipmhHarvester] Could not parse XML: " 
                     . $response->getBody()
@@ -204,8 +206,10 @@ class OaipmhHarvester_Request
             }
             return $iter;
         } else {
-            throw new Zend_Http_Client_Exception("Invalid URL (" 
-                . $response->getStatus() . " " . $response->getMessage() 
+            libxml_clear_errors();
+            libxml_use_internal_errors(false);
+            throw new Zend_Http_Client_Exception("Invalid URL ("
+                . $response->getStatus() . " " . $response->getMessage()
                 . ").");
         }
     }

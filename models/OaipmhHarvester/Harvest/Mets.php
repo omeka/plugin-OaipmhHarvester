@@ -67,13 +67,14 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
         
        
         $map = $this->_getMap($record);
-        $dmdSection = $this->_dmdSecToArray($record);
-        if(empty($map)){
-            $elementTexts = $dmdSection;
+        $isEmpty = count($this->_getMap($record)) == 0;
+        $dmdSections = $this->_dmdSecToArray($record, $isEmpty);
+        if ($isEmpty) {
+            $elementTexts = $dmdSections;
         } else {
-            $elementTexts = $dmdSection[$map['itemId']];
-        }       
-        
+            $elementTexts = $dmdSections[$map['itemId']];
+        }
+
         $fileMetadata = array();
         $recordMetadata = $record->metadata;
         $recordMetadata->registerXpathNamespace('mets', self::METS_NAMESPACE);
@@ -87,7 +88,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                 'Url' => (string) $file['href'],
                 'source' => (string) $file['href'],
                 //'name'   => (string) $file['title'],
-                'metadata' => (isset($dmdId['DMDID']) ? $dmdSection[(string) $dmdId['DMDID']] : array()),
+                'metadata' => (isset($dmdId['DMDID']) ? $dmdSections[(string) $dmdId['DMDID']] : array()),
             );
         }
         
@@ -97,16 +98,13 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
     }
     
     /**
-     * 
-     * Convenience function that returns the xml structMap
-     * as an array of items and the files associated with it.
-     * 
-     * if the structmap doesn't exist in the xml schema null
-     * will be returned.
-     * 
+     * Convenience function that returns the xml structMap as an array of items
+     * and the files associated with it.
+     *
+     * if the structmap doesn't exist in the xml schema null will be returned.
+     *
      * @param type $record
-     * @return type array/null 
-     *        
+     * @return array|null
      */
     private function _getMap($record)
     {
@@ -129,20 +127,21 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                 }
             }
         }
-        
-        
+
         return $map;
     }
+
     /**
-     * 
-     * Convenience funciton that returns the 
-     * xmls dmdSec as an Omeka ElementTexts array
-     * 
+     * Convenience funciton that returns the xmls dmdSec as an Omeka
+     * ElementTexts array.
+     *
      * @param type $record
+     * @param boolean $isEmpty
      * @return boolean/array
      */
-    private function _dmdSecToArray($record)
-    {   $mets= $record->metadata->mets->children(self::METS_NAMESPACE);
+    private function _dmdSecToArray($record, $isEmpty)
+    {
+        $mets= $record->metadata->mets->children(self::METS_NAMESPACE);
         $meta = null;
         foreach($mets->dmdSec as $k){
             $dcMetadata = $k
@@ -165,7 +164,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                     }
                 }
             }
-            if(count($this->_getMap($record)) == 0){
+            if ($isEmpty) {
                 $meta = $elementTexts;
             }else {
                 $meta[(string)$k->attributes()] = $elementTexts;

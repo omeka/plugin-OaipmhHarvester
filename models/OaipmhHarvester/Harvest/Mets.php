@@ -80,15 +80,31 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
         $recordMetadata->registerXpathNamespace('mets', self::METS_NAMESPACE);
         $files = $recordMetadata->xpath('mets:mets/mets:fileSec/mets:fileGrp/mets:file');
         foreach($files as $fl){
-            $dmdId = $fl->attributes();
+            $fileAttributes = $fl->attributes();
             $file = $fl->FLocat->attributes(self::XLINK_NAMESPACE);
-            
+
+            // The dmd id can be set in two main places.
+            if (isset($fileAttributes['DMDID'])) {
+                $dmdId = (string) $fileAttributes['DMDID'];
+            }
+            // Indirect, if any.
+            elseif (isset($fileAttributes['ID'])) {
+                $fileId = (string) $fileAttributes['ID'];
+                $fileDmdIds = $recordMetadata->xpath("mets:mets/mets:structMap[1]//mets:div[mets:fptr[@FILEID = '$fileId']][1]/@DMDID");
+                $dmdId = $fileDmdIds ? (string) reset($fileDmdIds) : null;
+                $dmdId = $dmdId != $map['itemId'] ? $dmdId : null;
+            }
+            // No dmd.
+            else {
+                $dmdId = null;
+            }
+
             $fileMetadata['files'][] = array(
                 'Upload' => null,
                 'Url' => (string) $file['href'],
                 'source' => (string) $file['href'],
                 //'name'   => (string) $file['title'],
-                'metadata' => (isset($dmdId['DMDID']) ? $dmdSections[(string) $dmdId['DMDID']] : array()),
+                'metadata' => $dmdId ? $dmdSections[$dmdId] : array(),
             );
         }
         

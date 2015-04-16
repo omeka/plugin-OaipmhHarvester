@@ -159,31 +159,64 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
     {
         $mets= $record->metadata->mets->children(self::METS_NAMESPACE);
         $meta = null;
+        $elements = array(
+            'title' => 'Title',
+            'creator' => 'Creator',
+            'subject' => 'Subject',
+            'description' => 'Description',
+            'publisher' => 'Publisher',
+            'contributor' => 'Contributor',
+            'date' => 'Date',
+            'type' => 'Type',
+            'format' => 'Format',
+            'identifier' => 'Identifier',
+            'source' => 'Source',
+            'language' => 'Language',
+            'relation' => 'Relation',
+            'coverage' => 'Coverage',
+            'rights' => 'Rights',
+        );
+
         foreach($mets->dmdSec as $k){
+            // TODO Currently, mdRef is not managed.
+            if (empty($k->mdWrap)) {
+                continue;
+            }
+
             $dcMetadata = $k
                     ->mdWrap
                     ->xmlData
                     ->children(self::DUBLIN_CORE_NAMESPACE);
+
+            // Sometime, an intermediate wrapper is added between xmlData
+            // and children, as <dc:dc>, so a quick check is done.
+            if ($metadata->count() == 1) {
+                $firstElement = $metadata[0]->getName();
+                if (!in_array($firstElement, array_keys($elements[$elementSetName]))) {
+                    $metadata = $metadata->children(self::DUBLIN_CORE_NAMESPACE);
+                }
+            }
+
+            if (empty($metadata->count())) {
+                continue;
+            }
+
             $elementTexts = array();
-            $elements = array('contributor', 'coverage', 'creator', 
-                          'date', 'description', 'format', 
-                          'identifier', 'language', 'publisher', 
-                          'relation', 'rights', 'source', 
-                          'subject', 'title', 'type');
-             
-            foreach($elements as $element){
+
+            foreach ($elements as $element => $label) {
                 if(isset($dcMetadata->$element)){
                     foreach($dcMetadata->$element as $rawText){
                          $text = trim($rawText);
-                         $elementTexts['Dublin Core'][ucwords($element)][]
-                                 = array('text'=> (string) $text, 'html' => false);
+                         $elementTexts['Dublin Core'][$label][]
+                             = array('text'=> (string) $text, 'html' => false);
                     }
                 }
             }
             if ($isEmpty) {
                 $meta = $elementTexts;
-            }else {
-                $meta[(string)$k->attributes()] = $elementTexts;
+            } else {
+                $dmdAttributes = $k->attributes();
+                $meta[(string) $dmdAttributes['ID']] = $elementTexts;
             }
         }
         

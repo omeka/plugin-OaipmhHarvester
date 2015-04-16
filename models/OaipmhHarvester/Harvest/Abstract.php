@@ -380,7 +380,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @see insert_item()
      * @see insert_files_for_item()
-     * @param OaipmhHarvester_Record $itemId ID of item to update
+     * @param OaipmhHarvester_Record $record Contains the ID of item to update
      * @param mixed $elementTexts The item's element texts
      * @param mixed $fileMetadata The item's file metadata
      * @return true
@@ -390,6 +390,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $elementTexts = array(), 
         $fileMetadata = array()
     ) {
+        // The default file transfer type is URL.
+        if (!isset($fileMetadata['file_transfer_type'])) {
+            $fileMetadata['file_transfer_type'] = 'Url';
+        }
+
         // Update the item
         $item = update_item(
             $record->item_id, 

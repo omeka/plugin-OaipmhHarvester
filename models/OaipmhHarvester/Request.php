@@ -178,9 +178,10 @@ class OaipmhHarvester_Request
             $iter = simplexml_load_string($response->getBody());
             if ($iter !== false) {
                 $ns = $iter->getNamespaces();
-                if (array_key_exists("oai", $ns)) {
+                $ns_key = array_search("http://www.openarchives.org/OAI/2.0/", $ns);
+                if ($ns_key !== false and $ns_key !== "") {
                     $iter = simplexml_load_string($response->getBody(),
-                            "SimpleXMLElement", 0, "oai", true);
+                            "SimpleXMLElement", 0, $ns_key, true);
                 }
             }
             if ($iter === false) {

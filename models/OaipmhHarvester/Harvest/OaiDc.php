@@ -21,6 +21,7 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
 
     const OAI_DC_NAMESPACE = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
     const DUBLIN_CORE_NAMESPACE = 'http://purl.org/dc/elements/1.1/';
+    const DCMI_BOX_NAMESPACE = 'http://dublincore.org/documents/2006/04/10/dcmi-box/';
 
     /**
      * Collection to insert items into.
@@ -71,7 +72,7 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
         $elements = array('contributor', 'coverage', 'creator', 
                           'date', 'description', 'format', 
                           'identifier', 'language', 'publisher', 
-                          'relation', 'rights', 'source', 
+                          'relation', 'rights', 'source',
                           'subject', 'title', 'type');
         foreach ($elements as $element) {
             if (isset($dcMetadata->$element)) {
@@ -83,6 +84,19 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
             }
         }
         
+        // Do spatial if the DC extended plugin is active
+        if (plugin_is_active("DublinCoreExtended")) {
+            $element = 'spatial';
+            $mapElement = 'Spatial Coverage';
+            if (isset($dcMetadata->$element)) {
+                $dcmiMetadata = $dcMetadata->$element
+                    ->children(self::DCMI_BOX_NAMESPACE);
+                $text = trim((string)$dcmiMetadata->asXML());
+                $elementTexts['Dublin Core'][ucwords($mapElement)][] 
+                    = array('text' => (string) $text, 'html' => false);
+            }
+        }
+
         return array('itemMetadata' => $itemMetadata,
                      'elementTexts' => $elementTexts,
                      'fileMetadata' => array());

@@ -176,6 +176,14 @@ class OaipmhHarvester_Request
         if ($response->isSuccessful() && !$response->isRedirect()) {
             libxml_use_internal_errors(true);
             $iter = simplexml_load_string($response->getBody());
+            if ($iter !== false) {
+                $ns = $iter->getNamespaces();
+                $ns_key = array_search("http://www.openarchives.org/OAI/2.0/", $ns);
+                if ($ns_key !== false and $ns_key !== "") {
+                    $iter = simplexml_load_string($response->getBody(),
+                            "SimpleXMLElement", 0, $ns_key, true);
+                }
+            }
             if ($iter === false) {
                 $errors = array();
                 foreach(libxml_get_errors() as $error) {

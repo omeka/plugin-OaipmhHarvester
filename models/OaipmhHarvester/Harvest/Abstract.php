@@ -174,22 +174,48 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         // Record has already been harvested
         if ($existingRecord) {
-            // If datestamp has changed, update the record, otherwise ignore.
-            if($existingRecord->datestamp != $record->header->datestamp) {
-                $this->_updateItem($existingRecord,
-                                  $harvestedRecord['elementTexts'],
-                                  $harvestedRecord['fileMetadata']);
+            // If datestamp has changed, update the record.
+            if ($existingRecord->datestamp != $record->header->datestamp) {
+                $item = $this->_updateItem(
+                    $existingRecord,
+                    $harvestedRecord['elementTexts'],
+                    $harvestedRecord['fileMetadata']);
+                $performed = 'updated';
             }
-            release_object($existingRecord);
+            // Ignore the update.
+            else {
+                $item = $existingRecord;
+                $performed = 'skipped';
+            }
         } else {
-            $this->_insertItem(
+            $item = $this->_insertItem(
                 $harvestedRecord['itemMetadata'],
                 $harvestedRecord['elementTexts'],
                 $harvestedRecord['fileMetadata']
             );
+            $performed = 'inserted';
         }
+
+        $this->_harvestRecordSpecific($item, $harvestedRecord, $performed);
+
+        // Release the Item object from memory.
+        release_object($item);
     }
-    
+
+    /**
+     * Ingest specific data, specialy for plugins that don't use elements.
+     *
+     * @internal A method is used, not a hook, because it depends of mapping.
+     *
+     * @param Record $record
+     * @param array $harvestedRecord
+     * @param string $performed Can be "inserted", "updated" or "skipped".
+     * @return void
+     */
+    protected function _harvestRecordSpecific($record, $harvestedRecord, $performed)
+    {
+    }
+
     /**
      * Return whether the record is deleted
      * 
@@ -314,7 +340,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param mixed $metadata Item metadata
      * @param mixed $elementTexts The item's element texts
      * @param mixed $fileMetadata The item's file metadata
-     * @return true
+     * @return Item The inserted item.
      */
     final protected function _insertItem(
         $metadata = array(), 
@@ -362,11 +388,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 release_object($fileObject);
             }
         }
-        
-        // Release the Item object from memory.
-        release_object($item);
-        
-        return true;
+
+        return $item;
     }
     
     /**
@@ -382,7 +405,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param OaipmhHarvester_Record $record Contains the ID of item to update
      * @param mixed $elementTexts The item's element texts
      * @param mixed $fileMetadata The item's file metadata
-     * @return true
+     * @return Item The updated item.
      */
     final protected function _updateItem(
         $record, 
@@ -405,10 +428,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // Update the datestamp stored in the database for this record.
         $this->_updateRecord($record);
 
-        // Release the Item object from memory.
-        release_object($item);
-        
-        return true;
+        return $item;
     }
     
     /**

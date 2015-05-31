@@ -19,6 +19,6 @@ class OaipmhHarvester_Harvest_Mock extends OaipmhHarvester_Harvest_Abstract
                 ),
             ),
             'fileMetadata' => array(),
-        );        
+        );
     }
 }

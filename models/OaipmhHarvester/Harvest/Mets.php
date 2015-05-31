@@ -151,6 +151,8 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
      * Convenience funciton that returns the xmls dmdSec as an Omeka
      * ElementTexts array.
      *
+     * @internal Here, only Dublin Core is managed.
+     *
      * @param type $record
      * @param boolean $isEmpty
      * @return boolean/array
@@ -190,14 +192,14 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
 
             // Sometime, an intermediate wrapper is added between xmlData
             // and children, as <dc:dc>, so a quick check is done.
-            if ($metadata->count() == 1) {
-                $firstElement = $metadata[0]->getName();
-                if (!in_array($firstElement, array_keys($elements[$elementSetName]))) {
-                    $metadata = $metadata->children(self::DUBLIN_CORE_NAMESPACE);
+            if ($dcMetadata->count() == 1) {
+                $firstElement = $dcMetadata[0]->getName();
+                if (!in_array($firstElement, array_keys($elements))) {
+                    $dcMetadata = $dcMetadata->children(self::DUBLIN_CORE_NAMESPACE);
                 }
             }
 
-            if (empty($metadata->count())) {
+            if (empty($dcMetadata->count())) {
                 continue;
             }
 

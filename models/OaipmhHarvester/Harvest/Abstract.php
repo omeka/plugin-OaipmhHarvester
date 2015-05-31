@@ -405,6 +405,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
             array('overwriteElementTexts' => true),
             $elementTexts);
 
+        // With default functions, old elements may not be removed. This process
+        // allows to delete all of them, for the item and each attached file.
+        if ($this->_harvest->update_metadata != OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP) {
+            $this->_updateMetadata($item, $elementTexts);
+        }
+
         $this->_insertFiles($item, $fileMetadata);
 
         // Warning: The core function "update_item" above adds new files even
@@ -445,6 +451,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // one and the older ones are removed.
         if ($this->_harvest->update_files == OaipmhHarvester_Harvest::UPDATE_FILES_FULL) {
             $this->_orderFiles($item, $fileMetadata);
+        }
+
+        if ($this->_harvest->update_metadata != OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP) {
+            $this->_updateFilesMetadata($item, $fileMetadata);
         }
 
         // Update the datestamp stored in the database for this record.
@@ -645,11 +655,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * Remove old files not set in new metadata files, using original filename.
      *
      * @param Item $item
-     * @param array $files
+     * @param array $filesMetadata
      */
-    protected function _deleteRemovedFiles($item, $files)
+    protected function _deleteRemovedFiles($item, $filesMetadata)
     {
-        $list = $this->_listFiles($files);
+        $list = $this->_listFiles($filesMetadata);
 
         // Delete all attached files.
         if (empty($list)) {
@@ -678,11 +688,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @todo Check if this is really needed (find a test for it).
      *
      * @param Item $item
-     * @param array $files
+     * @param array $filesMetadata
      */
-    protected function _orderFiles($item, $files)
+    protected function _orderFiles($item, $filesMetadata)
     {
-        $list = $this->_listFiles($files);
+        $list = $this->_listFiles($filesMetadata);
 
         if (empty($list)) {
             return array();
@@ -703,18 +713,18 @@ abstract class OaipmhHarvester_Harvest_Abstract
     /**
      * List the original filename of files.
      *
-     * @param array $files
+     * @param array $filesMetadata
      * @return array List of cleaned original names.
      */
-    protected function _listFiles($files)
+    protected function _listFiles($filesMetadata)
     {
-        if (empty($files['files'])) {
+        if (empty($filesMetadata['files'])) {
             return array();
         }
 
         // TODO Use Omeka_File_Ingest_AbstractIngest::_getOriginalFilename()?
         $list = array();
-        foreach ($files['files'] as $file) {
+        foreach ($filesMetadata['files'] as $file) {
             // Manage other cases? No, since this is update from OAI-PMH.
             if (!empty($file['Url'])) {
                 $list[] = $file['Url'];
@@ -725,6 +735,101 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
 
         return $list;
+    }
+
+    /**
+     * Remove old elements of a record (not set in an updated repository).
+     *
+     * @todo Optimize.
+     * @internal Mixin_ElementText::getAllElementTextsByElement() is available
+     * from Omeka 2.3 only.
+     *
+     * @param Record $record
+     * @param array $metadata
+     */
+    protected function _updateMetadata($record, $metadata)
+    {
+        switch ($this->_harvest->update_metadata) {
+            case OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP:
+                return;
+
+            case OaipmhHarvester_Harvest::UPDATE_METADATA_ELEMENT:
+                foreach ($metadata as $elementSetName => $element) {
+                    foreach ($element as $elementName => $dataElement) {
+                        $elementTexts = $record->getElementTexts($elementSetName, $elementName);
+                        $this->_deleteRemovedMetadata($record, $elementTexts, $metadata);
+                    }
+                }
+                break;
+
+            case OaipmhHarvester_Harvest::UPDATE_METADATA_STRICT:
+                $elementTexts = $record->getAllElementTexts();
+                $this->_deleteRemovedMetadata($record, $elementTexts, $metadata);
+                break;
+        }
+    }
+
+    /**
+     * Remove old elements of files of an item.
+     *
+     * @uses _updateMetadata()
+     *
+     * @param Item $item
+     * @param array $filesMetadata
+     */
+    protected function _updateFilesMetadata($item, $metadata)
+    {
+        if (empty($metadata['files'])) {
+            return;
+        }
+
+        foreach ($item->getFiles() as $key => $file) {
+            foreach ($metadata['files'] as $metadataFile) {
+                if (!empty($metadataFile['Url'])) {
+                    if ($file->original_filename == $metadataFile['Url']) {
+                        $this->_updateMetadata($file, $metadataFile['metadata']);
+                        break;
+                    }
+                }
+                elseif (!empty($metadataFile['Filesystem'])) {
+                    if ($file->original_filename == basename($metadataFile['Filesystem'])) {
+                        $this->_updateMetadata($file, $metadataFile['metadata']);
+                        break;
+                    }
+                }
+            }
+            release_object($file);
+        }
+    }
+
+    /**
+     * Helper for _updateMetadata().
+     */
+    private function _deleteRemovedMetadata($record, $elementTexts, $metadata)
+    {
+        if (empty($elementTexts)) {
+            return;
+        }
+        foreach ($elementTexts as $elementText) {
+            $exists = false;
+            // Internal: elements are already static.
+            $element = $record->getElementById($elementText->element_id);
+            // Check if the element exists in new metadata.
+            // Normally, there should not be duplicates, except if there
+            // are ones inside the repertory.
+            if (isset($metadata[$element->set_name][$element->name])) {
+                foreach ($metadata[$element->set_name][$element->name] as $data) {
+                    if ($elementText->text == $data['text'] && $elementText->html == $data['html']) {
+                        $exists = true;
+                        break;
+                    }
+                }
+            }
+            // Delete it if not exists.
+            if (!$exists) {
+                $elementText->delete();
+            }
+        }
     }
 
     public static function factory($harvest)

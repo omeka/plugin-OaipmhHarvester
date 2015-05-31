@@ -603,14 +603,19 @@ abstract class OaipmhHarvester_Harvest_Abstract
     protected function _deduplicateFiles($item)
     {
         $db = get_db();
+
         $sql = "
-            DELETE files
+            SELECT files.id
             FROM `{$db->files}` AS files, `{$db->files}` AS files_2
             WHERE files.item_id = ? AND files_2.item_id = ?
                 AND files.original_filename = files_2.original_filename
                 AND files.id < files_2.id;
         ";
-        $db->query($sql, array($item->id, $item->id));
+        $fileIds = $db->fetchCol($sql, array($item->id, $item->id));
+        $files = $db->getTable('File')->findByItem($item->id, $fileIds, 'id');
+        foreach ($files as $file) {
+            $file->delete();
+        }
     }
 
     /**
@@ -623,13 +628,25 @@ abstract class OaipmhHarvester_Harvest_Abstract
     {
         $list = $this->_listFiles($files);
 
+        // Delete all attached files.
+        if (empty($list)) {
+            foreach ($item->Files as $file) {
+                $file->delete();
+            }
+            return;
+        }
+
+        // Selective deletion.
         $db = get_db();
-        $sql = "
-            DELETE FROM `{$db->files}`
-            WHERE `item_id` = ?
-                AND `original_filename` NOT IN (" . $db->quote($list) . ")
-        ";
-        $db->query($sql, array($item->id));
+        $table = $db->getTable('File');
+        $tableAlias = $table->getTableAlias();
+        $select = $table->getSelect()
+            ->where("$tableAlias.item_id = ?", $item->id)
+            ->where("$tableAlias.original_filename NOT IN (?)", $list);
+        $files = $table->fetchObjects($select);
+        foreach ($files as $file) {
+            $file->delete();
+        }
     }
 
     /**
@@ -643,6 +660,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
     protected function _orderFiles($item, $files)
     {
         $list = $this->_listFiles($files);
+
+        if (empty($list)) {
+            return array();
+        }
 
         $db = get_db();
         $sql = "
@@ -664,13 +685,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     protected function _listFiles($files)
     {
-        $list = array();
-
         if (empty($files['files'])) {
-            $files['files'] = array();
+            return array();
         }
 
         // TODO Use Omeka_File_Ingest_AbstractIngest::_getOriginalFilename()?
+        $list = array();
         foreach ($files['files'] as $file) {
             // Manage other cases? No, since this is update from OAI-PMH.
             if (!empty($file['Url'])) {

@@ -16,10 +16,10 @@ class OaipmhHarvester_HooksTest extends OaipmhHarvester_Test_AppTestCase
             array('super', 'OaipmhHarvester_Index', 'sets', true),
             array('super', 'OaipmhHarvester_Index', 'status', true),
             array('super', 'OaipmhHarvester_Index', 'delete', true),
-            array('admin', 'OaipmhHarvester_Index', 'index', true),
-            array('admin', 'OaipmhHarvester_Index', 'sets', true),
-            array('admin', 'OaipmhHarvester_Index', 'status', true),
-            array('admin', 'OaipmhHarvester_Index', 'delete', true),
+            array('admin', 'OaipmhHarvester_Index', 'index', false),
+            array('admin', 'OaipmhHarvester_Index', 'sets', false),
+            array('admin', 'OaipmhHarvester_Index', 'status', false),
+            array('admin', 'OaipmhHarvester_Index', 'delete', false),
         );
     }
 

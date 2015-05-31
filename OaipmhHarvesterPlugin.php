@@ -30,10 +30,12 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_hooks = array(
         'install',
-        'uninstall',
         'upgrade',
-        'define_acl',
+        'uninstall',
         'uninstall_message',
+        'config_form',
+        'config',
+        'define_acl',
         'before_delete_item',
         'after_delete_collection',
         'admin_items_show_sidebar',
@@ -50,7 +52,10 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * @var array Options and their default values.
      */
-    protected $_options = array();
+    protected $_options = array(
+        // With roles, in particular if Guest User is installed.
+        'oaipmh_harvester_allow_roles' => 'a:1:{i:0;s:5:"super";}',
+    );
 
     /**
      * Install the plugin.
@@ -114,22 +119,8 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           UNIQUE KEY `item_id_idx` (item_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         $db->query($sql);
-    }
-    
-    /**
-     * Uninstall the plugin.
-     */
-    public function hookUninstall()
-    {
-        $db = $this->_db;
-        
-        // drop the tables        
-        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_harvests`;";
-        $db->query($sql);
-        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_records`;";
-        $db->query($sql);
-        
-        $this->_uninstallOptions();
+
+        $this->_installOptions();
     }
 
     /**
@@ -173,15 +164,21 @@ SQL;
             $db->query($sql);
         }
     }
+
     /**
-     * Define the ACL.
-     * 
-     * @param array $args
+     * Uninstall the plugin.
      */
-    public function hookDefineAcl($args)
+    public function hookUninstall()
     {
-        $acl = $args['acl']; // get the Zend_Acl
-        $acl->addResource('OaipmhHarvester_Index');
+        $db = $this->_db;
+
+        // drop the tables
+        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_harvests`;";
+        $db->query($sql);
+        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_records`;";
+        $db->query($sql);
+
+        $this->_uninstallOptions();
     }
 
     /**
@@ -193,6 +190,71 @@ SQL;
         harvests, you will lose all harvest-specific metadata and the ability to
         re-harvest.</p>';
     }
+
+    /**
+     * Shows plugin configuration page.
+     */
+    public function hookConfigForm($args)
+    {
+        $view = get_view();
+        echo $view->partial(
+            'plugins/oaipmh-harvester-config-form.php'
+        );
+    }
+
+    /**
+     * Saves plugin configuration page.
+     *
+     * @param array Options set in the config form.
+     */
+    public function hookConfig($args)
+    {
+        $post = $args['post'];
+        foreach (array(
+                'oaipmh_harvester_allow_roles',
+            ) as $posted) {
+            $post[$posted] = isset($post[$posted])
+                ? serialize($post[$posted])
+                : serialize(array());
+        }
+        foreach ($post as $key => $value) {
+            set_option($key, $value);
+        }
+    }
+
+    /**
+     * Defines the plugin's access control list.
+     *
+     * @param array $args
+     */
+    public function hookDefineAcl($args)
+    {
+        $acl = $args['acl'];
+        $resource = 'OaipmhHarvester_Index';
+
+        // TODO This is currently needed for tests for an undetermined reason.
+        if (!$acl->has($resource)) {
+            $acl->addResource($resource);
+        }
+        // Hack to disable CRUD actions.
+        $acl->deny(null, $resource, array('show', 'add', 'edit', 'delete'));
+        $acl->deny(null, $resource);
+
+        $roles = $acl->getRoles();
+
+        // Check that all the roles exist, in case a plugin-added role has
+        // been removed (e.g. GuestUser).
+        $allowRoles = unserialize(get_option('oaipmh_harvester_allow_roles')) ?: array();
+        $allowRoles = array_intersect($roles, $allowRoles);
+        if ($allowRoles) {
+            $acl->allow($allowRoles, $resource);
+        }
+
+        $denyRoles = array_diff($roles, $allowRoles);
+        if ($denyRoles) {
+            $acl->deny($denyRoles, $resource);
+        }
+  }
 
     /**
     * Appended to admin item show pages.

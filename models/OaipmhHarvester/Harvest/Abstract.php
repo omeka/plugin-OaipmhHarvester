@@ -462,6 +462,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $item = get_db()->getTable('Item')->find($record->item_id);
         }
 
+        // Reorder can be done only if files have been updated. Anyway, the
+        // order is generally already right.
+        // TODO Is it needed for other updates? The builder adds files one by
+        // one and the older ones are removed.
+        if ($this->_harvest->update_files == OaipmhHarvester_Harvest::UPDATE_FILES_FULL) {
+            $this->_orderFiles($item, $fileMetadata);
+        }
+
         // Update the datestamp stored in the database for this record.
         $this->_updateRecord($record);
 
@@ -612,6 +620,49 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     protected function _deleteRemovedFiles($item, $files)
     {
+        $list = $this->_listFiles($files);
+
+        $db = get_db();
+        $sql = "
+            DELETE FROM `{$db->files}`
+            WHERE `item_id` = ?
+                AND `original_filename` NOT IN (" . $db->quote($list) . ")
+        ";
+        $db->query($sql, array($item->id));
+    }
+
+    /**
+     * Reorder files according to the metadata file.
+     *
+     * @todo Check if this is really needed (find a test for it).
+     *
+     * @param Item $item
+     * @param array $files
+     */
+    protected function _orderFiles($item, $files)
+    {
+        $list = $this->_listFiles($files);
+
+        $db = get_db();
+        $sql = "
+            UPDATE `{$db->files}`
+            SET `order` = ?
+            WHERE `item_id` = ?
+                AND `original_filename` = ?
+        ";
+        foreach ($list as $key => $filename) {
+            $db->query($sql, array($key + 1, $item->id, $filename));
+        }
+    }
+
+    /**
+     * List the original filename of files.
+     *
+     * @param array $files
+     * @return array List of cleaned original names.
+     */
+    protected function _listFiles($files)
+    {
         $list = array();
 
         if (empty($files['files'])) {
@@ -629,15 +680,8 @@ abstract class OaipmhHarvester_Harvest_Abstract
             }
         }
 
-        $db = get_db();
-        $sql = "
-            DELETE FROM `{$db->files}`
-            WHERE item_id = ?
-                AND original_filename NOT IN (" . $db->quote($list) . ")
-        ";
-        $db->query($sql, array($item->id));
+        return $list;
     }
-
 
     public static function factory($harvest)
     {

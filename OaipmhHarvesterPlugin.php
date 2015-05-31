@@ -83,6 +83,7 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           `set_spec` text,
           `set_name` text,
           `set_description` text,
+          `update_files` enum('keep', 'deduplicate', 'remove', 'full') NOT NULL DEFAULT 'full',
           `status` enum('queued','in progress','completed','error','deleted','killed') NOT NULL default 'queued',
           `status_messages` text,
           `resumption_token` text,
@@ -130,6 +131,9 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
         $this->_uninstallOptions();
     }
 
+    /**
+     * Upgrade the plugin.
+     */
     public function hookUpgrade($args)
     {
         $db = $this->_db;
@@ -149,6 +153,15 @@ ALTER TABLE `{$db->prefix}oaipmh_harvester_records`
     ADD INDEX `identifier_idx` (identifier(255)),
     ADD UNIQUE INDEX `item_id_idx` (item_id)
 SQL;
+            $db->query($sql);
+        }
+
+        if (version_compare($oldVersion, '2.1', '<')) {
+            // Move all default values into a specific field.
+            $sql = "
+                ALTER TABLE `{$db->prefix}oaipmh_harvester_harvests`
+                ADD `update_files` enum('keep', 'deduplicate', 'remove', 'full') NOT NULL DEFAULT 'full' AFTER `set_description`
+            ";
             $db->query($sql);
         }
     }

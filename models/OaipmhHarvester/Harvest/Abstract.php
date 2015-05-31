@@ -400,6 +400,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $fileMetadata['file_transfer_type'] = 'Url';
         }
 
+        // The default option is ignore invalid files.
+        $fileOptions = isset($fileMetadata['file_ingest_options'])
+            ? $fileMetadata['file_ingest_options']
+            : array('ignore_invalid_files' => true);
+
         // Update the item
         $item = update_item(
             $record->item_id, 
@@ -407,7 +412,39 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $elementTexts, 
             $fileMetadata
         );
-        
+
+        // Warning: The core function "update_item" above adds new files even
+        // when they have been already ingested. So duplicates should be checked
+        // somewhere. Furthermore, old files are not removed. Three possible
+        // positions:
+        // - add a new ingest option in Builder_Item::addFiles(), but it implies
+        // to change Omeka core;
+        // - add a hook "before_save_item", but it will be used even outside of
+        // this plugin;
+        // - add the check just here, which is the simplest, even if this is not
+        // optimal, and it's compliant with the logical of OAI-PMH (cf. the
+        // option overwriteElementsTexts). Nevertheless, the choice is let to
+        // the user.
+        if (in_array($this->_harvest->update_files, array(
+                OaipmhHarvester_Harvest::UPDATE_FILES_FULL,
+                OaipmhHarvester_Harvest::UPDATE_FILES_DEDUPLICATE,
+            ))) {
+            $this->_deduplicateFiles($item);
+            // A reload is needed because the deduplication uses a direct query.
+            release_object($item);
+            $item = get_db()->getTable('Item')->find($record->item_id);
+        }
+
+        if (in_array($this->_harvest->update_files, array(
+                OaipmhHarvester_Harvest::UPDATE_FILES_FULL,
+                OaipmhHarvester_Harvest::UPDATE_FILES_REMOVE,
+            ))) {
+            $this->_deleteRemovedFiles($item, $fileMetadata);
+            // A reload is needed because the deduplication uses a direct query.
+            release_object($item);
+            $item = get_db()->getTable('Item')->find($record->item_id);
+        }
+
         // Update the datestamp stored in the database for this record.
         $this->_updateRecord($record);
 
@@ -531,6 +568,62 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $this->_harvest->start_from = null;
         $this->_harvest->save();
     }
+
+    /**
+     * Deduplicate files (same original name) of an item.
+     * In case of a duplicate, the newest file (greater id) is kept.
+     *
+     * The authentication is not checked in order to ingest updated files.
+     *
+     * @param Item $item
+     */
+    protected function _deduplicateFiles($item)
+    {
+        $db = get_db();
+        $sql = "
+            DELETE files
+            FROM `{$db->files}` AS files, `{$db->files}` AS files_2
+            WHERE files.item_id = ? AND files_2.item_id = ?
+                AND files.original_filename = files_2.original_filename
+                AND files.id < files_2.id;
+        ";
+        $db->query($sql, array($item->id, $item->id));
+    }
+
+    /**
+     * Remove old files not set in new metadata files, using original filename.
+     *
+     * @param Item $item
+     * @param array $files
+     */
+    protected function _deleteRemovedFiles($item, $files)
+    {
+        $list = array();
+
+        if (empty($files['files'])) {
+            $files['files'] = array();
+        }
+
+        // TODO Use Omeka_File_Ingest_AbstractIngest::_getOriginalFilename()?
+        foreach ($files['files'] as $file) {
+            // Manage other cases? No, since this is update from OAI-PMH.
+            if (!empty($file['Url'])) {
+                $list[] = $file['Url'];
+            }
+            elseif (!empty($file['Filesystem'])) {
+                $list[] = basename($file['Filesystem']);
+            }
+        }
+
+        $db = get_db();
+        $sql = "
+            DELETE FROM `{$db->files}`
+            WHERE item_id = ?
+                AND original_filename NOT IN (" . $db->quote($list) . ")
+        ";
+        $db->query($sql, array($item->id));
+    }
+
 
     public static function factory($harvest)
     {

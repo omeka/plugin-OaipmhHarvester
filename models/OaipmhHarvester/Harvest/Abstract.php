@@ -168,7 +168,20 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
         $existingRecord = $this->_recordExists($record);
         $harvestedRecord = $this->_harvestRecord($record);
-        
+
+        // Set some default values for the harvested record.
+        if (!empty($fileMetadata['files'])) {
+            // The default file transfer type is URL.
+            if (empty($harvestedRecord['fileMetadata'][Builder_Item::FILE_TRANSFER_TYPE])) {
+                $harvestedRecord['fileMetadata'][Builder_Item::FILE_TRANSFER_TYPE] = 'Url';
+            }
+
+            // The default option is ignore invalid files.
+            if (!isset($harvestedRecord['fileMetadata'][Builder_Item::FILE_INGEST_OPTIONS]['ignore_invalid_files'])) {
+                $harvestedRecord['fileMetadata'][Builder_Item::FILE_INGEST_OPTIONS]['ignore_invalid_files'] = true;
+            }
+        }
+
         // Cache the record for later use.
         $this->_record = $record;
         
@@ -334,45 +347,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // OaipmhHarvester_Records table should only contain records that have 
         // corresponding items.
         $this->_insertRecord($item);
-        
-        // If there are files, insert one file at a time so the file objects can 
-        // be released individually.
-        if (isset($fileMetadata['files'])) {
-            
-            // The default file transfer type is URL.
-            $fileTransferType = isset($fileMetadata['file_transfer_type']) 
-                              ? $fileMetadata['file_transfer_type'] 
-                              : 'Url';
-            
-            // The default option is ignore invalid files.
-            $fileOptions = isset($fileMetadata['file_ingest_options']) 
-                         ? $fileMetadata['file_ingest_options'] 
-                         : array('ignore_invalid_files' => true);
-            
-            // Prepare the files value for one-file-at-a-time iteration.
-            $files = array($fileMetadata['files']);
-            
-            foreach ($files as $file) {
-                $fileOb = insert_files_for_item(
-                    $item, 
-                    $fileTransferType, 
-                    $file, 
-                    $fileOptions);
-                $fileObject= $fileOb;
-                if (!empty($file['metadata'])) {
-                    $fileObject->addElementTextsByArray($file['metadata']);
-                    $fileObject->save();
-                }
-                  
-                // Release the File object from memory. 
-                release_object($fileObject);
-            }
-        }
-        
-        // Release the Item object from memory.
-        release_object($item);
-        
-        return true;
+
+        $this->_insertFiles($item, $fileMetadata);
+
+        return $item;
     }
     
     /**
@@ -395,23 +373,13 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $elementTexts = array(), 
         $fileMetadata = array()
     ) {
-        // The default file transfer type is URL.
-        if (!isset($fileMetadata['file_transfer_type'])) {
-            $fileMetadata['file_transfer_type'] = 'Url';
-        }
-
-        // The default option is ignore invalid files.
-        $fileOptions = isset($fileMetadata['file_ingest_options'])
-            ? $fileMetadata['file_ingest_options']
-            : array('ignore_invalid_files' => true);
-
         // Update the item
         $item = update_item(
-            $record->item_id, 
-            array('overwriteElementTexts' => true), 
-            $elementTexts, 
-            $fileMetadata
-        );
+            $record->item_id,
+            array('overwriteElementTexts' => true),
+            $elementTexts);
+
+        $this->_insertFiles($item, $fileMetadata);
 
         // Warning: The core function "update_item" above adds new files even
         // when they have been already ingested. So duplicates should be checked
@@ -461,7 +429,45 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         return true;
     }
-    
+
+    /**
+     * Insert files one by one to preserve memory.
+     *
+     * If there are files, insert one file at a time so the file objects can be
+     * released individually.
+     *
+     * @param Item $item
+     * @param mixed $fileMetadata The item's file metadata
+     */
+    protected function _insertFiles($item, $fileMetadata)
+    {
+        if (empty($fileMetadata['files'])) {
+            return;
+        }
+
+        $fileTransferType = $fileMetadata[Builder_Item::FILE_TRANSFER_TYPE];
+        $fileOptions = $fileMetadata[Builder_Item::FILE_INGEST_OPTIONS];
+
+        // Prepare the files value for one-file-at-a-time iteration.
+        $files = array($fileMetadata['files']);
+
+        foreach ($files as $file) {
+            $fileOb = insert_files_for_item(
+                $item,
+                $fileTransferType,
+                $file,
+                $fileOptions);
+            $fileObject= $fileOb;
+            if (!empty($file['metadata'])) {
+                $fileObject->addElementTextsByArray($file['metadata']);
+                $fileObject->save();
+            }
+
+            // Release the File object from memory.
+            release_object($fileObject);
+        }
+    }
+
     /**
      * Adds a status message to the harvest.
      * 

@@ -57,8 +57,8 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
     protected function _harvestRecord($record)
     {
         $itemMetadata = array(
-            'collection_id' => $this->_collection->id, 
-            'public'        => $this->getOption('public'), 
+            'collection_id' => isset($this->_collection->id) ? $this->_collection->id : 0,
+            'public'        => $this->getOption('public'),
             'featured'      => $this->getOption('featured'),
         );
         

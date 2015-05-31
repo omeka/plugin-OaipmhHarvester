@@ -468,13 +468,22 @@ abstract class OaipmhHarvester_Harvest_Abstract
             return;
         }
 
-        $fileTransferType = $fileMetadata[Builder_Item::FILE_TRANSFER_TYPE];
-        $fileOptions = $fileMetadata[Builder_Item::FILE_INGEST_OPTIONS];
+        // The default file transfer type is URL.
+        $fileTransferType = empty($fileMetadata[Builder_Item::FILE_TRANSFER_TYPE])
+            ? 'Url'
+            : $fileMetadata[Builder_Item::FILE_TRANSFER_TYPE];
+        // The default option is ignore invalid files.
+        $fileOptions = empty($fileMetadata[Builder_Item::FILE_INGEST_OPTIONS])
+            ? array('ignore_invalid_files' => true)
+            : $fileMetadata[Builder_Item::FILE_INGEST_OPTIONS];
 
         // Prepare the files value for one-file-at-a-time iteration.
         $files = array($fileMetadata['files']);
 
         foreach ($files as $file) {
+            if (empty($file)) {
+                continue;
+            }
             $fileOb = insert_files_for_item(
                 $item,
                 $fileTransferType,

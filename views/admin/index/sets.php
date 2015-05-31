@@ -1,14 +1,16 @@
 <?php
 /**
  * Admin sets view.
- * 
+ *
  * @package OaipmhHarvester
  * @subpackage Views
  * @copyright Copyright (c) 2009-2011 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
-$head = array('body_class' => 'oaipmh-harvester content', 
-              'title'      => 'OAI-PMH Harvester | Harvest');
+$head = array(
+    'body_class' => 'oaipmh-harvester content',
+    'title' => __('OAI-PMH Harvester | Harvest'),
+);
 echo head($head);
 ?>
 <div id="primary">
@@ -69,8 +71,8 @@ echo head($head);
         </thead>
         <tbody>
     <?php foreach ($this->sets as $set): ?>
-    <?php 
-    if ($set->setDescription 
+    <?php
+    if ($set->setDescription
         && ($dcWrapper = $set->setDescription->children('oai_dc', true))
         && ($descWrapper = $dcWrapper->children('dc', true))
     ):

@@ -1,0 +1,11 @@
+.base-url, .harvest-status {
+  white-space: nowrap;
+}
+.base-url div{
+  max-width: 30em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.harvest-status input[type="submit"] {
+  margin: .25em 0 0 0;
+}

@@ -9,7 +9,7 @@
  */
 
 queue_css_file('oai-pmh-harvester');
- $head = array(
+$head = array(
     'title' => __('OAI-PMH Harvester'),
     'body_class' => 'primary oaipmh-harvester',
 );

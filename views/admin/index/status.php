@@ -39,6 +39,16 @@ echo head($head);
         <td><?php echo html_escape($this->harvest->set_description); ?></td>
     </tr>
     <tr>
+        <td><?php echo __('Update metadata'); ?></td>
+        <td><?php
+            $optionsUpdateMetadata = array(
+                OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP => __('Keep existing'),
+                OaipmhHarvester_Harvest::UPDATE_METADATA_ELEMENT => __('By element'),
+                OaipmhHarvester_Harvest::UPDATE_METADATA_STRICT => __('Strict copy'),
+            );
+            echo $optionsUpdateMetadata[$this->harvest->update_metadata]; ?></td>
+    </tr>
+    <tr>
         <td><?php echo __('Update files'); ?></td>
         <td><?php
             $optionsUpdateFiles = array(

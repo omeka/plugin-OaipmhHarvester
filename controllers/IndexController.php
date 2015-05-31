@@ -129,6 +129,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
             $setSpec        = $this->_getParam('set_spec');
             $setName        = $this->_getParam('set_name');
             $setDescription = $this->_getParam('set_description');
+            $updateMetadata = $this->_getParam('update_metadata');
             $updateFiles    = $this->_getParam('update_files');
 
             $metadataPrefix = $metadataSpec;
@@ -141,6 +142,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
                 $harvest->set_spec        = $setSpec;
                 $harvest->set_name        = $setName;
                 $harvest->set_description = $setDescription;
+                $harvest->update_metadata = $updateMetadata;
                 $harvest->update_files    = $updateFiles;
                 $harvest->metadata_prefix = $metadataPrefix;
             }

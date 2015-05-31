@@ -5,7 +5,7 @@ class OaipmhHarvester_Request
     /**
      * OAI-PMH error code for a repository with no set hierarchy
      */
-    const ERROR_CODE_NO_SET_HIERARCHY = 'noSetHierarchy';
+    const OAI_ERR_NO_SET_HIERARCHY = 'noSetHierarchy';
 
     /**
      * @var string
@@ -115,8 +115,8 @@ class OaipmhHarvester_Request
             // http://solarphysics.livingreviews.org/register/oai
             if ($error = $this->_getError($xml)) {
                 $retVal['error'] = $error;
-                if ($error['code'] == 
-                        OaipmhHarvester_Request::ERROR_CODE_NO_SET_HIERARCHY
+                if ($error['code'] ==
+                        OaipmhHarvester_Request::OAI_ERR_NO_SET_HIERARCHY
                 ) {
                     $sets = array();
                 }

@@ -66,7 +66,13 @@ Instructions
 
 * Go to Admin > "OAI-PMH Harvester"
 * Enter an OAI-PMH base URL, click "View Sets"
-* Select a set and the metadata prefix to harvest
+* Select a set and the metadata format prefix to harvest
+* The "update metadata" drop-down allows to indicate what to do with old
+metadata when a re-harvest is done: keep all old ones, updated or not (Omeka
+default), remove only metadata from elements that have been updated, so specific
+metadata that have been added in other elements are kept (plugin default), or
+remove all old metadata, so the items will be strictly the same that in the
+repository.
 * The "update files" drop-down allows to indicate what to do with old files when
 a re-harvest is done: keep them all, deduplicate files with same original names,
 remove old files that are no more present in the metadata, or deduplicate and

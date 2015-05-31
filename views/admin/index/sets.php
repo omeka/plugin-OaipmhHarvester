@@ -36,6 +36,20 @@ echo head($head);
             </div>
             <div class="field">
                 <div class="two columns alpha">
+                    <?php echo $this->formLabel('update_metadata', __('Update metadata')); ?>
+                </div>
+                <div class="inputs five columns omega">
+                    <?php
+                    $optionsUpdateMetadata = array(
+                        OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP => __('Keep existing'),
+                        OaipmhHarvester_Harvest::UPDATE_METADATA_ELEMENT => __('By element'),
+                        OaipmhHarvester_Harvest::UPDATE_METADATA_STRICT => __('Strict copy'),
+                    );
+                    echo $this->formSelect('update_metadata', OaipmhHarvester_Harvest::UPDATE_METADATA_ELEMENT, null, $optionsUpdateMetadata); ?>
+                </div>
+            </div>
+            <div class="field">
+                <div class="two columns alpha">
                     <?php echo $this->formLabel('update_files', __('Update files')); ?>
                 </div>
                 <div class="inputs five columns omega">
@@ -46,7 +60,7 @@ echo head($head);
                         OaipmhHarvester_Harvest::UPDATE_FILES_REMOVE => __('Remove deleted'),
                         OaipmhHarvester_Harvest::UPDATE_FILES_FULL => __('Full update'),
                     );
-                    echo $this->formSelect('update_files', 'full', null, $optionsUpdateFiles); ?>
+                    echo $this->formSelect('update_files', OaipmhHarvester_Harvest::UPDATE_FILES_FULL, null, $optionsUpdateFiles); ?>
                 </div>
             </div>
         </section>
@@ -97,8 +111,12 @@ echo head($head);
                         <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
                     </div>
                     <div class="field">
+                        <?php echo $this->formLabel('update_metadata', __('Update metadata')); ?>
+                        <?php echo $this->formSelect('update_metadata', OaipmhHarvester_Harvest::UPDATE_METADATA_ELEMENT, null, $optionsUpdateMetadata); ?>
+                    </div>
+                    <div class="field">
                         <?php echo $this->formLabel('update_files', __('Update files')); ?>
-                        <?php echo $this->formSelect('update_files', 'full', null, $optionsUpdateFiles); ?>
+                        <?php echo $this->formSelect('update_files', OaipmhHarvester_Harvest::UPDATE_FILES_FULL, null, $optionsUpdateFiles); ?>
                     </div>
                     <div class="field">
                         <?php echo $this->formHidden('base_url', $this->baseUrl); ?>

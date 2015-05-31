@@ -14,6 +14,10 @@
  */
 class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
 {
+    const UPDATE_METADATA_KEEP = 'keep';
+    const UPDATE_METADATA_ELEMENT ='element';
+    const UPDATE_METADATA_STRICT = 'strict';
+
     const UPDATE_FILES_KEEP = 'keep';
     const UPDATE_FILES_DEDUPLICATE = 'deduplicate';
     const UPDATE_FILES_REMOVE = 'remove';
@@ -33,6 +37,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
     public $set_spec;
     public $set_name;
     public $set_description;
+    public $update_metadata = self::UPDATE_METADATA_ELEMENT;
     public $update_files = self::UPDATE_FILES_FULL;
     public $status;
     public $status_messages;

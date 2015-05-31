@@ -317,13 +317,18 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     final protected function _insertCollection($metadata = array())
     {
-        // If collection_id is not null, use the existing collection, do not
+        $collection = null;
+
+        // If collection_id is not empty, use the existing collection and don't
         // create a new one.
-        if (($collection_id = $this->_harvest->collection_id)) {
-            $collection = get_db()->getTable('Collection')->find($collection_id);
+        $collectionId = $this->_harvest->collection_id;
+        if ($collectionId) {
+            $collection = get_db()->getTable('Collection')->find($collectionId);
         }
-        else {
-            // There must be a collection name, so if there is none, like when the 
+
+        // The collection may not be created or may be removed.
+        if (empty($collection)) {
+            // There must be a collection name, so if there is none, like when the
             // harvest is repository-wide, set it to the base URL.
             if (!isset($metadata['elementTexts']['Dublin Core']['Title']) ||
                     trim($metadata['elementTexts']['Dublin Core']['Title'][0]['text']) == '') {
@@ -332,11 +337,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
             }
 
             $collection = insert_collection($metadata['metadata'],$metadata['elementTexts']);
-        
+
             // Remember to set the harvest's collection ID once it has been saved.
             $this->_harvest->collection_id = $collection->id;
             $this->_harvest->save();
         }
+
         return $collection;
     }
     

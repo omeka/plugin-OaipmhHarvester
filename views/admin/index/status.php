@@ -12,8 +12,13 @@ $head = array('body_class' => 'oaipmh-harvester content',
               'title'      => 'OAI-PMH Harvester | Status');
 echo head($head);
 ?>
-
 <?php echo flash(); ?>
+<?php if (empty($this->harvest)): ?>
+<p><?php echo __('This harvest does not exist.'); ?></p>
+<p><?php echo __('Go back to the %slist of harvests%s.',
+    '<a href="' . url('/oaipmh-harvester') . '">',
+    '</a>'); ?></p>
+<?php else: ?>
 <table>
     <tr>
         <td>ID</td>
@@ -54,10 +59,9 @@ echo head($head);
 </table>
 
 <?php if ($this->harvest->status != OaipmhHarvester_Harvest::STATUS_DELETED): ?>
-<p><strong>Warning:</strong> Clicking the following link will delete all items created for this harvest. 
+<p><strong>Warning:</strong> Clicking the following link will delete all items created for this harvest.
 <?php //echo link_to($this->harvest, 'delete-confirm', 'Delete Items', array('class' => 'delete-button')); ?>
 <a href="<?php echo url(array('id' => $this->harvest->id, 'action' => 'delete'), 'default'); ?>" class="delete-button">Delete Items</a>
-
 <?php endif; ?>
-
+<?php endif; ?>
 <?php echo foot(); ?>

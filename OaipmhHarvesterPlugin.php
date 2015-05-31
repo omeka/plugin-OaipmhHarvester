@@ -35,6 +35,7 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
         'define_acl',
         'uninstall_message',
         'before_delete_item',
+        'after_delete_collection',
         'admin_items_show_sidebar',
         'items_browse_sql',
     );
@@ -221,7 +222,24 @@ SQL;
             release_object($record);
         }
     }
-    
+
+    /**
+     * Reset harvester collection associated with a deleted collection.
+     *
+     * @param array $args
+     */
+    public function hookAfterDeleteCollection($args)
+    {
+        $collection = $args['record'];
+        $harvests = $this->_db->getTable('OaipmhHarvester_Harvest')
+            ->findBy(array('collection_id' => $collection->id));
+        foreach ($harvests as $harvest) {
+            $harvest->collection_id = 0;
+            $harvest->save();
+            release_object($harvest);
+        }
+    }
+
     /**
      * Hooks into item_browse_sql to return items in a particular oaipmh record.
      *

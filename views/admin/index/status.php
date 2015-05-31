@@ -28,6 +28,21 @@ echo head($head);
         <td><?php echo html_escape($this->harvest->set_name); ?></td>
     </tr>
     <tr>
+        <td><?php echo __('Set Description'); ?></td>
+        <td><?php echo html_escape($this->harvest->set_description); ?></td>
+    </tr>
+    <tr>
+        <td><?php echo __('Update files'); ?></td>
+        <td><?php
+            $optionsUpdateFiles = array(
+                OaipmhHarvester_Harvest::UPDATE_FILES_KEEP => __('Keep existing'),
+                OaipmhHarvester_Harvest::UPDATE_FILES_DEDUPLICATE => __('Deduplicate'),
+                OaipmhHarvester_Harvest::UPDATE_FILES_REMOVE => __('Remove deleted'),
+                OaipmhHarvester_Harvest::UPDATE_FILES_FULL => __('Full update'),
+            );
+            echo $optionsUpdateFiles[$this->harvest->update_files]; ?></td>
+    </tr>
+    <tr>
         <td>Metadata Prefix</td>
         <td><?php echo html_escape($this->harvest->metadata_prefix); ?></td>
     </tr>

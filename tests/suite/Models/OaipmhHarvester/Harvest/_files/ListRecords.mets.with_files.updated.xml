@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+<responseDate>2015-06-01T00:00:02Z</responseDate>
+<request verb="ListRecords" metadataPrefix="mets">http://www.example.com/oai-pmh</request>
+<ListRecords>
+    <record>
+        <header>
+            <identifier>oai:www.example.com:ark:/12345/b6KN</identifier>
+            <datestamp>2015-06-01T00:00:01Z</datestamp>
+        </header>
+        <metadata>
+            <mets xmlns="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <metsHdr CREATEDATE="2015-06-01T00:00:01Z">
+                    <agent ROLE="CREATOR">
+                        <name>daniel.omeka@berthereau.net</name>
+                        <note>OAI-PMH Harvester for Omeka</note>
+                    </agent>
+                </metsHdr>
+                <dmdSec ID="DMD.01">
+                    <mdWrap MIMETYPE="text/xml" MDTYPE="DC" LABEL="Dublin Core Metadata">
+                        <xmlData xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
+                            <dc:title>Foo item updated</dc:title>
+                            <dc:identifier>ark:/12345/b6KN</dc:identifier>
+                        </xmlData>
+                    </mdWrap>
+                </dmdSec>
+                <dmdSec ID="DMD.01.1">
+                    <mdWrap MIMETYPE="text/xml" MDTYPE="DC" LABEL="Dublin Core Metadata">
+                        <xmlData xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
+                            <dc:title>File #1 unchanged</dc:title>
+                            <dc:identifier>ark:/12345/b6KN/1</dc:identifier>
+                            <dc:rights>Public domain</dc:rights>
+                        </xmlData>
+                    </mdWrap>
+                </dmdSec>
+                <dmdSec ID="DMD.01.3">
+                    <mdWrap MIMETYPE="text/xml" MDTYPE="DC" LABEL="Dublin Core Metadata">
+                        <xmlData xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
+                            <dc:title>File #3 updated</dc:title>
+                            <dc:identifier>ark:/12345/b6KN/3</dc:identifier>
+                            <dc:rights>Public domain</dc:rights>
+                        </xmlData>
+                    </mdWrap>
+                </dmdSec>
+                <dmdSec ID="DMD.01.4">
+                    <mdWrap MIMETYPE="text/xml" MDTYPE="DC" LABEL="Dublin Core Metadata">
+                        <xmlData xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
+                            <dc:title>File #4 added</dc:title>
+                            <dc:identifier>ark:/12345/b6KN/4</dc:identifier>
+                            <dc:rights>Public domain</dc:rights>
+                        </xmlData>
+                    </mdWrap>
+                </dmdSec>
+                <fileSec>
+                    <fileGrp USE="original">
+                        <file ID="original.01.1" MIMETYPE="image/png" DMDID="DMD.01.1">
+                            <FLocat LOCTYPE="URL" xlink:type="simple" xlink:title="ophfile1.png" xlink:href="http://www.example.com/first/ophfile1.png"/>
+                        </file>
+                        <file ID="original.01.3" MIMETYPE="image/png" DMDID="DMD.01.3">
+                            <FLocat LOCTYPE="URL" xlink:type="simple" xlink:title="ophfile3.png" xlink:href="http://www.example.com/update/ophfile3.png"/>
+                        </file>
+                        <file ID="original.01.4" MIMETYPE="image/png" DMDID="DMD.01.4">
+                            <FLocat LOCTYPE="URL" xlink:type="simple" xlink:title="ophfile4.png" xlink:href="http://www.example.com/update/ophfile4.png"/>
+                        </file>
+                    </fileGrp>
+                </fileSec>
+                <structMap>
+                    <div DMDID="DMD.01">
+                        <fptr FILEID="original.01.1"/>
+                        <fptr FILEID="original.01.3"/>
+                        <fptr FILEID="original.01.4"/>
+                    </div>
+                </structMap>
+            </mets>
+        </metadata>
+    </record>
+</ListRecords>
+</OAI-PMH>

@@ -24,23 +24,28 @@ require_once dirname(__FILE__) . '/functions.php';
  */
 class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
 {
-    
+
     /**
      * @var array Hooks for the plugin.
      */
-    protected $_hooks = array('install', 
-                              'uninstall',
-                              'upgrade',
-                              'define_acl', 
-                              'admin_append_to_plugin_uninstall_message', 
-                              'before_delete_item',
-                              'admin_items_show_sidebar',
-                              'items_browse_sql');
+    protected $_hooks = array(
+        'install',
+        'uninstall',
+        'upgrade',
+        'define_acl',
+        'uninstall_message',
+        'before_delete_item',
+        'after_delete_collection',
+        'admin_items_show_sidebar',
+        'items_browse_sql',
+    );
 
     /**
      * @var array Filters for the plugin.
      */
-    protected $_filters = array('admin_navigation_main');
+    protected $_filters = array(
+        'admin_navigation_main',
+    );
 
     /**
      * @var array Options and their default values.
@@ -157,19 +162,17 @@ SQL;
         $acl = $args['acl']; // get the Zend_Acl
         $acl->addResource('OaipmhHarvester_Index');
     }
-    
+
     /**
-     * Specify plugin uninstall message
-     *
-     * @param array $args
+     * Add a message to the confirm form for uninstallation of the plugin.
      */
-    public function hookAdminAppendToPluginUninstallMessage($args)
+    public function hookUninstallMessage()
     {
         echo '<p>While you will not lose the items and collections created by your
         harvests, you will lose all harvest-specific metadata and the ability to
         re-harvest.</p>';
     }
-    
+
     /**
     * Appended to admin item show pages.
     *
@@ -219,7 +222,24 @@ SQL;
             release_object($record);
         }
     }
-    
+
+    /**
+     * Reset harvester collection associated with a deleted collection.
+     *
+     * @param array $args
+     */
+    public function hookAfterDeleteCollection($args)
+    {
+        $collection = $args['record'];
+        $harvests = $this->_db->getTable('OaipmhHarvester_Harvest')
+            ->findBy(array('collection_id' => $collection->id));
+        foreach ($harvests as $harvest) {
+            $harvest->collection_id = 0;
+            $harvest->save();
+            release_object($harvest);
+        }
+    }
+
     /**
      * Hooks into item_browse_sql to return items in a particular oaipmh record.
      *

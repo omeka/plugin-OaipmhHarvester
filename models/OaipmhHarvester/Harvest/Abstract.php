@@ -278,27 +278,32 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     final protected function _insertCollection($metadata = array())
     {
-        // If collection_id is not null, use the existing collection, do not
-        // create a new one.
-        if (($collection_id = $this->_harvest->collection_id)) {
-            $collection = get_db()->getTable('Collection')->find($collection_id);
-        }
-        else {
-            // There must be a collection name, so if there is none, like when the 
-            // harvest is repository-wide, set it to the base URL.
-            if (!isset($metadata['elementTexts']['Dublin Core']['Title']['text']) || 
-                    !$metadata['elementTexts']['Dublin Core']['Title']['text']) {
-                $$metadata['elementTexts']['Dublin Core']['Title']['text'] = $this->_harvest->base_url;
-            }
-        
+        $collection = null;
 
-        
+        // If collection_id is not empty, use the existing collection and don't
+        // create a new one.
+        $collectionId = $this->_harvest->collection_id;
+        if ($collectionId) {
+            $collection = get_db()->getTable('Collection')->find($collectionId);
+        }
+
+        // The collection may not be created or may be removed.
+        if (empty($collection)) {
+            // There must be a collection name, so if there is none, like when the
+            // harvest is repository-wide, set it to the base URL.
+            if (!isset($metadata['elementTexts']['Dublin Core']['Title']) ||
+                    trim($metadata['elementTexts']['Dublin Core']['Title'][0]['text']) == '') {
+                $metadata['elementTexts']['Dublin Core']['Title'][] =
+                    array('text' => $this->_harvest->base_url, 'html' => false);
+            }
+
             $collection = insert_collection($metadata['metadata'],$metadata['elementTexts']);
-        
+
             // Remember to set the harvest's collection ID once it has been saved.
             $this->_harvest->collection_id = $collection->id;
             $this->_harvest->save();
         }
+
         return $collection;
     }
     
@@ -380,7 +385,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @see insert_item()
      * @see insert_files_for_item()
-     * @param OaipmhHarvester_Record $itemId ID of item to update
+     * @param OaipmhHarvester_Record $record Contains the ID of item to update
      * @param mixed $elementTexts The item's element texts
      * @param mixed $fileMetadata The item's file metadata
      * @return true
@@ -390,6 +395,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
         $elementTexts = array(), 
         $fileMetadata = array()
     ) {
+        // The default file transfer type is URL.
+        if (!isset($fileMetadata['file_transfer_type'])) {
+            $fileMetadata['file_transfer_type'] = 'Url';
+        }
+
         // Update the item
         $item = update_item(
             $record->item_id, 

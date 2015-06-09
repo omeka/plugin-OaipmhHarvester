@@ -26,8 +26,8 @@ class OaipmhHarvester_Harvest_AbstractTest extends OaipmhHarvester_Test_AppTestC
             OaipmhHarvester_Harvest::STATUS_COMPLETED, 
             $harvest->status
         );
-        $this->assertGreaterThan(
-            $defaultItemCount, 
+        $this->assertEquals(
+            $defaultItemCount,
             $this->db->fetchOne("select count(*) from {$this->db->Item}")
         );
 

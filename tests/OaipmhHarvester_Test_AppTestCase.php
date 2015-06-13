@@ -21,12 +21,21 @@ class OaipmhHarvester_Test_AppTestCase extends Omeka_Test_AppTestCase
         $pluginHelper = new Omeka_Test_Helper_Plugin;
         $pluginHelper->setUp(self::PLUGIN_NAME);
         Omeka_Test_Resource_Db::$runInstaller = true;
+
+        // Remove the default item.
+        $items = $this->db->getTable('Item')->findAll();
+        foreach($items as $item) {
+            $item->delete();
+        }
     }
     
     public function assertPreConditions()
     {
         $harvests = $this->db->getTable('OaipmhHarvester_Harvest')->findAll();
         $this->assertEquals(0, count($harvests), 'There should be no harvests.');
+
+        $items = $this->db->getTable('Item')->findAll();
+        $this->assertEquals(0, count($items), 'There should be no items.');
     }
     
     protected function _deleteAllHarvests()

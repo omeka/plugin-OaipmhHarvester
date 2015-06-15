@@ -5,7 +5,7 @@ class OaipmhHarvester_Request
     /**
      * OAI-PMH error code for a repository with no set hierarchy
      */
-    const ERROR_CODE_NO_SET_HIERARCHY = 'noSetHierarchy';
+    const OAI_ERR_NO_SET_HIERARCHY = 'noSetHierarchy';
 
     /**
      * @var string
@@ -115,8 +115,8 @@ class OaipmhHarvester_Request
             // http://solarphysics.livingreviews.org/register/oai
             if ($error = $this->_getError($xml)) {
                 $retVal['error'] = $error;
-                if ($error['code'] == 
-                        OaipmhHarvester_Request::ERROR_CODE_NO_SET_HIERARCHY
+                if ($error['code'] ==
+                        OaipmhHarvester_Request::OAI_ERR_NO_SET_HIERARCHY
                 ) {
                     $sets = array();
                 }
@@ -183,6 +183,8 @@ class OaipmhHarvester_Request
                               . $error->line . ', column ' 
                               . $error->column;
                 }
+                libxml_clear_errors();
+                libxml_use_internal_errors(false);
                 _log(
                     "[OaipmhHarvester] Could not parse XML: " 
                     . $response->getBody()
@@ -197,8 +199,10 @@ class OaipmhHarvester_Request
             }
             return $iter;
         } else {
-            throw new Zend_Http_Client_Exception("Invalid URL (" 
-                . $response->getStatus() . " " . $response->getMessage() 
+            libxml_clear_errors();
+            libxml_use_internal_errors(false);
+            throw new Zend_Http_Client_Exception("Invalid URL ("
+                . $response->getStatus() . " " . $response->getMessage()
                 . ").");
         }
     }

@@ -168,7 +168,20 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
         $existingRecord = $this->_recordExists($record);
         $harvestedRecord = $this->_harvestRecord($record);
-        
+
+        // Set some default values for the harvested record.
+        if (!empty($fileMetadata['files'])) {
+            // The default file transfer type is URL.
+            if (empty($harvestedRecord['fileMetadata'][Builder_Item::FILE_TRANSFER_TYPE])) {
+                $harvestedRecord['fileMetadata'][Builder_Item::FILE_TRANSFER_TYPE] = 'Url';
+            }
+
+            // The default option is ignore invalid files.
+            if (!isset($harvestedRecord['fileMetadata'][Builder_Item::FILE_INGEST_OPTIONS]['ignore_invalid_files'])) {
+                $harvestedRecord['fileMetadata'][Builder_Item::FILE_INGEST_OPTIONS]['ignore_invalid_files'] = true;
+            }
+        }
+
         // Cache the record for later use.
         $this->_record = $record;
         
@@ -278,27 +291,32 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     final protected function _insertCollection($metadata = array())
     {
-        // If collection_id is not null, use the existing collection, do not
-        // create a new one.
-        if (($collection_id = $this->_harvest->collection_id)) {
-            $collection = get_db()->getTable('Collection')->find($collection_id);
-        }
-        else {
-            // There must be a collection name, so if there is none, like when the 
-            // harvest is repository-wide, set it to the base URL.
-            if (!isset($metadata['elementTexts']['Dublin Core']['Title']['text']) || 
-                    !$metadata['elementTexts']['Dublin Core']['Title']['text']) {
-                $$metadata['elementTexts']['Dublin Core']['Title']['text'] = $this->_harvest->base_url;
-            }
-        
+        $collection = null;
 
-        
+        // If collection_id is not empty, use the existing collection and don't
+        // create a new one.
+        $collectionId = $this->_harvest->collection_id;
+        if ($collectionId) {
+            $collection = get_db()->getTable('Collection')->find($collectionId);
+        }
+
+        // The collection may not be created or may be removed.
+        if (empty($collection)) {
+            // There must be a collection name, so if there is none, like when the
+            // harvest is repository-wide, set it to the base URL.
+            if (!isset($metadata['elementTexts']['Dublin Core']['Title']) ||
+                    trim($metadata['elementTexts']['Dublin Core']['Title'][0]['text']) == '') {
+                $metadata['elementTexts']['Dublin Core']['Title'][] =
+                    array('text' => $this->_harvest->base_url, 'html' => false);
+            }
+
             $collection = insert_collection($metadata['metadata'],$metadata['elementTexts']);
-        
+
             // Remember to set the harvest's collection ID once it has been saved.
             $this->_harvest->collection_id = $collection->id;
             $this->_harvest->save();
         }
+
         return $collection;
     }
     
@@ -329,45 +347,10 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // OaipmhHarvester_Records table should only contain records that have 
         // corresponding items.
         $this->_insertRecord($item);
-        
-        // If there are files, insert one file at a time so the file objects can 
-        // be released individually.
-        if (isset($fileMetadata['files'])) {
-            
-            // The default file transfer type is URL.
-            $fileTransferType = isset($fileMetadata['file_transfer_type']) 
-                              ? $fileMetadata['file_transfer_type'] 
-                              : 'Url';
-            
-            // The default option is ignore invalid files.
-            $fileOptions = isset($fileMetadata['file_ingest_options']) 
-                         ? $fileMetadata['file_ingest_options'] 
-                         : array('ignore_invalid_files' => true);
-            
-            // Prepare the files value for one-file-at-a-time iteration.
-            $files = array($fileMetadata['files']);
-            
-            foreach ($files as $file) {
-                $fileOb = insert_files_for_item(
-                    $item, 
-                    $fileTransferType, 
-                    $file, 
-                    $fileOptions);
-                $fileObject= $fileOb;
-                if (!empty($file['metadata'])) {
-                    $fileObject->addElementTextsByArray($file['metadata']);
-                    $fileObject->save();
-                }
-                  
-                // Release the File object from memory. 
-                release_object($fileObject);
-            }
-        }
-        
-        // Release the Item object from memory.
-        release_object($item);
-        
-        return true;
+
+        $this->_insertFiles($item, $fileMetadata);
+
+        return $item;
     }
     
     /**
@@ -380,7 +363,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * 
      * @see insert_item()
      * @see insert_files_for_item()
-     * @param OaipmhHarvester_Record $itemId ID of item to update
+     * @param OaipmhHarvester_Record $record Contains the ID of item to update
      * @param mixed $elementTexts The item's element texts
      * @param mixed $fileMetadata The item's file metadata
      * @return true
@@ -392,12 +375,62 @@ abstract class OaipmhHarvester_Harvest_Abstract
     ) {
         // Update the item
         $item = update_item(
-            $record->item_id, 
-            array('overwriteElementTexts' => true), 
-            $elementTexts, 
-            $fileMetadata
-        );
-        
+            $record->item_id,
+            array('overwriteElementTexts' => true),
+            $elementTexts);
+
+        // With default functions, old elements may not be removed. This process
+        // allows to delete all of them, for the item and each attached file.
+        if ($this->_harvest->update_metadata != OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP) {
+            $this->_updateMetadata($item, $elementTexts);
+        }
+
+        $this->_insertFiles($item, $fileMetadata);
+
+        // Warning: The core function "update_item" above adds new files even
+        // when they have been already ingested. So duplicates should be checked
+        // somewhere. Furthermore, old files are not removed. Three possible
+        // positions:
+        // - add a new ingest option in Builder_Item::addFiles(), but it implies
+        // to change Omeka core;
+        // - add a hook "before_save_item", but it will be used even outside of
+        // this plugin;
+        // - add the check just here, which is the simplest, even if this is not
+        // optimal, and it's compliant with the logical of OAI-PMH (cf. the
+        // option overwriteElementsTexts). Nevertheless, the choice is let to
+        // the user.
+        if (in_array($this->_harvest->update_files, array(
+                OaipmhHarvester_Harvest::UPDATE_FILES_FULL,
+                OaipmhHarvester_Harvest::UPDATE_FILES_DEDUPLICATE,
+            ))) {
+            $this->_deduplicateFiles($item);
+            // A reload is needed because the deduplication uses a direct query.
+            release_object($item);
+            $item = get_db()->getTable('Item')->find($record->item_id);
+        }
+
+        if (in_array($this->_harvest->update_files, array(
+                OaipmhHarvester_Harvest::UPDATE_FILES_FULL,
+                OaipmhHarvester_Harvest::UPDATE_FILES_REMOVE,
+            ))) {
+            $this->_deleteRemovedFiles($item, $fileMetadata);
+            // A reload is needed because the deduplication uses a direct query.
+            release_object($item);
+            $item = get_db()->getTable('Item')->find($record->item_id);
+        }
+
+        // Reorder can be done only if files have been updated. Anyway, the
+        // order is generally already right.
+        // TODO Is it needed for other updates? The builder adds files one by
+        // one and the older ones are removed.
+        if ($this->_harvest->update_files == OaipmhHarvester_Harvest::UPDATE_FILES_FULL) {
+            $this->_orderFiles($item, $fileMetadata);
+        }
+
+        if ($this->_harvest->update_metadata != OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP) {
+            $this->_updateFilesMetadata($item, $fileMetadata);
+        }
+
         // Update the datestamp stored in the database for this record.
         $this->_updateRecord($record);
 
@@ -406,7 +439,54 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
         return true;
     }
-    
+
+    /**
+     * Insert files one by one to preserve memory.
+     *
+     * If there are files, insert one file at a time so the file objects can be
+     * released individually.
+     *
+     * @param Item $item
+     * @param mixed $fileMetadata The item's file metadata
+     */
+    protected function _insertFiles($item, $fileMetadata)
+    {
+        if (empty($fileMetadata['files'])) {
+            return;
+        }
+
+        // The default file transfer type is URL.
+        $fileTransferType = empty($fileMetadata[Builder_Item::FILE_TRANSFER_TYPE])
+            ? 'Url'
+            : $fileMetadata[Builder_Item::FILE_TRANSFER_TYPE];
+        // The default option is ignore invalid files.
+        $fileOptions = empty($fileMetadata[Builder_Item::FILE_INGEST_OPTIONS])
+            ? array('ignore_invalid_files' => true)
+            : $fileMetadata[Builder_Item::FILE_INGEST_OPTIONS];
+
+        // Prepare the files value for one-file-at-a-time iteration.
+        $files = array($fileMetadata['files']);
+
+        foreach ($files as $file) {
+            if (empty($file)) {
+                continue;
+            }
+            $fileOb = insert_files_for_item(
+                $item,
+                $fileTransferType,
+                $file,
+                $fileOptions);
+            $fileObject= $fileOb;
+            if (!empty($file['metadata'])) {
+                $fileObject->addElementTextsByArray($file['metadata']);
+                $fileObject->save();
+            }
+
+            // Release the File object from memory.
+            release_object($fileObject);
+        }
+    }
+
     /**
      * Adds a status message to the harvest.
      * 
@@ -520,6 +600,213 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // error occured, re-harvests need to start from the beginning.
         $this->_harvest->start_from = null;
         $this->_harvest->save();
+    }
+
+    /**
+     * Deduplicate files (same original name) of an item.
+     * In case of a duplicate, the newest file (greater id) is kept.
+     *
+     * The authentication is not checked in order to ingest updated files.
+     *
+     * @param Item $item
+     */
+    protected function _deduplicateFiles($item)
+    {
+        $db = get_db();
+
+        $sql = "
+            SELECT files.id
+            FROM `{$db->files}` AS files, `{$db->files}` AS files_2
+            WHERE files.item_id = ? AND files_2.item_id = ?
+                AND files.original_filename = files_2.original_filename
+                AND files.id < files_2.id;
+        ";
+        $fileIds = $db->fetchCol($sql, array($item->id, $item->id));
+        $files = $db->getTable('File')->findByItem($item->id, $fileIds, 'id');
+        foreach ($files as $file) {
+            $file->delete();
+        }
+    }
+
+    /**
+     * Remove old files not set in new metadata files, using original filename.
+     *
+     * @param Item $item
+     * @param array $filesMetadata
+     */
+    protected function _deleteRemovedFiles($item, $filesMetadata)
+    {
+        $list = $this->_listFiles($filesMetadata);
+
+        // Delete all attached files.
+        if (empty($list)) {
+            foreach ($item->Files as $file) {
+                $file->delete();
+            }
+            return;
+        }
+
+        // Selective deletion.
+        $db = get_db();
+        $table = $db->getTable('File');
+        $tableAlias = $table->getTableAlias();
+        $select = $table->getSelect()
+            ->where("$tableAlias.item_id = ?", $item->id)
+            ->where("$tableAlias.original_filename NOT IN (?)", $list);
+        $files = $table->fetchObjects($select);
+        foreach ($files as $file) {
+            $file->delete();
+        }
+    }
+
+    /**
+     * Reorder files according to the metadata file.
+     *
+     * @todo Check if this is really needed (find a test for it).
+     *
+     * @param Item $item
+     * @param array $filesMetadata
+     */
+    protected function _orderFiles($item, $filesMetadata)
+    {
+        $list = $this->_listFiles($filesMetadata);
+
+        if (empty($list)) {
+            return array();
+        }
+
+        $db = get_db();
+        $sql = "
+            UPDATE `{$db->files}`
+            SET `order` = ?
+            WHERE `item_id` = ?
+                AND `original_filename` = ?
+        ";
+        foreach ($list as $key => $filename) {
+            $db->query($sql, array($key + 1, $item->id, $filename));
+        }
+    }
+
+    /**
+     * List the original filename of files.
+     *
+     * @param array $filesMetadata
+     * @return array List of cleaned original names.
+     */
+    protected function _listFiles($filesMetadata)
+    {
+        if (empty($filesMetadata['files'])) {
+            return array();
+        }
+
+        // TODO Use Omeka_File_Ingest_AbstractIngest::_getOriginalFilename()?
+        $list = array();
+        foreach ($filesMetadata['files'] as $file) {
+            // Manage other cases? No, since this is update from OAI-PMH.
+            if (!empty($file['Url'])) {
+                $list[] = $file['Url'];
+            }
+            elseif (!empty($file['Filesystem'])) {
+                $list[] = basename($file['Filesystem']);
+            }
+        }
+
+        return $list;
+    }
+
+    /**
+     * Remove old elements of a record (not set in an updated repository).
+     *
+     * @todo Optimize.
+     * @internal Mixin_ElementText::getAllElementTextsByElement() is available
+     * from Omeka 2.3 only.
+     *
+     * @param Record $record
+     * @param array $metadata
+     */
+    protected function _updateMetadata($record, $metadata)
+    {
+        switch ($this->_harvest->update_metadata) {
+            case OaipmhHarvester_Harvest::UPDATE_METADATA_KEEP:
+                return;
+
+            case OaipmhHarvester_Harvest::UPDATE_METADATA_ELEMENT:
+                foreach ($metadata as $elementSetName => $element) {
+                    foreach ($element as $elementName => $dataElement) {
+                        $elementTexts = $record->getElementTexts($elementSetName, $elementName);
+                        $this->_deleteRemovedMetadata($record, $elementTexts, $metadata);
+                    }
+                }
+                break;
+
+            case OaipmhHarvester_Harvest::UPDATE_METADATA_STRICT:
+                $elementTexts = $record->getAllElementTexts();
+                $this->_deleteRemovedMetadata($record, $elementTexts, $metadata);
+                break;
+        }
+    }
+
+    /**
+     * Remove old elements of files of an item.
+     *
+     * @uses _updateMetadata()
+     *
+     * @param Item $item
+     * @param array $filesMetadata
+     */
+    protected function _updateFilesMetadata($item, $metadata)
+    {
+        if (empty($metadata['files'])) {
+            return;
+        }
+
+        foreach ($item->getFiles() as $key => $file) {
+            foreach ($metadata['files'] as $metadataFile) {
+                if (!empty($metadataFile['Url'])) {
+                    if ($file->original_filename == $metadataFile['Url']) {
+                        $this->_updateMetadata($file, $metadataFile['metadata']);
+                        break;
+                    }
+                }
+                elseif (!empty($metadataFile['Filesystem'])) {
+                    if ($file->original_filename == basename($metadataFile['Filesystem'])) {
+                        $this->_updateMetadata($file, $metadataFile['metadata']);
+                        break;
+                    }
+                }
+            }
+            release_object($file);
+        }
+    }
+
+    /**
+     * Helper for _updateMetadata().
+     */
+    private function _deleteRemovedMetadata($record, $elementTexts, $metadata)
+    {
+        if (empty($elementTexts)) {
+            return;
+        }
+        foreach ($elementTexts as $elementText) {
+            $exists = false;
+            // Internal: elements are already static.
+            $element = $record->getElementById($elementText->element_id);
+            // Check if the element exists in new metadata.
+            // Normally, there should not be duplicates, except if there
+            // are ones inside the repertory.
+            if (isset($metadata[$element->set_name][$element->name])) {
+                foreach ($metadata[$element->set_name][$element->name] as $data) {
+                    if ($elementText->text == $data['text'] && $elementText->html == $data['html']) {
+                        $exists = true;
+                        break;
+                    }
+                }
+            }
+            // Delete it if not exists.
+            if (!$exists) {
+                $elementText->delete();
+            }
+        }
     }
 
     public static function factory($harvest)

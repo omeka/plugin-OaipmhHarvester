@@ -9,12 +9,12 @@
 
 
 /** Path to plugin directory */
-defined('OAIPMH_HARVESTER_PLUGIN_DIRECTORY') 
+defined('OAIPMH_HARVESTER_PLUGIN_DIRECTORY')
     or define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 
 /** Path to plugin maps directory */
-defined('OAIPMH_HARVESTER_MAPS_DIRECTORY') 
-    or define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
+defined('OAIPMH_HARVESTER_MAPS_DIRECTORY')
+    or define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY
                                         . '/models/OaipmhHarvester/Harvest');
 
 require_once dirname(__FILE__) . '/functions.php';
@@ -210,16 +210,17 @@ SQL;
     public function hookConfig($args)
     {
         $post = $args['post'];
-        foreach (array(
-                'oaipmh_harvester_allow_roles',
-            ) as $posted) {
-            $post[$posted] = isset($post[$posted])
-                ? serialize($post[$posted])
-                : serialize(array());
+        foreach ($this->_options as $optionKey => $optionValue) {
+            if (in_array($optionKey, array(
+                    'oaipmh_harvester_allow_roles',
+                ))) {
+               $post[$optionKey] = serialize($post[$optionKey]) ?: serialize(array());
+            }
+            if (isset($post[$optionKey])) {
+                set_option($optionKey, $post[$optionKey]);
+            }
         }
-        foreach ($post as $key => $value) {
-            set_option($key, $value);
-        }
+
     }
 
     /**
@@ -266,7 +267,7 @@ SQL;
         $item = $args['item'];
         echo $this->_expose_duplicates($item);
     }
-    
+
     /**
      * Returns a view of any duplicate harvested records for an item
      *
@@ -287,7 +288,7 @@ SQL;
         }
         return get_view()->partial('index/_duplicates.php', array('items' => $items));
     }
-    
+
     /**
      * Deletes harvester record associated with a deleted item.
      *
@@ -333,7 +334,7 @@ SQL;
         $db = $this->_db;
         $select = $args['select'];
         $params = $args['params'];
-        
+
         // Filter based on duplicates of a given oaipmh record.
         $dupKey = 'oaipmh_harvester_duplicate_items';
         if (array_key_exists($dupKey, $params)) {
@@ -350,22 +351,22 @@ SQL;
             );
         }
     }
-    
+
     /**
      * Add the OAI-PMH Harvester link to the admin main navigation.
-     * 
+     *
      * @param array Navigation array.
      * @return array Filtered navigation array.
      */
     public function filterAdminNavigationMain($nav)
-    {            
+    {
         $nav[] = array(
             'label' => __('OAI-PMH Harvester'),
             'uri' => url('oaipmh-harvester'),
             'resource' => 'OaipmhHarvester_Index',
             'privilege' => 'index',
             'class' => 'nav-oai-pmh-harvester'
-        );       
+        );
         return $nav;
     }
 }

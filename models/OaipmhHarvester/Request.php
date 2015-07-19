@@ -45,7 +45,12 @@ class OaipmhHarvester_Request
         $xml = $this->_makeRequest(array(
             'verb' => 'ListMetadataFormats',
         ));
+
         $formats = array();
+        if ($error = $this->_getError($xml)) {
+            $formats['error'] = $error;
+        }
+
         foreach ($xml->ListMetadataFormats->metadataFormat as $format) {
             $prefix = trim((string)$format->metadataPrefix);
             $schema = trim((string)$format->schema);
@@ -107,6 +112,7 @@ class OaipmhHarvester_Request
         }
 
         $retVal = array();
+        $sets = array();
         try {
             $xml = $this->_makeRequest($query);
         

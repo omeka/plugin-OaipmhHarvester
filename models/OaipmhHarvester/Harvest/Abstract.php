@@ -86,7 +86,37 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * @param SimpleXMLIterator The current record object
      */
     abstract protected function _harvestRecord($record);
-    
+
+    /**
+     * Return the first registered item type of a record, if any.
+     *
+     * @param array $record
+     * @return ItemType|null
+     */
+    private function _getItemType($record)
+    {
+        if (isset($record['elementTexts']['Dublin Core']['Type'])) {
+            $db = get_db();
+            $quotedTypes = array();
+            foreach ($record['elementTexts']['Dublin Core']['Type'] as $type) {
+                $quotedTypes[] = $db->quote($type['text']);
+            }
+            $quotedTypes = implode(',', $quotedTypes);
+
+            $sql = "
+                SELECT id
+                FROM `{$db->ItemType}`
+                WHERE `name` IN ($quotedTypes)
+                ORDER BY FIELD(`name`, $quotedTypes)
+                LIMIT 1;";
+            $result = $db->fetchOne($sql);
+
+            if ($result) {
+                return get_record_by_id('ItemType', $result);
+            }
+        }
+    }
+
     /**
      * Checks whether the current record has already been harvested, and
      * returns the record if it does.
@@ -185,6 +215,13 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
         $existingRecord = $this->_recordExists($record);
         $harvestedRecord = $this->_harvestRecord($record);
+
+        $itemType = $this->_getItemType($harvestedRecord);
+        if (!empty($itemType)) {
+            // The name is used to simplify potential other checks.
+            unset($harvestedRecord['itemMetadata']['item_type_id']);
+            $harvestedRecord['itemMetadata']['item_type_name'] = $itemType->name;
+        }
 
         // Set some default values for the harvested record.
         if (!empty($fileMetadata['files'])) {

@@ -213,8 +213,16 @@ abstract class OaipmhHarvester_Harvest_Abstract
         if ($this->isDeletedRecord($record)) {
             return;
         }
-        $existingRecord = $this->_recordExists($record);
+
         $harvestedRecord = $this->_harvestRecord($record);
+        if (empty($harvestedRecord)
+                || (empty($harvestedRecord['itemMetadata'])
+                    && empty($harvestedRecord['elementTexts'])
+                    && empty($harvestedRecord['fileMetadata'])
+                )
+            ) {
+            return;
+        }
 
         $itemType = $this->_getItemType($harvestedRecord);
         if (!empty($itemType)) {
@@ -238,8 +246,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
 
         // Cache the record for later use.
         $this->_record = $record;
-        
-        // Record has already been harvested
+
+        // Check if the record has already been harvested.
+        $existingRecord = $this->_recordExists($record);
         if ($existingRecord) {
             // If datestamp has changed, update the record.
             if ($existingRecord->datestamp != $record->header->datestamp) {
@@ -254,7 +263,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 $item = $existingRecord;
                 $performed = 'skipped';
             }
-        } else {
+        }
+        // This is a new item.
+        else {
             $item = $this->_insertItem(
                 $harvestedRecord['itemMetadata'],
                 $harvestedRecord['elementTexts'],

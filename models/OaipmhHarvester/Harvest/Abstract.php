@@ -18,7 +18,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
      * Notice message code, used for status messages.
      */
     const MESSAGE_CODE_NOTICE = 1;
-    
+
+    /**
+     * Warning message code, used for status messages.
+     */
+    const MESSAGE_CODE_WARNING = 3;
+
     /**
      * Error message code, used for status messages.
      */
@@ -140,8 +145,20 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // inheriting from this class.
         $response = $this->_harvest->listRecords();
         if ($this->_isIterable($response['records'])) {
+            // Sometimes, the files are not available. To avoid potential errors
+            // and to allows harvest of next records, a try/catch is needed.
+            // The item will be updated during next harvest.
             foreach ($response['records'] as $record) {
-                $this->_harvestLoop($record);
+                try {
+                    $this->_harvestLoop($record);
+                } catch (Omeka_File_Ingest_Exception $e) {
+                    $this->_continueWithWarning($e);
+                    _log('[OaipmhHarvester] ' . $e->getMessage(), Zend_Log::WARN);
+                } catch (Exception $e) {
+                    $this->_stopWithError($e);
+                    // For real errors need to be logged and debugged.
+                    _log($e, Zend_Log::ERR);
+                }
             }
         } else {
             $this->_addStatusMessage("No records were found.");
@@ -623,6 +640,11 @@ abstract class OaipmhHarvester_Harvest_Abstract
         // error occured, re-harvests need to start from the beginning.
         $this->_harvest->start_from = null;
         $this->_harvest->save();
+    }
+
+    private function _continueWithWarning($e)
+    {
+        $this->_addStatusMessage($e->getMessage(), self::MESSAGE_CODE_WARNING);
     }
 
     /**

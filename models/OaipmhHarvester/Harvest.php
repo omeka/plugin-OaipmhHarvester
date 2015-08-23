@@ -152,6 +152,9 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
             case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_ERROR:
                 $messageCodeText = 'Error';
                 break;
+            case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_WARNING:
+                $messageCodeText = 'Warning';
+                break;
             case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_NOTICE:
             default:
                 $messageCodeText = 'Notice';

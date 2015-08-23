@@ -72,8 +72,8 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           set_spec: the OAI-PMH set spec (unique identifier)
           set_name: the OAI-PMH set name
           set_description: the Dublin Core description of the set, if any
-          status: the current harvest status for this set: starting, in progress,
-          completed, error, deleted
+          status: the current harvest status for this set: queued, in progress,
+          completed, error, deleted, killed
           status_messages: any messages sent from the harvester, usually during
           an error status
           initiated: the datetime the harvest initiated

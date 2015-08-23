@@ -17,7 +17,7 @@ echo head($head);
     <?php echo flash(); ?>
     <?php if (empty($this->availableMaps)): ?>
     <div class="error"><?php
-        echo __('There are no available data maps that are compatable with this repository.');
+        echo __('There are no available data maps that are compatible with this repository.');
         echo ' ' . __('You will not be able to harvest from this repository.');
     ?></div>
     <?php endif; ?>

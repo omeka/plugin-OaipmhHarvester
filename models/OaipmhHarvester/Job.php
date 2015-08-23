@@ -31,7 +31,9 @@ class OaipmhHarvester_Job extends Omeka_Job_AbstractJob
         require_once 'OaipmhHarvester/Harvest/Abstract.php';
         $harvester = OaipmhHarvester_Harvest_Abstract::factory($harvest);
         $harvester->harvest();
-        if ($harvest->isResumable() && !$harvest->isError()) {
+        if ($harvest->isResumable()
+                && !($harvest->isError() || $harvest->isKilled())
+            ) {
             $this->resend();
         }
     }

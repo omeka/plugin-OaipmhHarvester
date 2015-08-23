@@ -53,13 +53,21 @@ echo head($head);
                 </td>
                 <td class="harvest-status">
                     <a href="<?php echo url("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo html_escape(ucwords($harvest->status)); ?></a>
-                    <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED): ?>
-                        <br />
-                        <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest');?>">
-                        <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
-                        <?php echo $this->formSubmit('submit_reharvest', 'Re-Harvest'); ?>
-                        </form>
-                    <?php endif; ?>
+                    <br />
+                    <?php switch ($harvest->status):
+                        case OaipmhHarvester_Harvest::STATUS_QUEUED:
+                        case OaipmhHarvester_Harvest::STATUS_IN_PROGRESS: ?>
+                            <form method="post" action="<?php echo url('oaipmh-harvester/index/kill');?>">
+                                <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
+                                <?php echo $this->formSubmit('submit_reharvest', __('Stop/Kill'), array('class' => 'red')); ?>
+                            </form>
+                            <?php break;
+                        default: ?>
+                            <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest');?>">
+                                <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
+                                <?php echo $this->formSubmit('submit_reharvest', __('Re-Harvest')); ?>
+                            </form>
+                    <?php endswitch; ?>
                 </td>
             </tr>
         <?php endforeach; ?>

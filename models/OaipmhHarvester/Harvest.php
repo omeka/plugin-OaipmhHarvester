@@ -74,6 +74,11 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
         return ($this->status == self::STATUS_ERROR);
     }
 
+    public function isKilled()
+    {
+        return ($this->status == self::STATUS_KILLED);
+    }
+
     public function listRecords()
     {
         $query = array();

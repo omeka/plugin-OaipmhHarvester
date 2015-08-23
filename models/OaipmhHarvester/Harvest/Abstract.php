@@ -189,6 +189,12 @@ abstract class OaipmhHarvester_Harvest_Abstract
                     // For real errors need to be logged and debugged.
                     _log($e, Zend_Log::ERR);
                 }
+                // The current harvest is not updated during process.
+                $harvest = get_db()->getTable('OaipmhHarvester_Harvest')
+                    ->find($this->_harvest->id);
+                if ($harvest->isKilled()) {
+                    return false;
+                }
             }
         } else {
             $this->_addStatusMessage("No records were found.");
@@ -663,18 +669,30 @@ abstract class OaipmhHarvester_Harvest_Abstract
         
             $this->_beforeHarvest();
             // This method does most of the actual work.
-            $resumptionToken = $this->_harvestRecords();
+            $result = $this->_harvestRecords();
 
             // A return value of true just indicates success, all other values
             // must be valid resumption tokens.
-            if ($resumptionToken === true) {
+            if ($result === true) {
                 $this->_afterHarvest();
                 $this->_harvest->status = 
                     OaipmhHarvester_Harvest::STATUS_COMPLETED;
                 $this->_harvest->completed = $this->_getCurrentDateTime();
                 $this->_harvest->resumption_token = null;
-            } else {
-                $this->_harvest->resumption_token = $resumptionToken;
+            }
+            // When the process is killed (the current process is ended).
+            elseif ($result === false) {
+                $this->_afterHarvest();
+                $this->_harvest->status = OaipmhHarvester_Harvest::STATUS_KILLED;
+                $msg = __('The harvest has been killed.');
+                $this->_addStatusMessage($msg,
+                    OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_WARNING);
+                $this->_harvest->completed = $this->_getCurrentDateTime();
+                _log('[OaipmhHarvester] ' . __('The harvest %d has been killed.', $this->_harvest->id), Zend_Log::WARN);
+            }
+            // When the process has a resumption token.
+            else {
+                $this->_harvest->resumption_token = $result;
                 $this->_harvest->status =
                     OaipmhHarvester_Harvest::STATUS_QUEUED;
             }

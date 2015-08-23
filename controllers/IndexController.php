@@ -183,7 +183,43 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
         $this->_helper->flashMessenger($message, 'success');
         return $this->_helper->redirector->goto('index');
     }
-    
+
+    /**
+     * Kill or stop the current process.
+     *
+     * @return void
+     */
+    public function killAction()
+    {
+        // Only set on re-harvest.
+        $harvest_id = $this->_getParam('harvest_id');
+        if ($harvest_id) {
+            $harvest = $this->_helper->db->getTable('OaipmhHarvester_Harvest')->find($harvest_id);
+            if (in_array($harvest->status, array(
+                    OaipmhHarvester_Harvest::STATUS_QUEUED,
+                    OaipmhHarvester_Harvest::STATUS_IN_PROGRESS,
+                ))) {
+                $harvest->status = OaipmhHarvester_Harvest::STATUS_KILLED;
+                $harvest->save();
+                $msg = __('The harvest has been killed.')
+                    . ' ' . __('Because this is a background process, it may take take a while, according to your parameters.');
+                $this->_helper->flashMessenger($msg, 'info');
+            }
+            // Error.
+            else {
+                $msg = __('No harvest to kill.');
+                $this->_helper->flashMessenger($msg, 'error');
+            }
+        }
+        // Else, this is an error.
+        else {
+            $msg = __('The harvest to kill should be set.');
+            $this->_helper->flashMessenger($msg, 'error');
+        }
+
+        return $this->_helper->redirector->goto('index');
+    }
+
     /**
      * Prepare the status view.
      * 

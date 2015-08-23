@@ -575,7 +575,21 @@ abstract class OaipmhHarvester_Harvest_Abstract
             = array('text' => (string) $text, 'html' => (bool) $html);
         return $elementTexts;
     }
-    
+
+    /**
+     * Check if a string is an Xml one.
+     *
+     * @param string $string
+     * @return boolean
+     */
+    protected function _isXml($string)
+    {
+        return strpos($string, '<') !== false
+            && strpos($string, '>') !== false
+            // A main tag is added to allow inner ones.
+            && (boolean) simplexml_load_string('<xml>' . $string . '</xml>', 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_NOWARNING);
+    }
+
     /**
      * Error handler callback.
      * 

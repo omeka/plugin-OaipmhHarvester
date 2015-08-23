@@ -209,7 +209,7 @@ class OaipmhHarvester_Harvest_Mets extends OaipmhHarvester_Harvest_Abstract
                     foreach($dcMetadata->$element as $rawText){
                          $text = trim($rawText);
                          $elementTexts['Dublin Core'][$label][]
-                             = array('text'=> (string) $text, 'html' => false);
+                             = array('text'=> (string) $text, 'html' => $this->_isXml($text));
                     }
                 }
             }

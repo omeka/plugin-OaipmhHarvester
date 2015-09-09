@@ -31,6 +31,7 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
     protected $_hooks = array('install', 
                               'uninstall',
                               'upgrade',
+                              'initialize',
                               'define_acl', 
                               'admin_append_to_plugin_uninstall_message', 
                               'before_delete_item',
@@ -147,6 +148,12 @@ SQL;
             $db->query($sql);
         }
     }
+
+    public function hookInitialize()
+    {
+        add_translation_source(dirname(__FILE__) . '/languages');
+    }
+
     /**
      * Define the ACL.
      * 
@@ -165,9 +172,9 @@ SQL;
      */
     public function hookAdminAppendToPluginUninstallMessage($args)
     {
-        echo '<p>While you will not lose the items and collections created by your
-        harvests, you will lose all harvest-specific metadata and the ability to
-        re-harvest.</p>';
+        echo '<p>' . __('While you will not lose the items and collections '
+        . 'created by your harvests, you will lose all harvest-specific '
+        . 'metadata and the ability to re-harvest.') . '</p>';
     }
     
     /**

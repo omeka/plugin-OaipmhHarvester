@@ -7,6 +7,8 @@
  * @copyright Copyright (c) 2009-2011 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
+
+queue_css_string('.field select {width: auto;}');
 $head = array(
     'body_class' => 'oaipmh-harvester content',
     'title' => __('OAI-PMH Harvester | Harvest'),
@@ -105,7 +107,6 @@ echo head($head);
                 </td>
                 <td><?php echo html_escape($set->setSpec); ?></td>
                 <td style="white-space: nowrap"><form method="post" action="<?php echo url('oaipmh-harvester/index/harvest'); ?>">
-                    <style type="text/css">.field select {width: auto;}</style>
                     <div class="field">
                         <?php echo $this->formLabel('metadata_spec', __('Format to harvest')); ?>
                         <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
 <responseDate>2015-06-01T00:00:01Z</responseDate>
-<request verb="ListRecords" set="First Set" metadataPrefix="mets">http://www.example.com/oai-pmh</request>
+<request verb="ListRecords" set="FirstSet" metadataPrefix="mets">http://www.example.com/oai-pmh</request>
 <ListRecords>
   <record>
     <header>
       <identifier>oai:www.example.com:ark:/12345/b6KN</identifier>
       <datestamp>2015-06-01T00:00:00Z</datestamp>
-      <setSpec>First Set</setSpec>
+      <setSpec>FirstSet</setSpec>
     </header>
     <metadata>
       <mets xmlns="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" xmlns:xlink="http://www.w3.org/1999/xlink">

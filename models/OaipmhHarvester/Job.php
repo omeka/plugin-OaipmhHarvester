@@ -9,8 +9,9 @@ class OaipmhHarvester_Job extends Omeka_Job_AbstractJob
 
     public function perform()
     {
-        if ($memoryLimit = oaipmh_harvester_config('memoryLimit')) {
-            ini_set('memory_limit', $memoryLimit); 
+        $memoryLimit = oaipmh_harvester_config('memoryLimit');
+        if ($memoryLimit) {
+            ini_set('memory_limit', $memoryLimit);
         }
         // Set the set.
         $harvest = $this->_db->getTable('OaipmhHarvester_Harvest')

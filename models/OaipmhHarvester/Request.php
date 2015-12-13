@@ -47,7 +47,8 @@ class OaipmhHarvester_Request
         ));
 
         $formats = array();
-        if ($error = $this->_getError($xml)) {
+        $error = $this->_getError($xml);
+        if ($error) {
             $formats['error'] = $error;
         }
 
@@ -86,10 +87,12 @@ class OaipmhHarvester_Request
         $response = array(
             'records' => $xml->ListRecords->record,
         );
-        if ($error = $this->_getError($xml)) {
+        $error = $this->_getError($xml);
+        if ($error) {
             $response['error'] = $error;
         }
-        if ($token = $xml->ListRecords->resumptionToken) {
+        $token = $xml->ListRecords->resumptionToken;
+        if ($token) {
             $response['resumptionToken'] = (string)$token;
         }
         return $response;
@@ -119,7 +122,8 @@ class OaipmhHarvester_Request
             // Handle returned errors, such as "noSetHierarchy". For a data 
             // provider that has no set hierarchy, see: 
             // http://solarphysics.livingreviews.org/register/oai
-            if ($error = $this->_getError($xml)) {
+            $error = $this->_getError($xml);
+            if ($error) {
                 $retVal['error'] = $error;
                 if ($error['code'] ==
                         OaipmhHarvester_Request::OAI_ERR_NO_SET_HIERARCHY

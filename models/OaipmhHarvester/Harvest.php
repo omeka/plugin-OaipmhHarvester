@@ -96,7 +96,8 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
 
             // Perform date-selective harvesting if a "from" date is
             // specified.
-            if(($startFrom = $this->start_from)) {
+            $startFrom = $this->start_from;
+            if ($startFrom) {
                 $oaiDate = $this->_datetimeToOai($startFrom);
                 $query['from'] = $oaiDate;
                 $this->addStatusMessage("Resuming harvest from $oaiDate.");

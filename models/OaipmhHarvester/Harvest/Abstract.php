@@ -638,6 +638,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
      */
     protected function _isXml($string)
     {
+        $string = trim($string);
         return strpos($string, '<') !== false
             && strpos($string, '>') !== false
             // A main tag is added to allow inner ones.

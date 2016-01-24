@@ -39,7 +39,7 @@ class OaipmhHarvester_Harvest_OaiDc extends OaipmhHarvester_Harvest_Abstract
             'metadata' => array(
                 'public' => $this->getOption('public'),
                 'featured' => $this->getOption('featured'),
-            ),);
+        ));
         $collectionMetadata['elementTexts']['Dublin Core']['Title'][]
             = array('text' => (string) $harvest->set_name, 'html' => false); 
         $collectionMetadata['elementTexts']['Dublin Core']['Description'][]

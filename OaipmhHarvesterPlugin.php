@@ -88,9 +88,9 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           `set_spec` text,
           `set_name` text,
           `set_description` text,
-          `update_metadata` enum('keep', 'element', 'strict') NOT NULL DEFAULT 'element',
-          `update_files` enum('keep', 'deduplicate', 'remove', 'full') NOT NULL DEFAULT 'full',
-          `status` enum('queued','in progress','completed','error','deleted','killed') NOT NULL default 'queued',
+          `update_metadata` enum('element', 'keep', 'strict') NOT NULL,
+          `update_files` enum(, 'full', 'keep', 'deduplicate', 'remove') NOT NULL,
+          `status` enum('queued','in progress','completed','error','deleted','killed') NOT NULL,
           `status_messages` text,
           `resumption_token` text,
           `initiated` datetime default NULL,
@@ -151,7 +151,7 @@ SQL;
         if (version_compare($oldVersion, '2.1', '<')) {
             $sql = "
                 ALTER TABLE `{$db->prefix}oaipmh_harvester_harvests`
-                ADD `update_files` enum('keep', 'deduplicate', 'remove', 'full') NOT NULL DEFAULT 'full' AFTER `set_description`
+                ADD `update_files` enum('full', 'keep', 'deduplicate', 'remove') NOT NULL AFTER `set_description`
             ";
             $db->query($sql);
         }
@@ -159,7 +159,7 @@ SQL;
         if (version_compare($oldVersion, '2.1.1', '<')) {
             $sql = "
                 ALTER TABLE `{$db->prefix}oaipmh_harvester_harvests`
-                ADD `update_metadata` enum('keep', 'element', 'strict') NOT NULL DEFAULT 'element' AFTER `set_description`
+                ADD `update_metadata` enum('element', 'keep', 'strict') NOT NULL AFTER `set_description`
             ";
             $db->query($sql);
         }

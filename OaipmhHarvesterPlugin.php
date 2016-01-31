@@ -89,7 +89,7 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           `set_name` text,
           `set_description` text,
           `update_metadata` enum('element', 'keep', 'strict') NOT NULL,
-          `update_files` enum(, 'full', 'keep', 'deduplicate', 'remove') NOT NULL,
+          `update_files` enum('full', 'keep', 'deduplicate', 'remove') NOT NULL,
           `status` enum('queued','in progress','completed','error','deleted','killed') NOT NULL,
           `status_messages` text,
           `resumption_token` text,

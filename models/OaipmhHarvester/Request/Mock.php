@@ -16,13 +16,14 @@ class OaipmhHarvester_Request_Mock extends OaipmhHarvester_Request
     public function setResponseXml($xml)
     {
         if (!$this->_defaultHeader) {
-        $this->_defaultHeader = 'HTTP/1.1 200 OK
-Date: Mon, 1 Jun 2015 00:00:00 GMT
-Server: Apache/2.4 (Debian)
-Content-Type: text/xml;charset=UTF-8
-Connection: close
-
-';
+            // Required end of line: https://www.ietf.org/rfc/rfc2616.txt
+            $eol = "\r\n";
+            $this->_defaultHeader = 'HTTP/1.1 200 OK' . $eol
+                . 'Date: Mon, 1 Jun 2015 00:00:00 GMT' . $eol
+                . 'Server: Apache/2.4 (Debian)' . $eol
+                . 'Content-Type: text/xml;charset=UTF-8' .$eol
+                . 'Connection: close' . $eol
+                . $eol;
         }
         $this->setResponse($this->_defaultHeader . $xml);
     }

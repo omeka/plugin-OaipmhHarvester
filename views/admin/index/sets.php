@@ -10,8 +10,8 @@
 
 queue_css_string('.field select {width: auto;}');
 $head = array(
-    'body_class' => 'oaipmh-harvester content',
     'title' => __('OAI-PMH Harvester | Harvest'),
+    'body_class' => 'oaipmh-harvester content',
 );
 echo head($head);
 ?>
@@ -145,4 +145,4 @@ echo head($head);
     </div>
     <?php endif; ?>
 </div>
-<?php echo foot(); ?>
+<?php echo foot();

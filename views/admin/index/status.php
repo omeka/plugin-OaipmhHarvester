@@ -9,8 +9,8 @@
  */
 
 $head = array(
-    'body_class' => 'oaipmh-harvester content',
     'title' => __('OAI-PMH Harvester | Status'),
+    'body_class' => 'oaipmh-harvester content',
 );
 echo head($head);
 ?>
@@ -69,7 +69,7 @@ echo head($head);
     </tr>
     <tr>
         <td><?php echo __('Status'); ?></td>
-        <td><?php echo html_escape(ucwords($this->harvest->status)); ?></td>
+        <td><?php echo html_escape(ucwords(__($this->harvest->status))); ?></td>
     </tr>
     <tr>
         <td><?php echo __('Initiated'); ?></td>
@@ -77,7 +77,7 @@ echo head($head);
     </tr>
     <tr>
         <td><?php echo __('Completed'); ?></td>
-        <td><?php echo $this->harvest->completed ? html_escape($this->harvest->completed) : html_escape('[not completed]'); ?></td>
+        <td><?php echo $this->harvest->completed ? html_escape($this->harvest->completed) : html_escape(__('[not completed]')); ?></td>
     </tr>
     <tr>
         <td><?php echo __('Status Messages'); ?></td>
@@ -92,4 +92,4 @@ echo head($head);
 </p>
 <?php endif; ?>
 <?php endif; ?>
-<?php echo foot(); ?>
+<?php echo foot();

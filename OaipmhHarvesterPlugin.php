@@ -29,6 +29,7 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
      * @var array Hooks for the plugin.
      */
     protected $_hooks = array(
+        'initialize',
         'install',
         'upgrade',
         'uninstall',
@@ -56,6 +57,11 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
         // With roles, in particular if Guest User is installed.
         'oaipmh_harvester_allow_roles' => 'a:1:{i:0;s:5:"super";}',
     );
+
+    public function hookInitialize()
+    {
+        add_translation_source(dirname(__FILE__) . '/languages');
+    }
 
     /**
      * Install the plugin.
@@ -186,9 +192,9 @@ SQL;
      */
     public function hookUninstallMessage()
     {
-        echo '<p>While you will not lose the items and collections created by your
-        harvests, you will lose all harvest-specific metadata and the ability to
-        re-harvest.</p>';
+        echo '<p>' . __('While you will not lose the items and collections '
+        . 'created by your harvests, you will lose all harvest-specific '
+        . 'metadata and the ability to re-harvest.') . '</p>';
     }
 
     /**

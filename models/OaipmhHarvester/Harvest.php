@@ -110,7 +110,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
 
         if (isset($response['error'])) {
             if ($response['error']['code'] == 'noRecordsMatch') {
-                $this->addStatusMessage("The repository returned no records.");
+                $this->addStatusMessage(__("The repository returned no records."));
             } else {
                 $this->addStatusMessage($response['error']['code'] . ': '
                     . $response['error']['message']);

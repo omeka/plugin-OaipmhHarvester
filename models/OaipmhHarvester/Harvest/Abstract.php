@@ -197,14 +197,14 @@ abstract class OaipmhHarvester_Harvest_Abstract
                 }
             }
         } else {
-            $this->_addStatusMessage("No records were found.");
+            $this->_addStatusMessage(__("No records were found."));
         }
         
         $resumptionToken = @$response['resumptionToken'];
         if ($resumptionToken) {
-            $this->_addStatusMessage("Received resumption token: $resumptionToken");
+            $this->_addStatusMessage(__("Received resumption token: %s", $resumptionToken));
         } else {
-            $this->_addStatusMessage("Did not receive a resumption token.");
+            $this->_addStatusMessage(__("Did not receive a resumption token."));
         }
 
         return ($resumptionToken ? $resumptionToken : true);

@@ -31,7 +31,7 @@ echo head($head);
                 <th><?php echo __('Base URL'); ?></th>
                 <th><?php echo __('Metadata Prefix'); ?></th>
                 <th><?php echo __('Set'); ?></th>
-                <th><?php echo __('Status') ?></th>
+                <th><?php echo __('Status'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -52,7 +52,7 @@ echo head($head);
                     ?>
                 </td>
                 <td class="harvest-status">
-                    <a href="<?php echo url("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo html_escape(ucwords($harvest->status)); ?></a>
+                    <a href="<?php echo url("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo html_escape(ucwords(__($harvest->status))); ?></a>
                     <br />
                     <?php switch ($harvest->status):
                         case OaipmhHarvester_Harvest::STATUS_QUEUED:
@@ -76,4 +76,4 @@ echo head($head);
     <?php endif; ?>
     </div>
 </div>
-<?php echo foot(); ?>
+<?php echo foot();

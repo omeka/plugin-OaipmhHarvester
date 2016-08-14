@@ -4,7 +4,7 @@
     <?php foreach($items as $item): ?>
         <li>
         <?php echo link_to_item(
-                'Item #' . $item->id,
+                __('Item #%s', $item->id),
                 array(),
                 'show',
                 $item

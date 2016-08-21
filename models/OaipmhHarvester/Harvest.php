@@ -14,6 +14,15 @@
  */
 class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
 {
+    const UPDATE_METADATA_KEEP = 'keep';
+    const UPDATE_METADATA_ELEMENT ='element';
+    const UPDATE_METADATA_STRICT = 'strict';
+
+    const UPDATE_FILES_KEEP = 'keep';
+    const UPDATE_FILES_DEDUPLICATE = 'deduplicate';
+    const UPDATE_FILES_REMOVE = 'remove';
+    const UPDATE_FILES_FULL = 'full';
+
     const STATUS_QUEUED      = 'queued';
     const STATUS_IN_PROGRESS = 'in progress';
     const STATUS_COMPLETED   = 'completed';
@@ -28,6 +37,8 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
     public $set_spec;
     public $set_name;
     public $set_description;
+    public $update_metadata = self::UPDATE_METADATA_ELEMENT;
+    public $update_files = self::UPDATE_FILES_FULL;
     public $status;
     public $status_messages;
     public $resumption_token;
@@ -63,6 +74,11 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
         return ($this->status == self::STATUS_ERROR);
     }
 
+    public function isKilled()
+    {
+        return ($this->status == self::STATUS_KILLED);
+    }
+
     public function listRecords()
     {
         $query = array();
@@ -80,7 +96,8 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
 
             // Perform date-selective harvesting if a "from" date is
             // specified.
-            if(($startFrom = $this->start_from)) {
+            $startFrom = $this->start_from;
+            if ($startFrom) {
                 $oaiDate = $this->_datetimeToOai($startFrom);
                 $query['from'] = $oaiDate;
                 $this->addStatusMessage("Resuming harvest from $oaiDate.");
@@ -93,7 +110,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
 
         if (isset($response['error'])) {
             if ($response['error']['code'] == 'noRecordsMatch') {
-                $this->addStatusMessage("The repository returned no records.");
+                $this->addStatusMessage(__("The repository returned no records."));
             } else {
                 $this->addStatusMessage($response['error']['code'] . ': '
                     . $response['error']['message']);
@@ -119,11 +136,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
         $validators = array(
             'base_url' => new Omeka_Validate_Uri(),
             'metadata_prefix' => new Zend_Validate_InArray(
-                array(
-                    'oai_dc',
-                    'cdwalite',
-                    'mets',
-                )
+                array_keys(oaipmh_harvester_get_maps())
             ),
         );
         foreach ($validators as $column => $validator) {
@@ -144,6 +157,9 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
         switch ($messageCode) {
             case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_ERROR:
                 $messageCodeText = 'Error';
+                break;
+            case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_WARNING:
+                $messageCodeText = 'Warning';
                 break;
             case OaipmhHarvester_Harvest_Abstract::MESSAGE_CODE_NOTICE:
             default:

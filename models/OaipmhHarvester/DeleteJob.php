@@ -64,8 +64,8 @@ class OaipmhHarvester_DeleteJob extends Omeka_Job_AbstractJob
         }
         
         $harvest->status = OaipmhHarvester_Harvest::STATUS_DELETED;
-        $statusMessage = 'All items created for this harvest were deleted on ' 
-                       . date('Y-m-d H:i:s');
+        $statusMessage = __('All items created for this harvest were deleted on %s',
+                            date('Y-m-d H:i:s'));
         $harvest->status_messages = strlen($harvest->status_messages) == 0 
                                   ? $statusMessage 
                                   : "\n\n" . $statusMessage;

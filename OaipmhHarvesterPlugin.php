@@ -9,12 +9,12 @@
 
 
 /** Path to plugin directory */
-defined('OAIPMH_HARVESTER_PLUGIN_DIRECTORY') 
+defined('OAIPMH_HARVESTER_PLUGIN_DIRECTORY')
     or define('OAIPMH_HARVESTER_PLUGIN_DIRECTORY', dirname(__FILE__));
 
 /** Path to plugin maps directory */
-defined('OAIPMH_HARVESTER_MAPS_DIRECTORY') 
-    or define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY 
+defined('OAIPMH_HARVESTER_MAPS_DIRECTORY')
+    or define('OAIPMH_HARVESTER_MAPS_DIRECTORY', OAIPMH_HARVESTER_PLUGIN_DIRECTORY
                                         . '/models/OaipmhHarvester/Harvest');
 
 require_once dirname(__FILE__) . '/functions.php';
@@ -24,28 +24,44 @@ require_once dirname(__FILE__) . '/functions.php';
  */
 class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
 {
-    
+
     /**
      * @var array Hooks for the plugin.
      */
-    protected $_hooks = array('install', 
-                              'uninstall',
-                              'upgrade',
-                              'define_acl', 
-                              'admin_append_to_plugin_uninstall_message', 
-                              'before_delete_item',
-                              'admin_items_show_sidebar',
-                              'items_browse_sql');
+    protected $_hooks = array(
+        'initialize',
+        'install',
+        'upgrade',
+        'uninstall',
+        'uninstall_message',
+        'config_form',
+        'config',
+        'define_acl',
+        'before_delete_item',
+        'after_delete_collection',
+        'admin_items_show_sidebar',
+        'items_browse_sql',
+    );
 
     /**
      * @var array Filters for the plugin.
      */
-    protected $_filters = array('admin_navigation_main');
+    protected $_filters = array(
+        'admin_navigation_main',
+    );
 
     /**
      * @var array Options and their default values.
      */
-    protected $_options = array();
+    protected $_options = array(
+        // With roles, in particular if Guest User is installed.
+        'oaipmh_harvester_allow_roles' => 'a:1:{i:0;s:5:"super";}',
+    );
+
+    public function hookInitialize()
+    {
+        add_translation_source(dirname(__FILE__) . '/languages');
+    }
 
     /**
      * Install the plugin.
@@ -62,8 +78,8 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           set_spec: the OAI-PMH set spec (unique identifier)
           set_name: the OAI-PMH set name
           set_description: the Dublin Core description of the set, if any
-          status: the current harvest status for this set: starting, in progress,
-          completed, error, deleted
+          status: the current harvest status for this set: queued, in progress,
+          completed, error, deleted, killed
           status_messages: any messages sent from the harvester, usually during
           an error status
           initiated: the datetime the harvest initiated
@@ -78,7 +94,9 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           `set_spec` text,
           `set_name` text,
           `set_description` text,
-          `status` enum('queued','in progress','completed','error','deleted','killed') NOT NULL default 'queued',
+          `update_metadata` enum('element', 'keep', 'strict') NOT NULL,
+          `update_files` enum('full', 'keep', 'deduplicate', 'remove') NOT NULL,
+          `status` enum('queued','in progress','completed','error','deleted','killed') NOT NULL,
           `status_messages` text,
           `resumption_token` text,
           `initiated` datetime default NULL,
@@ -107,24 +125,13 @@ class OaipmhHarvesterPlugin extends Omeka_Plugin_AbstractPlugin
           UNIQUE KEY `item_id_idx` (item_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         $db->query($sql);
-    }
-    
-    /**
-     * Uninstall the plugin.
-     */
-    public function hookUninstall()
-    {
-        $db = $this->_db;
-        
-        // drop the tables        
-        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_harvests`;";
-        $db->query($sql);
-        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_records`;";
-        $db->query($sql);
-        
-        $this->_uninstallOptions();
+
+        $this->_installOptions();
     }
 
+    /**
+     * Upgrade the plugin.
+     */
     public function hookUpgrade($args)
     {
         $db = $this->_db;
@@ -146,30 +153,116 @@ ALTER TABLE `{$db->prefix}oaipmh_harvester_records`
 SQL;
             $db->query($sql);
         }
+
+        if (version_compare($oldVersion, '2.1', '<')) {
+            $sql = "
+                ALTER TABLE `{$db->prefix}oaipmh_harvester_harvests`
+                ADD `update_files` enum('full', 'keep', 'deduplicate', 'remove') NOT NULL AFTER `set_description`
+            ";
+            $db->query($sql);
+        }
+
+        if (version_compare($oldVersion, '2.1.1', '<')) {
+            $sql = "
+                ALTER TABLE `{$db->prefix}oaipmh_harvester_harvests`
+                ADD `update_metadata` enum('element', 'keep', 'strict') NOT NULL AFTER `set_description`
+            ";
+            $db->query($sql);
+        }
     }
+
     /**
-     * Define the ACL.
-     * 
+     * Uninstall the plugin.
+     */
+    public function hookUninstall()
+    {
+        $db = $this->_db;
+
+        // drop the tables
+        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_harvests`;";
+        $db->query($sql);
+        $sql = "DROP TABLE IF EXISTS `{$db->prefix}oaipmh_harvester_records`;";
+        $db->query($sql);
+
+        $this->_uninstallOptions();
+    }
+
+    /**
+     * Add a message to the confirm form for uninstallation of the plugin.
+     */
+    public function hookUninstallMessage()
+    {
+        echo '<p>' . __('While you will not lose the items and collections '
+        . 'created by your harvests, you will lose all harvest-specific '
+        . 'metadata and the ability to re-harvest.') . '</p>';
+    }
+
+    /**
+     * Shows plugin configuration page.
+     */
+    public function hookConfigForm($args)
+    {
+        $view = get_view();
+        echo $view->partial(
+            'plugins/oaipmh-harvester-config-form.php'
+        );
+    }
+
+    /**
+     * Saves plugin configuration page.
+     *
+     * @param array Options set in the config form.
+     */
+    public function hookConfig($args)
+    {
+        $post = $args['post'];
+        foreach ($this->_options as $optionKey => $optionValue) {
+            if (in_array($optionKey, array(
+                    'oaipmh_harvester_allow_roles',
+                ))) {
+               $post[$optionKey] = serialize($post[$optionKey]) ?: serialize(array());
+            }
+            if (isset($post[$optionKey])) {
+                set_option($optionKey, $post[$optionKey]);
+            }
+        }
+
+    }
+
+    /**
+     * Defines the plugin's access control list.
+     *
      * @param array $args
      */
     public function hookDefineAcl($args)
     {
-        $acl = $args['acl']; // get the Zend_Acl
-        $acl->addResource('OaipmhHarvester_Index');
-    }
-    
-    /**
-     * Specify plugin uninstall message
-     *
-     * @param array $args
-     */
-    public function hookAdminAppendToPluginUninstallMessage($args)
-    {
-        echo '<p>While you will not lose the items and collections created by your
-        harvests, you will lose all harvest-specific metadata and the ability to
-        re-harvest.</p>';
-    }
-    
+        $acl = $args['acl'];
+        $resource = 'OaipmhHarvester_Index';
+
+        // TODO This is currently needed for tests for an undetermined reason.
+        if (!$acl->has($resource)) {
+            $acl->addResource($resource);
+        }
+        // Hack to disable CRUD actions.
+        $acl->deny(null, $resource, array('show', 'add', 'edit', 'delete'));
+        $acl->deny(null, $resource);
+
+        $roles = $acl->getRoles();
+
+        // Check that all the roles exist, in case a plugin-added role has
+        // been removed (e.g. GuestUser).
+        $allowRoles = unserialize(get_option('oaipmh_harvester_allow_roles')) ?: array();
+        $allowRoles = array_intersect($roles, $allowRoles);
+        if ($allowRoles) {
+            $acl->allow($allowRoles, $resource);
+        }
+
+        $denyRoles = array_diff($roles, $allowRoles);
+        if ($denyRoles) {
+            $acl->deny($denyRoles, $resource);
+        }
+  }
+
     /**
     * Appended to admin item show pages.
     *
@@ -180,7 +273,7 @@ SQL;
         $item = $args['item'];
         echo $this->_expose_duplicates($item);
     }
-    
+
     /**
      * Returns a view of any duplicate harvested records for an item
      *
@@ -201,7 +294,7 @@ SQL;
         }
         return get_view()->partial('index/_duplicates.php', array('items' => $items));
     }
-    
+
     /**
      * Deletes harvester record associated with a deleted item.
      *
@@ -219,7 +312,24 @@ SQL;
             release_object($record);
         }
     }
-    
+
+    /**
+     * Reset harvester collection associated with a deleted collection.
+     *
+     * @param array $args
+     */
+    public function hookAfterDeleteCollection($args)
+    {
+        $collection = $args['record'];
+        $harvests = $this->_db->getTable('OaipmhHarvester_Harvest')
+            ->findBy(array('collection_id' => $collection->id));
+        foreach ($harvests as $harvest) {
+            $harvest->collection_id = 0;
+            $harvest->save();
+            release_object($harvest);
+        }
+    }
+
     /**
      * Hooks into item_browse_sql to return items in a particular oaipmh record.
      *
@@ -230,7 +340,7 @@ SQL;
         $db = $this->_db;
         $select = $args['select'];
         $params = $args['params'];
-        
+
         // Filter based on duplicates of a given oaipmh record.
         $dupKey = 'oaipmh_harvester_duplicate_items';
         if (array_key_exists($dupKey, $params)) {
@@ -247,22 +357,22 @@ SQL;
             );
         }
     }
-    
+
     /**
      * Add the OAI-PMH Harvester link to the admin main navigation.
-     * 
+     *
      * @param array Navigation array.
      * @return array Filtered navigation array.
      */
     public function filterAdminNavigationMain($nav)
-    {            
+    {
         $nav[] = array(
             'label' => __('OAI-PMH Harvester'),
             'uri' => url('oaipmh-harvester'),
             'resource' => 'OaipmhHarvester_Index',
             'privilege' => 'index',
             'class' => 'nav-oai-pmh-harvester'
-        );       
+        );
         return $nav;
     }
 }

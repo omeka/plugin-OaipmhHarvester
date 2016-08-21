@@ -5,7 +5,7 @@ class OaipmhHarvester_Request
     /**
      * OAI-PMH error code for a repository with no set hierarchy
      */
-    const ERROR_CODE_NO_SET_HIERARCHY = 'noSetHierarchy';
+    const OAI_ERR_NO_SET_HIERARCHY = 'noSetHierarchy';
 
     /**
      * @var string
@@ -45,7 +45,13 @@ class OaipmhHarvester_Request
         $xml = $this->_makeRequest(array(
             'verb' => 'ListMetadataFormats',
         ));
+
         $formats = array();
+        $error = $this->_getError($xml);
+        if ($error) {
+            $formats['error'] = $error;
+        }
+
         foreach ($xml->ListMetadataFormats->metadataFormat as $format) {
             $prefix = trim((string)$format->metadataPrefix);
             $schema = trim((string)$format->schema);
@@ -81,10 +87,12 @@ class OaipmhHarvester_Request
         $response = array(
             'records' => $xml->ListRecords->record,
         );
-        if ($error = $this->_getError($xml)) {
+        $error = $this->_getError($xml);
+        if ($error) {
             $response['error'] = $error;
         }
-        if ($token = $xml->ListRecords->resumptionToken) {
+        $token = $xml->ListRecords->resumptionToken;
+        if ($token) {
             $response['resumptionToken'] = (string)$token;
         }
         return $response;
@@ -107,16 +115,18 @@ class OaipmhHarvester_Request
         }
 
         $retVal = array();
+        $sets = array();
         try {
             $xml = $this->_makeRequest($query);
         
             // Handle returned errors, such as "noSetHierarchy". For a data 
             // provider that has no set hierarchy, see: 
             // http://solarphysics.livingreviews.org/register/oai
-            if ($error = $this->_getError($xml)) {
+            $error = $this->_getError($xml);
+            if ($error) {
                 $retVal['error'] = $error;
-                if ($error['code'] == 
-                        OaipmhHarvester_Request::ERROR_CODE_NO_SET_HIERARCHY
+                if ($error['code'] ==
+                        OaipmhHarvester_Request::OAI_ERR_NO_SET_HIERARCHY
                 ) {
                     $sets = array();
                 }
@@ -176,6 +186,14 @@ class OaipmhHarvester_Request
         if ($response->isSuccessful() && !$response->isRedirect()) {
             libxml_use_internal_errors(true);
             $iter = simplexml_load_string($response->getBody());
+            if ($iter !== false) {
+                $ns = $iter->getNamespaces();
+                $ns_key = array_search("http://www.openarchives.org/OAI/2.0/", $ns);
+                if ($ns_key !== false and $ns_key !== "") {
+                    $iter = simplexml_load_string($response->getBody(),
+                            "SimpleXMLElement", 0, $ns_key, true);
+                }
+            }
             if ($iter === false) {
                 $errors = array();
                 foreach(libxml_get_errors() as $error) {
@@ -183,6 +201,8 @@ class OaipmhHarvester_Request
                               . $error->line . ', column ' 
                               . $error->column;
                 }
+                libxml_clear_errors();
+                libxml_use_internal_errors(false);
                 _log(
                     "[OaipmhHarvester] Could not parse XML: " 
                     . $response->getBody()
@@ -197,8 +217,10 @@ class OaipmhHarvester_Request
             }
             return $iter;
         } else {
-            throw new Zend_Http_Client_Exception("Invalid URL (" 
-                . $response->getStatus() . " " . $response->getMessage() 
+            libxml_clear_errors();
+            libxml_use_internal_errors(false);
+            throw new Zend_Http_Client_Exception("Invalid URL ("
+                . $response->getStatus() . " " . $response->getMessage()
                 . ").");
         }
     }

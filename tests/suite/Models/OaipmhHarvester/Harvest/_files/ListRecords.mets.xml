@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+<responseDate>2015-06-01T00:00:01Z</responseDate>
+<request verb="ListRecords" set="FirstSet" metadataPrefix="mets">http://www.example.com/oai-pmh</request>
+<ListRecords>
+  <record>
+    <header>
+      <identifier>oai:www.example.com:ark:/12345/b6KN</identifier>
+      <datestamp>2015-06-01T00:00:00Z</datestamp>
+      <setSpec>FirstSet</setSpec>
+    </header>
+    <metadata>
+      <mets xmlns="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <metsHdr CREATEDATE="2015-06-01T00:00:00Z">
+          <agent ROLE="CREATOR">
+            <name>john.smith@example.com</name>
+            <note>OAI-PMH Harvester for Omeka</note>
+           </agent>
+        </metsHdr>
+        <dmdSec ID="DMD.01">
+          <mdWrap MIMETYPE="text/xml" MDTYPE="DC" LABEL="Dublin Core Metadata">
+            <xmlData xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
+              <dc:dc>
+                <dc:title>Foo item</dc:title>
+                <dc:identifier>ark:/12345/b6KN</dc:identifier>
+              </dc:dc>
+            </xmlData>
+          </mdWrap>
+        </dmdSec>
+        <structMap>
+          <div DMDID="DMD.01" />
+        </structMap>
+      </mets>
+    </metadata>
+  </record>
+</ListRecords>
+</OAI-PMH>

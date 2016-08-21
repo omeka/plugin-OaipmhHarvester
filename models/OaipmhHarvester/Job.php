@@ -9,8 +9,9 @@ class OaipmhHarvester_Job extends Omeka_Job_AbstractJob
 
     public function perform()
     {
-        if ($memoryLimit = oaipmh_harvester_config('memoryLimit')) {
-            ini_set('memory_limit', $memoryLimit); 
+        $memoryLimit = oaipmh_harvester_config('memoryLimit');
+        if ($memoryLimit) {
+            ini_set('memory_limit', $memoryLimit);
         }
         // Set the set.
         $harvest = $this->_db->getTable('OaipmhHarvester_Harvest')
@@ -30,10 +31,13 @@ class OaipmhHarvester_Job extends Omeka_Job_AbstractJob
 
         require_once 'OaipmhHarvester/Harvest/Abstract.php';
         $harvester = OaipmhHarvester_Harvest_Abstract::factory($harvest);
-        $harvester->harvest();
-        if ($harvest->isResumable() && !$harvest->isError()) {
-            $this->resend();
+
+        // Don't use resend(), because it will nest process.
+        do {
+            $harvester->harvest();
         }
+        while ($harvest->isResumable()
+            && !($harvest->isError() || $harvest->isKilled()));
     }
 
     public function setHarvestId($id)

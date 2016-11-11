@@ -62,6 +62,9 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
                   . 'for OAI-PMH harvesting.';
         try {
             $metadataFormats = $request->listMetadataFormats();
+            if (isset($metadataFormats['error'])) {
+                $errorMsg = $metadataFormats['error']['message'];
+            }
         } catch (Zend_Uri_Exception $e) {
             $errorMsg = "Invalid URL given. $extraMsg";
         } catch (Zend_Http_Client_Exception $e) {

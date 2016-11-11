@@ -119,11 +119,7 @@ class OaipmhHarvester_Harvest extends Omeka_Record_AbstractRecord
         $validators = array(
             'base_url' => new Omeka_Validate_Uri(),
             'metadata_prefix' => new Zend_Validate_InArray(
-                array(
-                    'oai_dc',
-                    'cdwalite',
-                    'mets',
-                )
+                array_keys(oaipmh_harvester_get_maps())
             ),
         );
         foreach ($validators as $column => $validator) {

@@ -524,9 +524,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
 
     public static function factory($harvest)
     {
-        $classSuffix = Inflector::camelize($harvest->metadata_prefix);
-        $class = 'OaipmhHarvester_Harvest_' . $classSuffix;
-        require_once OAIPMH_HARVESTER_MAPS_DIRECTORY . "/$classSuffix.php";
+        $maps = oaipmh_harvester_get_maps();
+        // The class is autoloaded.
+        $class = $maps[$harvest->metadata_prefix]['class'];
 
         // Set the harvest object.
         $harvester = new $class($harvest);

@@ -43,8 +43,8 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
     {
         // Get the available OAI-PMH to Omeka maps, which should correspond to 
         // OAI-PMH metadata formats.
-        $maps = $this->_getMaps();
-        
+        $maps = oaipmh_harvester_get_maps();
+
         $waitTime = oaipmh_harvester_config('requestThrottleSecs', 5);
         if ($waitTime) {
             $request = new OaipmhHarvester_Request_Throttler(
@@ -74,13 +74,15 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
             return $this->_helper->redirector->goto('index');
         }
 
-        /* Compare the available OAI-PMH metadataFormats with the available 
-        Omeka maps and extract only those that are common to both.         
-        The comparison is made between the metadata schemata, not the prefixes.
+        /* Compare the available OAI-PMH metadataFormats with the available
+        Omeka maps and extract only those that are common to both.
+        The comparison is made between the metadata schemas, not the prefixes.
         */
-        $availableMaps = array_intersect($maps, $metadataFormats);
-        
-        // For a data provider that uses a resumption token for sets, see: 
+        $availableMaps = $maps;
+        array_walk($availableMaps, function(&$v) {$v = $v['schema'];});
+        $availableMaps = array_intersect($availableMaps, $metadataFormats);
+
+        // For a data provider that uses a resumption token for sets, see:
         // http://www.ajol.info/oai/
         $response = $request->listSets($this->_getParam('resumption_token'));
         
@@ -207,34 +209,5 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
         $msg = 'Harvest has been marked for deletion.';
         $this->_helper->flashMessenger($msg, 'success');
         return $this->_helper->redirector->goto('index');
-    }
-    
-    /**
-     * Get the available OAI-PMH to Omeka maps, which should correspond to 
-     * OAI-PMH metadata formats.
-     * 
-     * @return array
-     */
-    private function _getMaps()
-    {
-        $dir = new DirectoryIterator(OAIPMH_HARVESTER_MAPS_DIRECTORY);
-        $maps = array();
-        foreach ($dir as $dirEntry) {
-            if ($dirEntry->isFile() && !$dirEntry->isDot()) {
-                $filename = $dirEntry->getFilename();
-                $pathname = $dirEntry->getPathname();
-                if (preg_match('/^(.+)\.php$/', $filename, $match) 
-                    && $match[1] != 'Abstract'
-                ) {
-                    // Get and set only the name of the file minus the extension.
-                    require_once($pathname);
-                    $class = "OaipmhHarvester_Harvest_${match[1]}";
-                    $metadataSchema = constant("$class::METADATA_SCHEMA");
-                    $metadataPrefix = constant("$class::METADATA_PREFIX");
-                    $maps[$metadataPrefix] = $metadataSchema;
-                }
-            }
-        }
-        return $maps;
     }
 }

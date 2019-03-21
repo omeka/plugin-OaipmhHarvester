@@ -286,9 +286,9 @@ abstract class OaipmhHarvester_Harvest_Abstract
         else {
             // There must be a collection name, so if there is none, like when the 
             // harvest is repository-wide, set it to the base URL.
-            if (!isset($metadata['elementTexts']['Dublin Core']['Title']['text']) || 
-                    !$metadata['elementTexts']['Dublin Core']['Title']['text']) {
-                $$metadata['elementTexts']['Dublin Core']['Title']['text'] = $this->_harvest->base_url;
+            if (!isset($metadata['elementTexts']['Dublin Core']['Title'][0]['text']) || 
+                    !$metadata['elementTexts']['Dublin Core']['Title'][0]['text']) {
+                $metadata['elementTexts']['Dublin Core']['Title'][]['text'] = $this->_harvest->base_url;
             }
         
 

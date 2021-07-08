@@ -148,7 +148,16 @@ class OaipmhHarvester_Request
     {
         if ($client === null) {
             $client = new Omeka_Http_Client();
-        }        
+
+            $config = array();
+
+            $timeout = get_option('oaipmhharvester_http_client_timeout');
+            if (isset($timeout) && is_numeric($timeout) && $timeout > 0) {
+                $config['timeout'] = $timeout;
+            }
+
+            $client->setConfig($config);
+        }
         $this->_client = $client;
     }
 
@@ -169,7 +178,6 @@ class OaipmhHarvester_Request
         $client->setConfig(
             array(
                 'useragent' => $this->_getUserAgent(),
-                'timeout'      => 20
             )
         );
         $client->setParameterGet($query);

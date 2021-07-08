@@ -1,61 +1,61 @@
 # Translation for the OaipmhHarvester plugin for Omeka.
 # Copyright (C) 2011 Roy Rosenzweig Center for History and New Media
 # This file is distributed under the same license as the Omeka package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Julian Maurice <julian.maurice@biblibre.com>, 2015.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: OaipmhHarvester\n"
 "Report-Msgid-Bugs-To: http://github.com/omeka/plugin-OaipmhHarvester/issues\n"
 "POT-Creation-Date: 2012-01-09 21:49-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2015-09-09 11:53+0200\n"
+"Last-Translator: Julian Maurice <julian.maurice@biblibre.com>\n"
+"Language-Team: French\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "queued"
-msgstr ""
+msgstr "en attente"
 
 msgid "in progress"
-msgstr ""
+msgstr "en cours"
 
 msgid "completed"
-msgstr ""
+msgstr "terminé"
 
 msgid "error"
-msgstr ""
+msgstr "erreur"
 
 msgid "deleted"
-msgstr ""
+msgstr "terminé"
 
 msgid "killed"
-msgstr ""
+msgstr "tué"
 
 #: models/OaipmhHarvester/DeleteJob.php:67
 #, php-format
 msgid "All items created for this harvest were deleted on %s"
-msgstr ""
+msgstr "Tous les contenus créés par ce moissonnage ont été supprimés le %s"
 
 #: models/OaipmhHarvester/Harvest/Abstract.php:147
 msgid "No records were found."
-msgstr ""
+msgstr "Aucun document n'a été trouvé"
 
 #: models/OaipmhHarvester/Harvest/Abstract.php:152
 #, php-format
 msgid "Received resumption token: %s"
-msgstr ""
+msgstr "Jeton de reprise reçu: %s"
 
 #: models/OaipmhHarvester/Harvest/Abstract.php:154
 msgid "Did not receive a resumption token."
-msgstr ""
+msgstr "Le jeton de reprise n'a pas été reçu."
 
 #: models/OaipmhHarvester/Harvest.php:96
 msgid "The repository returned no records."
-msgstr ""
+msgstr "Le dépôt n'a retourné aucun document."
 
 #: controllers/IndexController.php:167
 #, php-format
@@ -63,6 +63,8 @@ msgid ""
 "Set \"%1$s\" is being harvested using \"%2$s\". This may take a while. "
 "Please check below for status."
 msgstr ""
+"Le set \"%1$s\" est en train d'être moissonné en utilisant \"%2$s\". Cela "
+"peut prendre un moment. Merci de vérifier le statut ci-dessous."
 
 #: controllers/IndexController.php:169
 #, php-format
@@ -70,28 +72,30 @@ msgid ""
 "Repository \"%1$s\" is being harvested using \"%2$s\". This may take a "
 "while. Please check below for status."
 msgstr ""
+"Le dépôt \"%1$s\" est en train d'être moissonné en utilisant \"%2$s\". Cela "
+"peut prendre un moment. Merci de vérifier le statut ci-dessous."
 
 #: controllers/IndexController.php:172
 #, php-format
 msgid " Harvesting is continued from %s."
-msgstr ""
+msgstr " Le moissonnage est poursuivi depuis %s."
 
 #: forms/Harvest.php:9 views/admin/index/status.php:35
 #: views/admin/index/index.php:44
 msgid "Base URL"
-msgstr ""
+msgstr "URL de base"
 
 #: forms/Harvest.php:10
 msgid "The base URL of the OAI-PMH data provider."
-msgstr ""
+msgstr "L'URL de base du dépôt OAI-PMH."
 
 #: forms/Harvest.php:18
 msgid "View Sets"
-msgstr ""
+msgstr "Voir les sets"
 
 #: views/admin/index/sets.php:11
 msgid "OAI-PMH Harvester | Harvest"
-msgstr ""
+msgstr "Moissonneur OAI-PMH | Moissonnage"
 
 #: views/admin/index/sets.php:19
 msgid ""
@@ -101,111 +105,116 @@ msgstr ""
 
 #: views/admin/index/sets.php:25
 msgid "Data provider: "
-msgstr ""
+msgstr "Fournisseur: "
 
 #: views/admin/index/sets.php:26
 msgid "Harvest the entire repository:"
-msgstr ""
+msgstr "Moissonner tout le dépôt"
 
 #: views/admin/index/sets.php:31 views/admin/index/sets.php:72
 msgid "Go"
-msgstr ""
+msgstr "Démarrer"
 
 #: views/admin/index/sets.php:35
 msgid "Harvest a set:"
-msgstr ""
+msgstr "Moissonner un set:"
 
 #: views/admin/index/sets.php:40 views/admin/index/index.php:46
 msgid "Set"
-msgstr ""
+msgstr "Set"
 
 #: views/admin/index/sets.php:41 views/admin/index/status.php:23
 msgid "Set Spec"
-msgstr ""
+msgstr "Spécification du set"
 
 #: views/admin/index/sets.php:42
 msgid "Harvest"
-msgstr ""
+msgstr "Moissonnage"
 
 #: views/admin/index/sets.php:79
 msgid "This repository does not allow you to harvest individual sets."
-msgstr ""
+msgstr "Ce dépôt n'autorise pas le moissonnage de sets individuels."
 
 #: views/admin/index/status.php:12
 msgid "OAI-PMH Harvester | Status"
-msgstr ""
+msgstr "Moissonneur OAI-PMH | Statut"
 
 #: views/admin/index/status.php:19
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: views/admin/index/status.php:27
 msgid "Set Name"
-msgstr ""
+msgstr "Nom du set"
 
 #: views/admin/index/status.php:31 views/admin/index/index.php:45
 msgid "Metadata Prefix"
-msgstr ""
+msgstr "Préfixe de métadonnée"
 
 #: views/admin/index/status.php:39 views/admin/index/index.php:47
 msgid "Status"
-msgstr ""
+msgstr "Statut"
 
 #: views/admin/index/status.php:43
 msgid "Initiated"
-msgstr ""
+msgstr "Démarré"
 
 #: views/admin/index/status.php:47
 msgid "Completed"
-msgstr ""
+msgstr "Terminé"
 
 #: views/admin/index/status.php:48
 msgid "[not completed]"
-msgstr ""
+msgstr "[non terminé]"
 
 #: views/admin/index/status.php:51
 msgid "Status Messages"
-msgstr ""
+msgstr "Messages de statut"
 
 #: views/admin/index/status.php:57
 msgid "Warning:"
-msgstr ""
+msgstr "Avertissement:"
 
 #: views/admin/index/status.php:57
 msgid ""
 "Clicking the following link will delete all items created for this harvest. "
 msgstr ""
+"Cliquer sur le lien suivant supprimera tous les contenus créés par ce "
+"moissonnage. "
 
 #: views/admin/index/index.php:11 OaipmhHarvesterPlugin.php:267
 msgid "OAI-PMH Harvester"
-msgstr ""
+msgstr "Moissonneur OAI-PMH"
 
 #: views/admin/index/index.php:33
 msgid "Data Provider"
-msgstr ""
+msgstr "Fournisseur"
 
 #: views/admin/index/index.php:37
 msgid "Harvests"
-msgstr ""
+msgstr "Moissonnages"
 
 #: views/admin/index/index.php:39
 msgid "There are no harvests."
-msgstr ""
+msgstr "Il n'y a pas de moissonnages."
 
 #: views/admin/index/index.php:63
 msgid "[Entire Repository]"
-msgstr ""
+msgstr "[Dépôt entier]"
 
 #: views/admin/index/index.php:73
 msgid "Re-Harvest"
-msgstr ""
+msgstr "Re-moissonner"
 
 #: views/admin/index/_duplicates.php:2
 msgid "Duplicate Harvested Items"
-msgstr ""
+msgstr "Contenus moissonnés en doublon"
 
 #: OaipmhHarvesterPlugin.php:175
 msgid ""
 "While you will not lose the items and collections created by your harvests, "
 "you will lose all harvest-specific metadata and the ability to re-harvest."
 msgstr ""
+"Bien que vous ne perdrez pas les contenus et collections créés par vos "
+"moissonnages, vous perdrez toutes les métadonnées spécifiques à ces "
+"moissonnages ainsi que la capacité de re-moissonner."

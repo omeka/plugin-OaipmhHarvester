@@ -164,12 +164,12 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
         }
 
         if ($setSpec) {
-            $message = "Set \"$setSpec\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
+            $message = __('Set "%1$s" is being harvested using "%2$s". This may take a while. Please check below for status.', $setSpec, $metadataPrefix);
         } else {
-            $message = "Repository \"$baseUrl\" is being harvested using \"$metadataPrefix\". This may take a while. Please check below for status.";
+            $message = __('Repository "%1$s" is being harvested using "%2$s". This may take a while. Please check below for status.', $baseUrl, $metadataPrefix);
         }
         if ($harvest->start_from) {
-            $message = $message." Harvesting is continued from $harvest->start_from .";
+            $message = $message . __(" Harvesting is continued from %s.", $harvest->start_from);
         }
         $this->_helper->flashMessenger($message, 'success');
         return $this->_helper->redirector->goto('index');

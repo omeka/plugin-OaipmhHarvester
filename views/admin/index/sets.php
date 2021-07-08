@@ -8,33 +8,38 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 $head = array('body_class' => 'oaipmh-harvester content', 
-              'title'      => 'OAI-PMH Harvester | Harvest');
+              'title'      => __('OAI-PMH Harvester | Harvest'));
 echo head($head);
 ?>
 <div id="primary">
     <?php echo flash(); ?>
     <?php if (empty($this->availableMaps)): ?>
-    <div class="error">There are no available data maps that are compatable with 
-    this repository. You will not be able to harvest from this repository.</div>
+    <div class="error">
+        <?php
+            echo __('There are no available data maps that are compatable '
+            . 'with this repository. You will not be able to harvest from this '
+            . 'repository.');
+        ?>
+    </div>
     <?php endif; ?>
-    <h2>Data provider: <?php echo html_escape($this->baseUrl); ?></h2>
-    <h3>Harvest the entire repository:</h3>
+    <h2><?php echo __('Data provider: ') . html_escape($this->baseUrl); ?></h2>
+    <h3><?php echo __('Harvest the entire repository:'); ?></h3>
     <p>
     <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest'); ?>">
         <?php echo $this->formSelect('metadata_spec', null, null, $this->availableMaps); ?>
         <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
-        <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
+        <?php echo $this->formSubmit('submit_harvest', __('Go')); ?>
     </form>
     <br />
     </p>
-    <h3>Harvest a set:</h3>
+    <h3><?php echo __('Harvest a set:'); ?></h3>
     <?php if ($this->sets): ?>
     <table>
         <thead>
             <tr>
-                <th>Set</th>
-                <th>Set Spec</th>
-                <th>Harvest</th>
+                <th><?php echo __('Set'); ?></th>
+                <th><?php echo __('Set Spec'); ?></th>
+                <th><?php echo __('Harvest'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -64,21 +69,21 @@ echo head($head);
                 <?php echo $this->formHidden('set_spec', $set->setSpec); ?>
                 <?php echo $this->formHidden('set_name', $set->setName); ?>
                 <?php echo $this->formHidden('set_description', @ $setDescription); ?>
-                <?php echo $this->formSubmit('submit_harvest', 'Go'); ?>
+                <?php echo $this->formSubmit('submit_harvest', __('Go')); ?>
                 </form></td>
             </tr>
     <?php endforeach; ?>
         </tbody>
     </table>
     <?php else: ?>
-        <p>This repository does not allow you to harvest individual sets.</p>
+        <p><?php echo __('This repository does not allow you to harvest individual sets.'); ?></p>
     <?php endif; ?>
     <?php if ($this->resumptionToken): ?>
     <div>
         <form method="post">
             <?php echo $this->formHidden('base_url', $this->baseUrl); ?>
             <?php echo $this->formHidden('resumption_token', $this->resumptionToken); ?>
-            <?php echo $this->formSubmit('submit_next_page', 'Next Page'); ?>
+            <?php echo $this->formSubmit('submit_next_page', __('Next Page')); ?>
         </form>
     </div>
     <?php endif; ?>

@@ -38,46 +38,48 @@ echo head($head);
     <?php if (empty($this->harvests)): ?>
     <p>There are no harvests.</p>
     <?php else: ?>
-    <table>
-       <thead>
-            <tr>
-                <th>Base URL</th>
-                <th>Metadata Prefix</th>
-                <th>Set</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($this->harvests as $harvest): ?>
-            <tr>
-                <td title="<?php echo html_escape($harvest->base_url); ?>" class="base-url">
-                    <div><?php echo html_escape($harvest->base_url); ?></div>
-                </td>
-                <td><?php echo html_escape($harvest->metadata_prefix); ?></td>
-                <td>
-                    <?php
-                    if ($harvest->set_spec):
-                        echo html_escape($harvest->set_name)
-                            . ' (' . html_escape($harvest->set_spec) . ')';
-                    else:
-                        echo '[Entire Repository]';
-                    endif;
-                    ?>
-                </td>
-                <td class="harvest-status">
-                    <a href="<?php echo url("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo html_escape(ucwords($harvest->status)); ?></a>
-                    <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED): ?>
-                        <br>
-                        <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest');?>">
-                        <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
-                        <?php echo $this->formSubmit('submit_reharvest', 'Re-Harvest'); ?>
-                        </form>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+        <thead>
+                <tr>
+                    <th>Base URL</th>
+                    <th>Metadata Prefix</th>
+                    <th>Set</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($this->harvests as $harvest): ?>
+                <tr>
+                    <td title="<?php echo html_escape($harvest->base_url); ?>" class="base-url">
+                        <div><?php echo html_escape($harvest->base_url); ?></div>
+                    </td>
+                    <td><?php echo html_escape($harvest->metadata_prefix); ?></td>
+                    <td>
+                        <?php
+                        if ($harvest->set_spec):
+                            echo html_escape($harvest->set_name)
+                                . ' (' . html_escape($harvest->set_spec) . ')';
+                        else:
+                            echo '[Entire Repository]';
+                        endif;
+                        ?>
+                    </td>
+                    <td class="harvest-status">
+                        <a href="<?php echo url("oaipmh-harvester/index/status?harvest_id={$harvest->id}"); ?>"><?php echo html_escape(ucwords($harvest->status)); ?></a>
+                        <?php if ($harvest->status == OaipmhHarvester_Harvest::STATUS_COMPLETED): ?>
+                            <br>
+                            <form method="post" action="<?php echo url('oaipmh-harvester/index/harvest');?>">
+                            <?php echo $this->formHidden('harvest_id', $harvest->id); ?>
+                            <?php echo $this->formSubmit('submit_reharvest', 'Re-Harvest'); ?>
+                            </form>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
     <?php endif; ?>
     </div>
 </div>

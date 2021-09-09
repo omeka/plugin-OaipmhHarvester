@@ -14,6 +14,7 @@ echo head($head);
 ?>
 
 <?php echo flash(); ?>
+<div class="table-responsive">
 <table>
     <tr>
         <td>ID</td>
@@ -52,6 +53,7 @@ echo head($head);
         <td><?php echo html_escape($this->harvest->status_messages); ?></td>
     </tr>
 </table>
+</div>
 
 <?php if ($this->harvest->status != OaipmhHarvester_Harvest::STATUS_DELETED): ?>
 <p><strong>Warning:</strong> Clicking the following link will delete all items created for this harvest. 

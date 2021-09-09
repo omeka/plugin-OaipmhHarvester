@@ -29,6 +29,7 @@ echo head($head);
     </p>
     <h3>Harvest a set:</h3>
     <?php if ($this->sets): ?>
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
@@ -70,6 +71,7 @@ echo head($head);
     <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
     <?php else: ?>
         <p>This repository does not allow you to harvest individual sets.</p>
     <?php endif; ?>

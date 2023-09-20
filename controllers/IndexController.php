@@ -228,7 +228,7 @@ class OaipmhHarvester_IndexController extends Omeka_Controller_AbstractActionCon
                 ) {
                     // Get and set only the name of the file minus the extension.
                     require_once($pathname);
-                    $class = "OaipmhHarvester_Harvest_${match[1]}";
+                    $class = "OaipmhHarvester_Harvest_{$match[1]}";
                     $metadataSchema = constant("$class::METADATA_SCHEMA");
                     $metadataPrefix = constant("$class::METADATA_PREFIX");
                     $maps[$metadataPrefix] = $metadataSchema;

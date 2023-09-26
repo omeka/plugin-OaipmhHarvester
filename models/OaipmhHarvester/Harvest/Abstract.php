@@ -147,14 +147,15 @@ abstract class OaipmhHarvester_Harvest_Abstract
             $this->_addStatusMessage("No records were found.");
         }
         
-        $resumptionToken = @$response['resumptionToken'];
-        if ($resumptionToken) {
+        $resumptionToken = true;
+        if (isset($response['resumptionToken'])) {
+            $resumptionToken = $response['resumptionToken'];
             $this->_addStatusMessage("Received resumption token: $resumptionToken");
         } else {
             $this->_addStatusMessage("Did not receive a resumption token.");
         }
 
-        return ($resumptionToken ? $resumptionToken : true);
+        return $resumptionToken;
     }
 
     /**

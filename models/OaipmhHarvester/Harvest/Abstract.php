@@ -148,7 +148,7 @@ abstract class OaipmhHarvester_Harvest_Abstract
         }
         
         $resumptionToken = true;
-        if (isset($response['resumptionToken'])) {
+        if (isset($response['resumptionToken']) && strlen($response['resumptionToken']) > 0) {
             $resumptionToken = $response['resumptionToken'];
             $this->_addStatusMessage("Received resumption token: $resumptionToken");
         } else {
